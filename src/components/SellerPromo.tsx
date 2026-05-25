@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { 
   Zap, Megaphone, Plus, Percent, Clock, PlusCircle, Share2, 
   HelpCircle, Settings, Chrome, Facebook, Smartphone, Trash2, Heart, Award

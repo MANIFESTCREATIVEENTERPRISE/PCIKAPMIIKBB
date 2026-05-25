@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { 
   Award, ShieldAlert, Star, MessageSquare, Bot, Sparkles, CheckCircle2, 
   ChevronRight, Reply, Heart, ThumbsUp, Trash2, AlertCircle

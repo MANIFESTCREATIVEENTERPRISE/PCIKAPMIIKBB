@@ -3,7 +3,7 @@
 
 @theme {
   --color-primary: var(--primary);
-  --color-accent: #FFD700;
+  --color-accent: var(--accent);
   --color-surface: var(--surface);
   --color-card: var(--card);
   --color-text-base: var(--text-base);
@@ -14,21 +14,23 @@
 }
 
 :root {
-  --primary: #112D75;
-  --surface: #FDFBF7;
-  --card: #ffffff;
-  --text-base: #111827;
-  --text-muted: #4b5563;
-  --border-color: #e5e7eb;
+  --primary: #1E40AF;      /* Pure Professional Royal Blue */
+  --accent: #EAB308;       /* Vibrant Gold Yellow (Contrast safe) */
+  --surface: #FFFFFF;      /* Absolute Pure White (Dominant layout background) */
+  --card: #F9FAFB;         /* Pristine Smooth Ice-White */
+  --text-base: #0A0F1D;    /* Intense Ink Black (100% stable reading contrast) */
+  --text-muted: #4B5563;   /* Rich Charcoal Muted Grey */
+  --border-color: #E5E7EB; /* Razor-thin premium border */
 }
 
 .dark {
-  --primary: #081129;
-  --surface: #0a0e1a;
-  --card: #11182d;
-  --text-base: #f8fafc;
-  --text-muted: #94a3b8;
-  --border-color: #1e293b;
+  --primary: #3B82F6;      /* High-glow Electric Sapphire Blue */
+  --accent: #FBBF24;       /* Radiant Sun Yellow/Gold */
+  --surface: #040407;      /* Absolute Midnight Pure Black (Dominant dark canvas) */
+  --card: #0E0E12;         /* Pitch Charcoal Gray Card border-matched */
+  --text-base: #FFFFFF;    /* Pure Stellar White text (100% reading contrast) */
+  --text-muted: #9CA3AF;   /* Muted Platinum Silk Grey */
+  --border-color: #1F1F24; /* Seamless dark structural border */
 }
 
 @variant dark (&:where(.dark, .dark *));
@@ -38,7 +40,7 @@
     @apply bg-surface text-text-base font-sans transition-colors duration-300;
   }
   h1, h2, h3, h4 {
-    @apply font-display text-accent;
+    @apply font-display text-text-base;
   }
 }
 
@@ -56,72 +58,106 @@
 
 /* Smart Dark Mode Automatic Overrides */
 .dark {
-  /* Surface & Container Overrides */
-  .bg-white, 
+  /* Class hierarchy mapping to prevent overlapping */
+  
+  /* Level 1: Outer Backgrounds (Midnight almost-black tone) */
   .bg-surface, 
-  .bg-slate-50, 
-  .bg-gray-50, 
-  .bg-zinc-50,
-  .bg-neutral-50 {
+  .bg-slate-950, 
+  .bg-gray-950,
+  .bg-zinc-950,
+  .bg-neutral-950,
+  .bg-\[\#F8FAFC\],
+  .bg-\[\#FAF6EE\] {
+    background-color: var(--surface) !important;
+  }
+
+  /* Level 2: Core Cards & Content Containers (Distinct Navy-Slate container background) */
+  .bg-white,
+  .bg-card,
+  .bg-slate-900,
+  .bg-gray-900,
+  .bg-zinc-900,
+  .bg-neutral-900,
+  .bg-\[\#FCFAF2\] {
     background-color: var(--card) !important;
   }
 
-  .bg-gray-100, 
+  /* Level 3: Secondary cards, nested widgets or popup lists */
+  .bg-slate-800,
+  .bg-gray-800,
+  .bg-zinc-800,
+  .bg-neutral-800,
+  .bg-slate-800\/50,
+  .bg-[#131E3B],
+  .bg-[#131E3B]\/40,
+  .bg-[#1c2c54],
+  .bg-[#1C2C54],
+  .bg-[#202E50],
+  .bg-slate-950\/50 {
+    background-color: #14141A !important;
+  }
+
+  /* Level 4: Soft highlights, tables, interactive menu buttons */
+  .bg-slate-50, 
+  .bg-gray-50, 
+  .bg-zinc-50,
+  .bg-neutral-50,
   .bg-slate-100,
-  .bg-gray-150,
+  .bg-gray-100,
+  .bg-slate-200,
   .bg-gray-200,
-  .bg-slate-200 {
-    background-color: rgba(255, 255, 255, 0.08) !important;
+  .bg-[#FAF6EE] {
+    background-color: rgba(255, 255, 255, 0.04) !important;
   }
 
   .bg-gray-50\/50,
   .bg-gray-50\/60,
-  .bg-surface\/50 {
-    background-color: rgba(255, 255, 255, 0.03) !important;
+  .bg-surface\/50,
+  .bg-slate-50\/50 {
+    background-color: rgba(255, 255, 255, 0.02) !important;
   }
 
   /* Form / Interactive Utility Controls */
   input, 
   select, 
   textarea,
-  .bg-gray-55,
-  .bg-gray-50 {
-    &.border, &.border-gray-100, &.border-gray-200, &.border-gray-300 {
-      background-color: #1a2035 !important;
-      border-color: #334155 !important;
+  .bg-gray-55 {
+    &.border, &.border-gray-100, &.border-gray-200, &.border-gray-300, &.border-border-color {
+      background-color: #0E0E12 !important;
+      border-color: #1F1F26 !important;
       color: var(--text-base) !important;
     }
     &:focus {
-      background-color: #1e293b !important;
-      border-color: var(--color-accent) !important;
+      background-color: #14141A !important;
+      border-color: var(--accent) !important;
     }
   }
 
-  /* Text & Contrast Overrides */
+  /* Text & Contrast Overrides (Obsidian Obsidian Dark Slate to Crisp White) */
   .text-gray-900, 
   .text-gray-850,
   .text-gray-800, 
   .text-gray-750,
   .text-gray-700,
+  .text-slate-905,
   .text-slate-900, 
+  .text-slate-850,
   .text-slate-800, 
+  .text-slate-705,
   .text-slate-700,
-  .text-primary,
   .text-stone-800,
-  .text-zinc-800 {
-    color: var(--text-base) !important;
+  .text-zinc-850,
+  .text-zinc-805,
+  .text-zinc-800,
+  .text-text-base,
+  .text-slate-200,
+  .text-slate-300,
+  .text-slate-400,
+  .text-\[\#3E2A1C\] {
+    color: var(--text-base) !important; /* Perfect crisp light text */
   }
 
-  /* Give headers / text-primary the beautiful standout brand color or high contrast text */
-  h1, h2, h3, h4, 
-  .font-display.text-primary,
-  h1.text-primary,
-  h2.text-primary,
-  h3.text-primary,
-  h4.text-primary {
-    color: #ffd700 !important;
-  }
-
+  /* Muted Text - Silver Slate Gray for effortless readability */
   .text-gray-650, 
   .text-gray-600, 
   .text-slate-600, 
@@ -129,18 +165,44 @@
   .text-gray-500, 
   .text-slate-500,
   .text-gray-400,
-  .text-slate-400 {
+  .text-text-muted {
     color: var(--text-muted) !important;
   }
 
-  /* Borders & Dividers Overrides */
+  /* Core Headers or Highlights get beautiful yellow/gold accent */
+  h1, h2, h3, h4, 
+  .font-display.text-primary,
+  h1.text-primary,
+  h2.text-primary,
+  h3.text-primary,
+  h4.text-primary,
+  .text-primary {
+    color: var(--primary) !important;
+  }
+
+  /* Accent items (yellow/gold indicators) */
+  .text-accent,
+  .text-yellow-600,
+  .text-[#BC9010],
+  .text-yellow-500,
+  .text-amber-500 {
+    color: var(--accent) !important;
+  }
+
+  /* Borders & Dividers: Clean line separations for beautiful structured components */
+  .border,
   .border-gray-50,
   .border-gray-100, 
   .border-gray-150,
   .border-gray-200,
   .border-gray-300,
   .border-slate-100,
+  .border-slate-150,
   .border-slate-200,
+  .border-slate-300,
+  .border-slate-800,
+  .border-slate-850,
+  .border-slate-900,
   .border-dashed {
     border-color: var(--border-color) !important;
   }
@@ -148,19 +210,32 @@
   /* Hover and active states overrides */
   .hover\:bg-gray-50:hover,
   .hover\:bg-gray-100:hover,
-  .hover\:bg-slate-50:hover {
-    background-color: rgba(255, 255, 255, 0.06) !important;
+  .hover\:bg-slate-50:hover,
+  .hover\:bg-slate-100:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
   }
 
   .hover\:text-primary:hover {
-    color: #ffd700 !important;
+    color: var(--primary) !important;
   }
 
   /* Neutral Badges & Highlights */
-  .bg-gray-100.text-gray-800,
   .bg-gray-200.text-gray-600,
-  .bg-gray-100.text-gray-600 {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: var(--text-base) !important;
+  .bg-gray-105.text-gray-605,
+  .bg-gray-100.text-gray-600,
+  .bg-blue-50.text-blue-700 {
+    background-color: rgba(59, 130, 246, 0.15) !important;
+    color: var(--primary) !important;
+  }
+}
+
+/* Base Light Mode Refinements to prevent text elements from clashing with bright cards */
+:root {
+  /* Subtle borders and clean high readability */
+  .text-slate-500, .text-gray-500 {
+    color: #4B5563; /* Make body gray and secondary reading labels even clearer */
+  }
+  .bg-slate-50, .bg-slate-100 {
+    background-color: #F3F4F6 !important;
   }
 }

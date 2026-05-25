@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, Dispatch, SetStateAction } from "react";
 import { 
   Plus, Edit2, Trash2, ArrowUpRight, ArrowDownLeft, Sparkles, 
   Upload, Eye, HelpCircle, ToggleLeft, ToggleRight, CheckCircle, Smartphone
@@ -7,7 +7,7 @@ import { Product } from "../types/seller";
 
 interface SellerProductProps {
   products: Product[];
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  setProducts: Dispatch<SetStateAction<Product[]>>;
   isDarkMode: boolean;
   onTriggerNotification: (msg: string) => void;
 }

@@ -50,14 +50,14 @@ export default function SellerSidebar({
   ];
 
   // Dynamic style class based on dark mode
-  const bgClass = isDarkMode ? "bg-slate-900 border-slate-800 text-slate-100" : "bg-white border-slate-200 text-slate-800";
-  const hoverClass = isDarkMode ? "hover:bg-slate-800 text-slate-300" : "hover:bg-slate-100 text-slate-700";
-  const activeClass = "bg-blue-600 text-white shadow-lg shadow-blue-500/10";
+  const bgClass = "bg-card border-border-color text-text-base";
+  const hoverClass = "hover:bg-surface/60 hover:text-text-base text-text-muted transition-colors";
+  const activeClass = "bg-primary text-white shadow-lg shadow-primary/20";
 
   return (
     <aside id="seller-sidebar" className={`h-screen flex flex-col border-r transition-all duration-300 ${isCollapsed ? "w-20" : "w-72"} ${bgClass} shrink-0 overflow-y-auto z-40 relative`}>
       {/* Brand Logo Header */}
-      <div className={`p-5 flex items-center justify-between border-b ${isDarkMode ? "border-slate-800" : "border-slate-100"}`}>
+      <div className="p-5 flex items-center justify-between border-b border-border-color">
         <div className="flex items-center gap-3 overflow-hidden">
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shrink-0 shadow-md">
             <span className="font-sans font-black text-lg">M</span>
@@ -71,7 +71,7 @@ export default function SellerSidebar({
         </div>
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`p-1.5 rounded-lg border ${isDarkMode ? "border-slate-800 hover:bg-slate-800" : "border-slate-200 hover:bg-slate-100"} transition-all`}
+          className="p-1.5 rounded-lg border border-border-color bg-surface hover:bg-card text-text-base transition-all"
         >
           {isCollapsed ? <Menu size={16} /> : <X size={16} />}
         </button>
@@ -167,7 +167,7 @@ export default function SellerSidebar({
       </div>
 
       {/* Footer Profile State */}
-      <div className={`p-4 border-t ${isDarkMode ? "border-slate-800 bg-slate-900/40" : "border-slate-100 bg-slate-50/50"} shrink-0 flex items-center gap-3 overflow-hidden`}>
+      <div className="p-4 border-t border-border-color bg-surface/30 shrink-0 flex items-center gap-3 overflow-hidden">
         <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-sm shrink-0">
           WS
         </div>

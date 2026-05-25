@@ -71,9 +71,7 @@ export default function SellerHeader({
   };
 
   return (
-    <header className={`sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row items-center justify-between border-b gap-4 transition-colors duration-300 ${
-      isDarkMode ? "bg-slate-900/90 border-slate-800 text-slate-100 backdrop-blur-md" : "bg-white/90 border-slate-150 text-slate-800 backdrop-blur-md"
-    }`}>
+    <header className="sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row items-center justify-between border-b gap-4 transition-colors duration-300 bg-card/95 border-border-color text-text-base backdrop-blur-md">
       {/* Search Input Widget */}
       <form onSubmit={handleSearchSubmit} className="relative w-full md:max-w-md shrink-0">
         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
@@ -84,9 +82,7 @@ export default function SellerHeader({
           placeholder="Cari produk, layanan, resi, pelanggan... (Enter)"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className={`w-full pl-11 pr-4 py-2 bg-slate-100/60 hover:bg-slate-100 focus:bg-white rounded-full text-xs font-semibold border-none focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
-            isDarkMode ? "bg-slate-800/80 hover:bg-slate-800 focus:bg-slate-950 text-slate-200" : "bg-slate-100 hover:bg-slate-150/50 text-slate-700"
-          }`}
+          className="w-full pl-11 pr-4 py-2 rounded-full text-xs font-semibold border border-border-color bg-surface hover:bg-card focus:bg-surface text-text-base focus:ring-2 focus:ring-blue-500 outline-none transition-all"
         />
       </form>
 
@@ -101,9 +97,7 @@ export default function SellerHeader({
             <Plus size={16} /> Quick Action <ChevronDown size={14} />
           </button>
           {showQuickAddDropdown && (
-            <div className={`absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl border p-2 flex flex-col gap-1 z-50 ${
-              isDarkMode ? "bg-slate-950 border-slate-805" : "bg-white border-slate-102"
-            }`}>
+            <div className="absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl border p-2 flex flex-col gap-1 z-50 bg-card border-border-color">
               <button 
                 onClick={() => { onQuickAdd("produk"); setShowQuickAddDropdown(false); }}
                 className={`flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-[11px] font-bold text-left cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800`}
@@ -141,9 +135,7 @@ export default function SellerHeader({
         <button 
           onClick={() => setIsDarkMode(!isDarkMode)}
           title="Ubah Tema"
-          className={`p-2 rounded-xl border cursor-pointer transition-all ${
-            isDarkMode ? "border-slate-800 hover:bg-slate-800 text-yellow-400" : "border-slate-150 hover:bg-slate-50 text-slate-600"
-          }`}
+          className="p-2 rounded-xl border border-border-color bg-surface hover:bg-card text-accent cursor-pointer transition-all"
         >
           {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>
@@ -152,20 +144,16 @@ export default function SellerHeader({
         <div className="relative">
           <button 
             onClick={() => setShowNotificationList(!showNotificationList)}
-            className={`p-2 rounded-xl border relative cursor-pointer transition-all ${
-              isDarkMode ? "border-slate-800 hover:bg-slate-800 text-slate-300" : "border-slate-150 hover:bg-slate-50 text-slate-600"
-            }`}
+            className="p-2 rounded-xl border border-border-color bg-surface hover:bg-card text-text-base relative cursor-pointer transition-all"
           >
             <Bell size={18} />
             {notifications.length > 0 && (
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-505 bg-red-500 rounded-full animate-pulse"></span>
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
             )}
           </button>
           {showNotificationList && (
-            <div className={`absolute right-0 mt-2 w-80 rounded-2xl shadow-2xl border p-4 flex flex-col gap-3 z-50 ${
-              isDarkMode ? "bg-slate-950 border-slate-800" : "bg-white border-slate-100"
-            }`}>
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <div className="absolute right-0 mt-2 w-80 rounded-2xl shadow-2xl border p-4 flex flex-col gap-3 z-50 bg-card border-border-color text-text-base">
+              <div className="flex items-center justify-between pb-2 border-b border-border-color">
                 <span className="text-xs font-black">Notifikasi Penting</span>
                 <span className="text-[10px] text-blue-500 font-bold bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
                   {notifications.length} Info
@@ -197,21 +185,17 @@ export default function SellerHeader({
         <div className="relative">
           <button 
             onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-            className={`px-3.5 py-2 rounded-xl border flex items-center gap-2.5 text-xs font-extrabold cursor-pointer transition-all ${
-              isDarkMode ? "border-slate-800 hover:bg-slate-800 text-slate-200" : "border-slate-150 hover:bg-slate-50 text-slate-800"
-            }`}
+            className="px-3.5 py-2 rounded-xl border border-border-color bg-surface hover:bg-card text-text-base flex items-center gap-2.5 text-xs font-extrabold cursor-pointer transition-all"
           >
             <div className="flex flex-col text-right">
-              <span className="text-[9px] text-blue-500 font-black uppercase tracking-wider leading-none">Hak Akses</span>
+              <span className="text-[9px] font-black uppercase tracking-wider leading-none text-primary">Hak Akses</span>
               <span className="mt-1 leading-none">{currentRole}</span>
             </div>
             <ChevronDown size={14} className="text-slate-400" />
           </button>
           
           {showRoleDropdown && (
-            <div className={`absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl border p-2 flex flex-col gap-1 z-50 ${
-              isDarkMode ? "bg-slate-950 border-slate-800" : "bg-white border-slate-100"
-            }`}>
+            <div className="absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl border p-2 flex flex-col gap-1 z-50 bg-card border-border-color">
               {roles.map((r) => (
                 <button
                   key={r}

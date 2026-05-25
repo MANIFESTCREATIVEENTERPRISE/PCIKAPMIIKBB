@@ -293,7 +293,7 @@ export default function SellerDashboard() {
   };
 
   return (
-    <div className={`flex min-h-screen font-sans ${isDarkMode ? "bg-slate-950 text-slate-100" : "bg-[#F8FAFC] text-slate-800"} overflow-x-hidden transition-colors duration-300`}>
+    <div className="flex min-h-screen font-sans bg-surface text-text-base overflow-x-hidden transition-colors duration-300">
       {/* 1. COLLAPSIBLE PORTAL SIDEBAR */}
       <SellerSidebar 
         activeTab={activeTab}
@@ -319,9 +319,7 @@ export default function SellerDashboard() {
         />
 
         {/* BACK TO MAIN WEBSITE FLOATING BANNER */}
-        <div className={`px-8 py-3.5 flex items-center justify-between border-b text-xs font-bold leading-relaxed shrink-0 transition-colors ${
-          isDarkMode ? "bg-slate-900/40 border-slate-800/80 text-blue-400" : "bg-blue-50 text-blue-700 border-blue-100"
-        }`}>
+        <div className="px-8 py-3.5 flex items-center justify-between border-b text-xs font-bold leading-relaxed shrink-0 transition-colors bg-card border-border-color text-text-base">
           <div className="flex items-center gap-2">
             <Sparkles size={14} className="animate-spin" />
             <span>Maretoko Portal Admin Marketplace. Mode Integrasi Tunggal Koperasi KAMARA Aktif.</span>
