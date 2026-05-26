@@ -45,9 +45,58 @@ export default function SiapChatRoom() {
   });
 
   const [currentUserRole, setCurrentUserRole] = useState<"anggota" | "admin_biasa" | "super_admin">("anggota");
+  const [contacts, setContacts] = useState<any[]>(ALUMNI_CONTACTS);
   const [activeContact, setActiveContact] = useState<any>(ALUMNI_CONTACTS[0]);
   const [searchTerm, setSearchTerm] = useState("");
   const [typedMessage, setTypedMessage] = useState("");
+  
+  // Register effect to parse direct chat requests
+  useEffect(() => {
+    const handleSetPartner = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      const partnerName = customEvent.detail;
+      if (partnerName) {
+        const found = contacts.find(c => c.name.toLowerCase().includes(partnerName.toLowerCase()) || c.id === partnerName);
+        if (found) {
+          setActiveContact(found);
+        } else {
+          const newContact = {
+            id: partnerName.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+            name: partnerName,
+            prof: "Alumni Terdaftar",
+            loc: "Bandung Barat",
+            img: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(partnerName)}`
+          };
+          setContacts(prev => [newContact, ...prev]);
+          setActiveContact(newContact);
+        }
+      }
+    };
+    window.addEventListener("set-direct-chat-partner", handleSetPartner);
+
+    const directPartner = localStorage.getItem("siap_direct_chat_partner");
+    if (directPartner) {
+      localStorage.removeItem("siap_direct_chat_partner");
+      const found = contacts.find(c => c.name.toLowerCase().includes(directPartner.toLowerCase()) || c.id === directPartner);
+      if (found) {
+        setActiveContact(found);
+      } else {
+        const newContact = {
+          id: directPartner.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+          name: directPartner,
+          prof: "Alumni Terdaftar",
+          loc: "Bandung Barat",
+          img: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(directPartner)}`
+        };
+        setContacts(prev => [newContact, ...prev]);
+        setActiveContact(newContact);
+      }
+    }
+
+    return () => {
+      window.removeEventListener("set-direct-chat-partner", handleSetPartner);
+    };
+  }, [contacts]);
   
   // Admin supervision mode toggles & setup
   const [isAdminAuditerMode, setIsAdminAuditerMode] = useState(false);
@@ -102,7 +151,7 @@ export default function SiapChatRoom() {
   };
 
   // Filter contacts
-  const filteredContacts = ALUMNI_CONTACTS.filter(c => 
+  const filteredContacts = contacts.filter(c => 
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     c.prof.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -235,7 +284,7 @@ export default function SiapChatRoom() {
                   className="w-full text-xs font-bold bg-white border border-rose-200 text-primary rounded-xl px-3 py-2.5 outline-none focus:ring-1 focus:ring-rose-500"
                 >
                   <option value="sandi">Saya (Sandi Supyandi)</option>
-                  {ALUMNI_CONTACTS.map(c => (
+                  {contacts.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
@@ -250,7 +299,7 @@ export default function SiapChatRoom() {
                   className="w-full text-xs font-bold bg-white border border-rose-200 text-primary rounded-xl px-3 py-2.5 outline-none focus:ring-1 focus:ring-rose-500"
                 >
                   <option value="sandi">Saya (Sandi Supyandi)</option>
-                  {ALUMNI_CONTACTS.map(c => (
+                  {contacts.map(c => (
                     <option key={c.id} value={c.id} disabled={c.id === auditSender}>{c.name}</option>
                   ))}
                 </select>
@@ -359,11 +408,11 @@ export default function SiapChatRoom() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="font-bold text-base text-rose-900 leading-tight">
-                        TRANSKRIP AUDIT: {ALUMNI_CONTACTS.find(x => x.id === auditSender)?.name || auditSender}
+                        TRANSKRIP AUDIT: {contacts.find(x => x.id === auditSender)?.name || auditSender}
                       </h4>
                     </div>
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
-                      Memantau riwayat percakapan dengan: {ALUMNI_CONTACTS.find(x => x.id === auditReceiver)?.name || auditReceiver}
+                      Memantau riwayat percakapan dengan: {contacts.find(x => x.id === auditReceiver)?.name || auditReceiver}
                     </p>
                   </div>
                 </div>

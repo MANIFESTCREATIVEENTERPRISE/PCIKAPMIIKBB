@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   X, Hash, Mail, Phone, UserCheck, MapPin, Briefcase, MessageCircle,
@@ -58,6 +59,7 @@ interface CustomAlumniProfile extends AlumniProfile {
 }
 
 export default function AlumniProfileModal() {
+  const navigate = useNavigate();
   const [focusedAlumni, setFocusedAlumni] = useState<{ name: string; defaultLoc?: string } | null>(null);
   const [activeTab, setActiveTab] = useState<string>("ringkasan");
 
@@ -375,17 +377,29 @@ export default function AlumniProfileModal() {
                   </div>
                 )}
 
-                {/* WhatsApp Chat Connector */}
+                {/* SIAP Chat Connector */}
                 {activeProfile.whatsapp && (
-                  <a
-                    href={`https://wa.me/${activeProfile.whatsapp.replace(/[^0-9]/g, "")}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-3.5 px-5 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2.5 shadow-xl shadow-[#25d366]/15 hover:scale-[1.02] active:scale-[0.98]"
+                  <button
+                    onClick={() => {
+                      // Set SIAP active tab and direct chat partner
+                      localStorage.setItem("siap_active_tab", "chat");
+                      localStorage.setItem("siap_direct_chat_partner", activeProfile.name);
+                      
+                      // Dispatch active tab and partner changes instantly
+                      window.dispatchEvent(new CustomEvent("change-siap-tab", { detail: "chat" }));
+                      window.dispatchEvent(new CustomEvent("set-direct-chat-partner", { detail: activeProfile.name }));
+                      
+                      // Close the current modal
+                      setFocusedAlumni(null);
+                      
+                      // Navigate securely to the Member SIAP page
+                      navigate("/siap");
+                    }}
+                    className="w-full py-3.5 px-5 bg-primary text-accent hover:bg-accent hover:text-primary rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2.5 shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
                     <MessageCircle size={15} />
-                    Sambungkan WhatsApp (Secure)
-                  </a>
+                    Kirim Pesan (Secure)
+                  </button>
                 )}
               </div>
             </div>

@@ -49,17 +49,13 @@ const navigation = [
     name: "Koperasi KAMARA",
     children: [
       { name: "Katalog Produk", href: "/produk-umkm/katalog" },
-      { name: "Daftar Mitra", href: "/produk-umkm/kerjasama" },
-      { name: "Maretoko Seller Center", href: "/seller" },
+      { name: "Login Penjual", href: "/seller" },
     ],
   },
   {
-    name: "SIAP",
+    name: "Login",
+    href: "/login",
     icon: User,
-    children: [
-      { name: "Login SIAP", href: "/login" },
-      { name: "Daftar Anggota", href: "/daftar-anggota" },
-    ],
   },
   {
     name: "Donasi",
@@ -157,13 +153,16 @@ export default function Header() {
                 ) : (
                   <Link 
                     to={item.href} 
-                    className={`flex items-center gap-2 text-sm font-bold transition-all relative ${
-                      isActive(item.href) ? "text-accent" : "text-white/70 hover:text-accent"
-                    }`}
+                    className={item.name === "Login" 
+                      ? "flex items-center gap-2 text-[11px] font-black uppercase tracking-widest bg-accent hover:bg-white text-primary py-2.5 px-5 rounded-full transition-all duration-300 shadow-lg shadow-accent/10 active:scale-95" 
+                      : `flex items-center gap-2 text-sm font-bold transition-all relative ${
+                        isActive(item.href) ? "text-accent" : "text-white/70 hover:text-accent"
+                      }`
+                    }
                   >
-                    {item.icon && <item.icon size={16} />}
+                    {item.icon && <item.icon size={15} />}
                     {item.name}
-                    {isActive(item.href) && (
+                    {isActive(item.href) && item.name !== "Login" && (
                       <motion.div layoutId="navPill" className="absolute -bottom-2 left-0 right-0 h-0.5 bg-accent rounded-full" />
                     )}
                   </Link>

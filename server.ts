@@ -10,8 +10,40 @@ async function startServer() {
   app.use(express.json());
 
   // In-memory data store (simulating a database)
-  const db = {
+  const db: any = {
     members: [],
+    submittedContents: [
+      {
+        id: 1,
+        title: "Urgensi Kebijakan Digitalisasi Pesantren di tatar Bandung Barat",
+        author: "H. Saiful Rachman, M.Ag",
+        category: "Pikiran Kritis",
+        content: "Pesantren di Kabupaten Bandung Barat memiliki kontribusi historis yang amat kuat. Namun, memasuki era revolusi digital, pondok pesantren harus didukung infrastruktur digital yang mumpuni serta program literasi siber madani. IKA PMII mengusulkan perda pesantren yang progresif. Transformasi digital tidak bisa mengesampingkan jati diri salafiyah, justru digitalisasi membantu pesantren menyebarluaskan nilai-nilai Islam ahlussunnah wal jamaah yang moderat dan menjangkau santri secara global.",
+        date: "23 Mei 2026",
+        status: "Menunggu Kurasi",
+        views: 0
+      },
+      {
+        id: 2,
+        title: "Membangun Jaringan Ritel Berbasis Koperasi Swalayan KAMARA",
+        author: "Lina Marlina, S.Ak",
+        category: "Ekonomi",
+        content: "Swalayan KAMARA bukan sekadar gerai toko fisik, melainkan sistem integrasi kluster UMKM alumni. Melalui pendanaan terstruktur dan rantai pasok lokal, koperasi swalayan kami optimistis mampu bersaing dengan ritel waralaba nasional. Dengan membangun kemandirian ekonomi, kita bisa memberdayakan alumni IKA PMII Bandung Barat dari hulu ke hilir.",
+        date: "21 Mei 2026",
+        status: "Diterbitkan",
+        views: 142
+      },
+      {
+        id: 3,
+        title: "Refleksi Demokrasi Elektoral Bandung Barat: Perspektif Nilai Pergerakan",
+        author: "Sandi Supyandi, S.Kom., M.H",
+        category: "Opini",
+        content: "Kondisi sosiopolitik Bandung Barat membutuhkan kepemimpinan yang berintegritas tinggi serta berlandaskan nilai silih asuh dan keadilan sosial. Demokrasi elektoral tidak boleh terjebak dalam pragmatisme transaksional. Peran alumni PMII sangat vital sebagai navigator gerakan moral dan kontrol sosial kebijakan daerah agar selalu mementingkan kemaslahatan publik, kedaulatan pangan, dan stabilitas masyarakat.",
+        date: "18 Mei 2026",
+        status: "Menunggu Kurasi",
+        views: 0
+      }
+    ],
     news: [
       { id: 1, title: "Sinergi IKA PMII KBB dengan Pemkab Bandung Barat dalam Program Penataan Desa", content: "PC IKA PMII Kabupaten Bandung Barat menjalin kesepakatan strategis dengan Pemerintah Kabupaten Bandung Barat untuk mendorong digitalisasi administrasi di tingkat desa se-KBB.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Humas IKA PMII" },
       { id: 2, title: "IKA PMII KBB : silaturahim Rapatkan Barisan untuk pelantikan dan Rapat Kerja", content: "PC IKA PMII Kabupaten Bandung Barat menyelenggarakan kegiatan silaturahim akbar guna mempererat hubungan kekeluargaan antar-alumni sekaligus merapatkan barisan menyongsong agenda pelantikan kepengurusan baru serta pelaksanaan Rapat Kerja.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Redaksi" },
@@ -83,6 +115,80 @@ async function startServer() {
     } else {
       res.status(404).json({ error: "Not found" });
     }
+  });
+
+  app.get("/api/submitted-contents", (req, res) => {
+    res.json(db.submittedContents);
+  });
+
+  app.post("/api/submitted-contents", (req, res) => {
+    const { title, content, author, category } = req.body;
+    const newSubmit = {
+      id: Date.now(),
+      title,
+      author: author || "Alumni",
+      category: category || "Opini",
+      content,
+      date: new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }),
+      status: "Menunggu Kurasi",
+      views: 0
+    };
+    db.submittedContents.unshift(newSubmit);
+    res.json({ success: true, item: newSubmit });
+  });
+
+  app.post("/api/submitted-contents/update", (req, res) => {
+    const { id, title, content, author, category, status } = req.body;
+    db.submittedContents = db.submittedContents.map((c: any) => {
+      if (c.id === Number(id)) {
+        return {
+          ...c,
+          title: title !== undefined ? title : c.title,
+          content: content !== undefined ? content : c.content,
+          author: author !== undefined ? author : c.author,
+          category: category !== undefined ? category : c.category,
+          status: status !== undefined ? status : c.status
+        };
+      }
+      return c;
+    });
+    res.json({ success: true });
+  });
+
+  app.post("/api/submitted-contents/delete", (req, res) => {
+    const { id } = req.body;
+    db.submittedContents = db.submittedContents.filter((c: any) => c.id !== Number(id));
+    res.json({ success: true });
+  });
+
+  app.post("/api/content/publish", (req, res) => {
+    const { title, content, author, category, image, date } = req.body;
+    const newItem = {
+      id: Date.now(),
+      title,
+      content,
+      author: author || "Admin SIAP",
+      category: category === "Pikiran Kritis" ? "Opini" : category,
+      image: image || "https://picsum.photos/seed/pmii/800/400",
+      date: date || new Date().toISOString()
+    };
+
+    if (category === "Berita") {
+      db.news.unshift(newItem);
+    } else if (category === "Pengumuman") {
+      db.announcements.unshift({
+        id: newItem.id,
+        title: newItem.title,
+        content: newItem.content,
+        documentUrl: "#",
+        date: newItem.date,
+        category: "Pengumuman",
+      });
+    } else {
+      // Opini or Artikel
+      db.articles.unshift(newItem);
+    }
+    res.json({ success: true, item: newItem });
   });
 
   app.post("/api/register", (req, res) => {

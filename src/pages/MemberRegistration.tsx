@@ -2,6 +2,41 @@ import { useState, FormEvent } from "react";
 import { motion } from "motion/react";
 import { User, ClipboardList, GraduationCap, Briefcase, Store, Heart, Network, Share2, Upload, Plus, Trash2, Lock } from "lucide-react";
 
+const PROFESSION_OPTIONS = [
+  "Anggota DPR",
+  "PNS",
+  "PPPK",
+  "ASN",
+  "Pegawai Honorer",
+  "TNI",
+  "POLRI",
+  "Karyawan Swasta",
+  "Kepala Desa",
+  "Pegawasi PEMDA",
+  "Pegawai BUMN",
+  "Pegawai BUMD",
+  "Wiraswasta",
+  "Pengusaha",
+  "Pedagang",
+  "Freelancer",
+  "Pekerja Lepas",
+  "Dokter",
+  "Pengacara",
+  "Arsitek",
+  "Konsultan",
+  "Petani",
+  "Nelayan",
+  "Peternak",
+  "Buruh",
+  "Driver Ojek Online",
+  "Kurir",
+  "Ibu Rumah Tangga",
+  "Pelajar",
+  "Mahasiswa",
+  "Belum/Tidak Bekerja",
+  "Profesi Lainya"
+];
+
 export default function MemberRegistration() {
   const [formData, setFormData] = useState<any>({
     interests: [],
@@ -78,6 +113,7 @@ export default function MemberRegistration() {
   // States for adding detailed custom jobs/professions
   const [addJobStatus, setAddJobStatus] = useState("Aktif");
   const [addSideProfession, setAddSideProfession] = useState("");
+  const [addProfessionDropdown, setAddProfessionDropdown] = useState("");
   const [addCompany, setAddCompany] = useState("");
   const [addPosition, setAddPosition] = useState("");
   const [addSector, setAddSector] = useState("");
@@ -170,6 +206,7 @@ export default function MemberRegistration() {
     // Clear inputs
     setAddJobStatus("Aktif");
     setAddSideProfession("");
+    setAddProfessionDropdown("");
     setAddCompany("");
     setAddPosition("");
     setAddSector("");
@@ -1435,7 +1472,15 @@ export default function MemberRegistration() {
                                   onClick={() => {
                                     setEditingJobIdx(idx);
                                     setAddJobStatus(status);
-                                    setAddSideProfession(prof === "-" ? "" : prof);
+                                    const profVal = prof === "-" ? "" : prof;
+                                    setAddSideProfession(profVal);
+                                    if (profVal === "") {
+                                      setAddProfessionDropdown("");
+                                    } else if (PROFESSION_OPTIONS.includes(profVal)) {
+                                      setAddProfessionDropdown(profVal);
+                                    } else {
+                                      setAddProfessionDropdown("Profesi Lainya");
+                                    }
                                     setAddCompany(comp === "-" ? "" : comp);
                                     setAddPosition(pos === "-" ? "" : pos);
                                     setAddSector(sec === "-" ? "" : sec);
@@ -1451,6 +1496,7 @@ export default function MemberRegistration() {
                                       setEditingJobIdx(null);
                                       setAddJobStatus("Aktif");
                                       setAddSideProfession("");
+                                      setAddProfessionDropdown("");
                                       setAddCompany("");
                                       setAddPosition("");
                                       setAddSector("");
@@ -1498,14 +1544,41 @@ export default function MemberRegistration() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">2. Profesi / Pekerjaan</label>
-                    <input 
-                      type="text"
-                      placeholder="e.g. Software Engineer, Dosen, Guru"
-                      value={addSideProfession}
-                      onChange={(e) => setAddSideProfession(e.target.value)}
-                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-bold text-primary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-sm"
-                    />
+                    <select
+                      value={addProfessionDropdown}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setAddProfessionDropdown(val);
+                        if (val !== "Profesi Lainya" && val !== "") {
+                          setAddSideProfession(val);
+                        } else {
+                          setAddSideProfession("");
+                        }
+                      }}
+                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-bold text-primary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                    >
+                      <option value="">-- Pilih Profesi --</option>
+                      {PROFESSION_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+                  {addProfessionDropdown === "Profesi Lainya" && (
+                    <div className="space-y-1 sm:col-span-2">
+                      <label className="text-[9px] font-bold text-amber-600 uppercase tracking-widest block font-black">
+                        Isi Profesi Secara Manual
+                      </label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. Pegawai Khusus, Guru Ngaji, Masinis"
+                        value={addSideProfession}
+                        onChange={(e) => setAddSideProfession(e.target.value)}
+                        className="w-full bg-white border border-amber-200 focus:border-amber-400 focus:ring-amber-400 rounded-xl px-4 py-2.5 text-xs font-bold text-primary focus:outline-none focus:ring-1 transition-all shadow-sm"
+                      />
+                    </div>
+                  )}
                   <div className="space-y-1">
                     <label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">3. Nama Instansi / Perusahaan</label>
                     <input 
@@ -1545,6 +1618,7 @@ export default function MemberRegistration() {
                         setEditingJobIdx(null);
                         setAddJobStatus("Aktif");
                         setAddSideProfession("");
+                        setAddProfessionDropdown("");
                         setAddCompany("");
                         setAddPosition("");
                         setAddSector("");

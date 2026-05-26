@@ -212,6 +212,32 @@ export default function AdminDashboard() {
     }
   }, [selectedDirectoryAlumni]);
 
+  useEffect(() => {
+    fetch("/api/submitted-contents")
+      .then(res => res.json())
+      .then(data => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          setSubmittedContents(data);
+        }
+      })
+      .catch(err => console.error("Error loading submitted contents:", err));
+
+    Promise.all([
+      fetch("/api/content/news").then(res => res.json()).catch(() => []),
+      fetch("/api/content/articles").then(res => res.json()).catch(() => []),
+      fetch("/api/content/announcements").then(res => res.json()).catch(() => [])
+    ]).then(([news, articles, announcements]) => {
+      const combined = [
+        ...news.map((item: any) => ({ ...item, category: "Berita", date: item.date ? new Date(item.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }) : "24 Mei 2026" })),
+        ...articles.map((item: any) => ({ ...item, date: item.date ? new Date(item.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }) : "24 Mei 2026" })),
+        ...announcements.map((item: any) => ({ ...item, category: "Pengumuman", date: item.date ? new Date(item.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }) : "24 Mei 2026" }))
+      ];
+      if (combined.length > 0) {
+        setBulletins(combined);
+      }
+    }).catch(err => console.error("Error loading bulletins:", err));
+  }, []);
+
   // 3. SIAP KONTEN: Curation of user publications
   const [submittedContents, setSubmittedContents] = useState([
     {
@@ -836,30 +862,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Dynamic Mode Switcher Pills (Top of Sidebar) */}
-        <div className="px-6 py-4 border-b border-white/10 space-y-2 relative z-10">
-          <p className="text-[9px] font-black tracking-[0.2em] text-white/40 uppercase">Pilih Portal Fungsional:</p>
-          <div className="grid grid-cols-3 gap-1 bg-black/20 p-1 rounded-xl">
-            <button 
-              onClick={() => handleSwitchRole("siap")}
-              className={`py-2 text-[9px] font-bold rounded-lg transition-all cursor-pointer text-center ${currentRole === "siap" ? "bg-accent text-primary shadow-sm" : "text-white/60 hover:text-white"}`}
-            >
-              SIAP
-            </button>
-            <button 
-              onClick={() => handleSwitchRole("kamara")}
-              className={`py-2 text-[9px] font-bold rounded-lg transition-all cursor-pointer text-center ${currentRole === "kamara" ? "bg-accent text-primary shadow-sm" : "text-white/60 hover:text-white"}`}
-            >
-              KAMARA
-            </button>
-            <button 
-              onClick={() => handleSwitchRole("katara")}
-              className={`py-2 text-[9px] font-bold rounded-lg transition-all cursor-pointer text-center ${currentRole === "katara" ? "bg-accent text-primary shadow-sm" : "text-white/60 hover:text-white"}`}
-            >
-              KATARA
-            </button>
-          </div>
-        </div>
+
 
         {/* Role-adaptive sidebar menu items */}
         <nav className="flex-grow px-4 space-y-1.5 mt-6 relative z-10 overflow-y-auto max-h-[60vh] custom-scrollbar">

@@ -874,20 +874,23 @@ _Terima kasih telah memesan melalui ekosistem alumni PMII Bandung Barat. Silakan
 
       {/* MODAL 1: BRAND MARKETING & DETAIL DRAWER */}
       {detailItem && (
-        <div className="className-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40 backdrop-blur-xs">
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setDetailItem(null); }}
+          className="className-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40 backdrop-blur-xs overflow-y-auto"
+        >
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-white rounded-[2.5rem] shadow-2xl max-w-2xl w-full p-6 md:p-8 border border-gray-150 relative overflow-hidden"
+            className="bg-white rounded-[2.5rem] shadow-2xl max-w-2xl w-full p-6 md:p-8 border border-gray-150 relative flex flex-col max-h-[90vh] md:max-h-[85vh] overflow-hidden"
           >
             <button
               onClick={() => setDetailItem(null)}
-              className="absolute top-5 right-5 w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 transition-colors"
+              className="absolute top-5 right-5 w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-500 transition-colors z-20"
             >
               <X size={18} />
             </button>
 
-            <div className="space-y-6">
+            <div className="overflow-y-auto pr-1 flex-grow space-y-6">
               {/* Image if product */}
               {detailItem.type === "product" && (
                 <div className="aspect-[2.39/1] w-full rounded-2xl overflow-hidden bg-gray-100">
@@ -1012,11 +1015,14 @@ _Terima kasih telah memesan melalui ekosistem alumni PMII Bandung Barat. Silakan
 
       {/* MODAL 2: ORDER FORM & PAYMENT TRANSACTION FLOW */}
       {orderItem && (
-        <div className="className-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40 backdrop-blur-xs overflow-y-auto">
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) { setOrderItem(null); setOrderCompleted(null); } }}
+          className="className-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40 backdrop-blur-xs overflow-y-auto"
+        >
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full p-6 border border-gray-100 relative my-8"
+            className="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full p-6 border border-gray-100 relative flex flex-col max-h-[90vh] md:max-h-[85vh] overflow-hidden"
           >
             <button
               onClick={() => { setOrderItem(null); setOrderCompleted(null); }}
@@ -1027,8 +1033,8 @@ _Terima kasih telah memesan melalui ekosistem alumni PMII Bandung Barat. Silakan
 
             {!orderCompleted ? (
               // STEP 1: FORM PEMESANAN & PAYMENT SELECTOR
-              <form onSubmit={handleCheckoutSubmit} className="space-y-5">
-                <div className="space-y-1 pb-2 border-b border-gray-100">
+              <form onSubmit={handleCheckoutSubmit} className="flex flex-col h-full overflow-hidden space-y-4">
+                <div className="space-y-1 pb-3 border-b border-gray-100 shrink-0">
                   <span className="text-[10px] uppercase font-black text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-100">
                     Langkah Pembelian (Asisten Check-out)
                   </span>
@@ -1036,305 +1042,315 @@ _Terima kasih telah memesan melalui ekosistem alumni PMII Bandung Barat. Silakan
                   <p className="text-xs text-gray-400">Pemesanan Anda diteruskan resmi ke WhatsApp Koperasi KAMARA KBB.</p>
                 </div>
 
-                {/* Selected Item Summary in Form */}
-                <div className="bg-gray-50 p-4 rounded-2xl flex justify-between items-center border border-gray-100">
-                  <div>
-                    <span className="text-[9px] uppercase font-bold text-gray-400">Item Terpilih</span>
-                    <h4 className="text-sm font-bold text-primary mt-0.5">{orderItem.data.name}</h4>
-                    <span className="text-[10px] font-medium text-accent block">{orderItem.data.provider}</span>
+                <div className="overflow-y-auto pr-1 flex-grow space-y-4 py-1">
+                  {/* Selected Item Summary in Form */}
+                  <div className="bg-gray-50 p-4 rounded-2xl flex justify-between items-center border border-gray-100 shrink-0">
+                    <div className="text-left">
+                      <span className="text-[9px] uppercase font-bold text-gray-400">Item Terpilih</span>
+                      <h4 className="text-xs font-bold text-primary mt-0.5">{orderItem.data.name}</h4>
+                      <span className="text-[10px] font-medium text-accent block">{orderItem.data.provider}</span>
+                    </div>
+                    <div className="text-right min-w-[120px]">
+                      <span className="text-[9px] uppercase font-bold text-gray-400 block">Investasi Satuan</span>
+                      <span className="text-xs font-black text-primary font-display">
+                        {orderItem.data.price || orderItem.data.priceStart || orderItem.data.promoPrice}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[9px] uppercase font-bold text-gray-400 block">Investasi Satuan</span>
-                    <span className="text-sm font-black text-primary font-display">
-                      {orderItem.data.price || orderItem.data.priceStart || orderItem.data.promoPrice}
-                    </span>
+
+                  {/* Form Fields Fields */}
+                  <div className="space-y-3.5">
+                    {orderItem.type === "service" && (
+                      <div className="space-y-2 bg-indigo-50/45 p-4 rounded-2xl border border-indigo-100">
+                        <label className="text-[10px] font-black text-indigo-800 uppercase tracking-widest block ml-1">
+                          Sifat Pemesanan Layanan:
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setOrderForm(prev => ({ ...prev, serviceActionType: "Konsultasi" }))}
+                            className={`py-2 px-1 rounded-xl text-[10px] sm:text-xs font-black transition-all border ${
+                              orderForm.serviceActionType === "Konsultasi"
+                                ? "bg-primary text-white border-primary shadow-xs"
+                                : "bg-white text-gray-400 border-gray-150 hover:bg-gray-50 hover:text-gray-600"
+                            }`}
+                          >
+                            💬 Konsultasi Dulu
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setOrderForm(prev => ({ ...prev, serviceActionType: "Pemesanan" }))}
+                            className={`py-2 px-1 rounded-xl text-[10px] sm:text-xs font-black transition-all border ${
+                              orderForm.serviceActionType === "Pemesanan"
+                                ? "bg-primary text-white border-primary shadow-xs"
+                                : "bg-white text-gray-400 border-gray-150 hover:bg-gray-50 hover:text-gray-650"
+                            }`}
+                          >
+                            📋 Ajukan Penawaran
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-indigo-750 text-center leading-normal">
+                          {orderForm.serviceActionType === "Konsultasi" 
+                            ? "✓ Disarankan: Diskusi / konsultasi konsep gratis dengan admin via WA terlebih dahulu." 
+                            : "✓ Ajukan spesifikasi langsung ke admin untuk kebutuhan pemesanan cepat."}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-1">
+                        Nama Pembeli / Organisasi <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Masukkan nama lengkap Anda..."
+                        value={orderForm.name}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full bg-gray-55 border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-primary focus:bg-white transition-all shadow-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-1">
+                        No. WhatsApp Anda <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="Contoh: 0821xxxxxxx"
+                        value={orderForm.phone}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, phone: e.target.value }))}
+                        className="w-full bg-gray-55 border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-primary focus:bg-white transition-all shadow-xs"
+                      />
+                    </div>
+
+                    {/* Quantity selector (only relevant for physical products/tickets) */}
+                    {orderItem.type !== "service" && (
+                      <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                        <span className="text-xs font-bold text-gray-550 block ml-1">Jumlah Pemesanan</span>
+                        <div className="flex items-center gap-3 bg-white p-1 rounded-xl border border-gray-150">
+                          <button
+                            type="button"
+                            onClick={() => handleQtyChange(-1)}
+                            className="w-8 h-8 rounded-lg bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <span className="text-sm font-black text-primary w-6 text-center">{orderForm.quantity}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleQtyChange(1)}
+                            className="w-8 h-8 rounded-lg bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
+                          >
+                            <Plus size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-1.5 text-left">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-1">
+                        Alamat Pengiriman / Spesifikasi Khusus <span className="text-rose-500">*</span>
+                      </label>
+                      <textarea
+                        required
+                        rows={2}
+                        placeholder="Tuliskan nama jalan, kelurahan, kecamatan di KBB, atau instruksi pengerjaan..."
+                        value={orderForm.address}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, address: e.target.value }))}
+                        className="w-full bg-gray-55 border border-gray-200 rounded-xl p-4 text-xs focus:outline-none focus:border-primary focus:bg-white transition-all shadow-xs"
+                      />
+                    </div>
+
+                    {/* METODE PEMBAYARAN - AS REQUESTED (Hides during consultation) */}
+                    {!(orderItem.type === "service" && orderForm.serviceActionType === "Konsultasi") && (
+                      <div className="space-y-2 text-left">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-1 flex items-center gap-1">
+                          <CreditCard size={12} className="text-accent" /> Pilih Metode Pembayaran
+                        </label>
+                        
+                        <div className="space-y-2 col-span-1">
+                          <label className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                            orderForm.paymentMethod === "BSI-Transfer" 
+                              ? "bg-accent/10 border-accent text-primary font-bold" 
+                              : "bg-white border-gray-150 hover:border-gray-300 text-gray-500"
+                          }`}>
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="BSI-Transfer"
+                              checked={orderForm.paymentMethod === "BSI-Transfer"}
+                              onChange={() => setOrderForm(prev => ({ ...prev, paymentMethod: "BSI-Transfer" }))}
+                              className="mt-0.5 accent-primary h-4 w-4"
+                            />
+                            <div className="text-left space-y-0.5">
+                              <span className="text-xs font-extrabold block">Transfer Bank Syariah Mandiri (BSI)</span>
+                              <span className="text-[10px] text-gray-400 block font-normal leading-tight">
+                                Rek. PC IKA PMII KBB / KAMARA: <strong>7212-009-292</strong> (Bayar digital lewat m-banking).
+                              </span>
+                            </div>
+                          </label>
+
+                          <label className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                            orderForm.paymentMethod === "EWallet-QRIS" 
+                              ? "bg-accent/10 border-accent text-primary font-bold" 
+                              : "bg-white border-gray-150 hover:border-gray-300 text-gray-500"
+                          }`}>
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="EWallet-QRIS"
+                              checked={orderForm.paymentMethod === "EWallet-QRIS"}
+                              onChange={() => setOrderForm(prev => ({ ...prev, paymentMethod: "EWallet-QRIS" }))}
+                              className="mt-0.5 accent-primary h-4 w-4"
+                            />
+                            <div className="text-left space-y-0.5">
+                              <span className="text-xs font-extrabold block">QRIS Link Koperasi KAMARA</span>
+                              <span className="text-[10px] text-gray-400 block font-normal leading-tight">
+                                Scan barcode QRIS digital instan (Mendukung DANA, OVO, GoPay, ShopeePay).
+                              </span>
+                            </div>
+                          </label>
+
+                          <label className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                            orderForm.paymentMethod === "COD" 
+                              ? "bg-accent/10 border-accent text-primary font-bold" 
+                              : "bg-white border-gray-150 hover:border-gray-300 text-gray-500"
+                          }`}>
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="COD"
+                              checked={orderForm.paymentMethod === "COD"}
+                              onChange={() => setOrderForm(prev => ({ ...prev, paymentMethod: "COD" }))}
+                              className="mt-0.5 accent-primary h-4 w-4"
+                            />
+                            <div className="text-left space-y-0.5">
+                              <span className="text-xs font-extrabold block">Bayar di Tempat (COD) / Ambil Langsung</span>
+                              <span className="text-[10px] text-gray-400 block font-normal leading-tight">
+                                Bayar tunai di lokasi sekretariat pusat IKA PMII KBB saat pengambilan barang/acara selesai.
+                              </span>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Form Fields Fields */}
-                <div className="space-y-3.5">
-                  {orderItem.type === "service" && (
-                    <div className="space-y-2 bg-indigo-50/45 p-4 rounded-2xl border border-indigo-100">
-                      <label className="text-[10px] font-black text-indigo-800 uppercase tracking-widest block ml-1">
-                        Sifat Pemesanan Layanan:
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setOrderForm(prev => ({ ...prev, serviceActionType: "Konsultasi" }))}
-                          className={`py-2 px-1 rounded-xl text-[10px] sm:text-xs font-black transition-all border ${
-                            orderForm.serviceActionType === "Konsultasi"
-                              ? "bg-primary text-white border-primary shadow-xs"
-                              : "bg-white text-gray-400 border-gray-150 hover:bg-gray-50 hover:text-gray-600"
-                          }`}
-                        >
-                          💬 Konsultasi Dulu
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setOrderForm(prev => ({ ...prev, serviceActionType: "Pemesanan" }))}
-                          className={`py-2 px-1 rounded-xl text-[10px] sm:text-xs font-black transition-all border ${
-                            orderForm.serviceActionType === "Pemesanan"
-                              ? "bg-primary text-white border-primary shadow-xs"
-                              : "bg-white text-gray-400 border-gray-150 hover:bg-gray-50 hover:text-gray-650"
-                          }`}
-                        >
-                          📋 Ajukan Penawaran
-                        </button>
-                      </div>
-                      <p className="text-[10px] text-indigo-750 text-center leading-normal">
-                        {orderForm.serviceActionType === "Konsultasi" 
-                          ? "✓ Disarankan: Diskusi / konsultasi konsep gratis dengan admin via WA terlebih dahulu." 
-                          : "✓ Ajukan spesifikasi langsung ke admin untuk kebutuhan pemesanan cepat."}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-1">
-                      Nama Pembeli / Organisasi <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Masukkan nama lengkap Anda..."
-                      value={orderForm.name}
-                      onChange={(e) => setOrderForm(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full bg-gray-55 border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-primary focus:bg-white transition-all shadow-xs"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-1">
-                      No. WhatsApp Anda <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="Contoh: 0821xxxxxxx"
-                      value={orderForm.phone}
-                      onChange={(e) => setOrderForm(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full bg-gray-55 border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-primary focus:bg-white transition-all shadow-xs"
-                    />
-                  </div>
-
-                  {/* Quantity selector (only relevant for physical products/tickets) */}
-                  {orderItem.type !== "service" && (
-                    <div className="flex justify-between items-center bg-gray-50 p-3 rounded-2xl border border-gray-100">
-                      <span className="text-xs font-bold text-gray-550 block ml-1">Jumlah Pemesanan</span>
-                      <div className="flex items-center gap-3 bg-white p-1 rounded-xl border border-gray-150">
-                        <button
-                          type="button"
-                          onClick={() => handleQtyChange(-1)}
-                          className="w-8 h-8 rounded-lg bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
-                        >
-                          <Minus size={12} />
-                        </button>
-                        <span className="text-sm font-black text-primary w-6 text-center">{orderForm.quantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleQtyChange(1)}
-                          className="w-8 h-8 rounded-lg bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
-                        >
-                          <Plus size={12} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-1">
-                      Alamat Pengiriman / Spesifikasi Khusus <span className="text-rose-500">*</span>
-                    </label>
-                    <textarea
-                      required
-                      rows={2}
-                      placeholder="Tuliskan nama jalan, kelurahan, kecamatan di KBB, atau instruksi pengerjaan..."
-                      value={orderForm.address}
-                      onChange={(e) => setOrderForm(prev => ({ ...prev, address: e.target.value }))}
-                      className="w-full bg-gray-55 border border-gray-200 rounded-xl p-4 text-xs focus:outline-none focus:border-primary focus:bg-white transition-all shadow-xs"
-                    />
-                  </div>
-
-                  {/* METODE PEMBAYARAN - AS REQUESTED (Hides during consultation) */}
-                  {!(orderItem.type === "service" && orderForm.serviceActionType === "Konsultasi") && (
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-1 flex items-center gap-1">
-                        <CreditCard size={12} className="text-accent" /> Pilih Metode Pembayaran
-                      </label>
-                      
-                      <div className="space-y-2">
-                        <label className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                          orderForm.paymentMethod === "BSI-Transfer" 
-                            ? "bg-accent/10 border-accent text-primary font-bold" 
-                            : "bg-white border-gray-150 hover:border-gray-300 text-gray-500"
-                        }`}>
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="BSI-Transfer"
-                            checked={orderForm.paymentMethod === "BSI-Transfer"}
-                            onChange={() => setOrderForm(prev => ({ ...prev, paymentMethod: "BSI-Transfer" }))}
-                            className="mt-0.5 accent-primary h-4 w-4"
-                          />
-                          <div className="text-left space-y-0.5">
-                            <span className="text-xs font-extrabold block">Transfer Bank Syariah Mandiri (BSI)</span>
-                            <span className="text-[10px] text-gray-400 block font-normal leading-tight">
-                              Rek. PC IKA PMII KBB / KAMARA: <strong>7212-009-292</strong> (Bayar digital lewat m-banking).
-                            </span>
-                          </div>
-                        </label>
-
-                        <label className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                          orderForm.paymentMethod === "EWallet-QRIS" 
-                            ? "bg-accent/10 border-accent text-primary font-bold" 
-                            : "bg-white border-gray-150 hover:border-gray-300 text-gray-500"
-                        }`}>
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="EWallet-QRIS"
-                            checked={orderForm.paymentMethod === "EWallet-QRIS"}
-                            onChange={() => setOrderForm(prev => ({ ...prev, paymentMethod: "EWallet-QRIS" }))}
-                            className="mt-0.5 accent-primary h-4 w-4"
-                          />
-                          <div className="text-left space-y-0.5">
-                            <span className="text-xs font-extrabold block">QRIS Link Koperasi KAMARA</span>
-                            <span className="text-[10px] text-gray-400 block font-normal leading-tight">
-                              Scan barcode QRIS digital instan (Mendukung DANA, OVO, GoPay, ShopeePay).
-                            </span>
-                          </div>
-                        </label>
-
-                        <label className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                          orderForm.paymentMethod === "COD" 
-                            ? "bg-accent/10 border-accent text-primary font-bold" 
-                            : "bg-white border-gray-150 hover:border-gray-300 text-gray-500"
-                        }`}>
-                          <input
-                            type="radio"
-                            name="paymentMethod"
-                            value="COD"
-                            checked={orderForm.paymentMethod === "COD"}
-                            onChange={() => setOrderForm(prev => ({ ...prev, paymentMethod: "COD" }))}
-                            className="mt-0.5 accent-primary h-4 w-4"
-                          />
-                          <div className="text-left space-y-0.5">
-                            <span className="text-xs font-extrabold block">Bayar di Tempat (COD) / Ambil Langsung</span>
-                            <span className="text-[10px] text-gray-400 block font-normal leading-tight">
-                              Bayar tunai di lokasi sekretariat pusat IKA PMII KBB saat pengambilan barang/acara selesai.
-                            </span>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-2">
+                <div className="pt-3 border-t border-gray-100 shrink-0 flex gap-3 w-full">
+                  <button
+                    type="button"
+                    onClick={() => { setOrderItem(null); setOrderCompleted(null); }}
+                    className="flex-1 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold text-xs rounded-xl transition-all uppercase tracking-wider cursor-pointer"
+                  >
+                    Batal
+                  </button>
                   <button
                     type="submit"
-                    className="w-full py-4 bg-primary hover:bg-accent hover:text-primary text-white font-extrabold text-xs rounded-xl shadow-lg transition-all uppercase tracking-wider"
+                    className="flex-[2] py-3.5 bg-primary hover:bg-accent hover:text-primary text-white font-extrabold text-xs rounded-xl shadow-lg transition-all uppercase tracking-wider cursor-pointer"
                   >
                     {orderItem.type === "service" && orderForm.serviceActionType === "Konsultasi"
-                      ? "Mulai Sesi Diskusi / Konsultasi"
-                      : "Proses Pemesanan & Buat Nota"}
+                      ? "Mulai Konsultasi"
+                      : "Proses Pemesanan"}
                   </button>
                 </div>
               </form>
             ) : (
               // STEP 2: NOTA TRANSAKSI / INVOICE DIGITAL READY FOR WHATSAPP
-              <div className="space-y-6 text-center py-4">
-                <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100">
-                  <CheckCircle size={36} />
-                </div>
-
-                <div className="space-y-1">
-                  <h3 className="text-xl font-display font-bold text-primary">Nota Pemesanan Berhasil Dibuat!</h3>
+              <div className="flex flex-col h-full overflow-hidden space-y-4 text-center">
+                <div className="space-y-1 pb-3 border-b border-gray-100 shrink-0">
+                  <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100">
+                    <CheckCircle size={24} />
+                  </div>
+                  <h3 className="text-lg font-display font-bold text-primary mt-1">Nota Pemesanan Berhasil Dibuat!</h3>
                   <p className="text-xs text-gray-400">Satu langkah lagi untuk merampungkan transaksi Anda via WhatsApp.</p>
                 </div>
 
-                {/* Digital Receipt Styling */}
-                <div className="bg-amber-50/20 border border-amber-100 rounded-3xl p-5 text-left space-y-4 font-mono text-xs text-gray-600 relative overflow-hidden">
-                  <span className="absolute top-0 right-0 bg-accent text-primary text-[8px] font-black px-4 py-1 uppercase tracking-widest leading-none rounded-bl-xl">
-                    Nota Tagihan
-                  </span>
+                <div className="overflow-y-auto pr-1 flex-grow space-y-4">
+                  {/* Digital Receipt Styling */}
+                  <div className="bg-amber-50/20 border border-amber-100 rounded-3xl p-5 text-left space-y-4 font-mono text-xs text-gray-600 relative overflow-hidden">
+                    <span className="absolute top-0 right-0 bg-accent text-primary text-[8px] font-black px-4 py-1 uppercase tracking-widest leading-none rounded-bl-xl">
+                      Nota Tagihan
+                    </span>
 
-                  <div className="border-b border-dashed border-amber-200/60 pb-3 flex justify-between items-center">
-                    <div>
-                      <p className="font-sans font-bold text-primary">Koperasi Mandiri KAMARA</p>
-                      <p className="text-[9px] text-gray-400">Bandung Barat, INA</p>
-                    </div>
-                    <p className="font-bold text-right text-gray-700">#{orderCompleted.id}</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="flex justify-between"><span>Tgl Pemesanan:</span> <strong className="text-primary">{orderCompleted.date}</strong></p>
-                    <p className="flex justify-between"><span>Nama Pembeli:</span> <strong className="text-primary">{orderCompleted.buyer}</strong></p>
-                    <p className="flex justify-between"><span>No. WhatsApp:</span> <strong className="text-primary">{orderCompleted.phone}</strong></p>
-                    <p className="flex justify-between"><span className="shrink-0 mr-4">Alamat Kirim:</span> <strong className="text-primary text-right break-words max-w-[200px]">{orderCompleted.address}</strong></p>
-                  </div>
-
-                  <div className="border-t border-b border-dashed border-amber-200/60 py-3 space-y-1.5 font-sans">
-                    {orderCompleted.isCart ? (
-                      <div className="space-y-2">
-                        {orderCompleted.itemsBreakdown.map((it: any, idx: number) => (
-                          <div key={idx} className="flex justify-between text-xs font-bold text-primary border-b border-gray-100/40 pb-1.5 last:border-0 last:pb-0">
-                            <div className="text-left pr-4">
-                              <span className="leading-tight block">{it.name}</span>
-                              <span className="text-[9px] text-gray-400 block font-semibold leading-none mt-1">Qty: {it.qty} x {it.price}</span>
-                            </div>
-                            <span className="text-gray-700 font-mono text-[11px] shrink-0">{it.subtotal}</span>
-                          </div>
-                        ))}
+                    <div className="border-b border-dashed border-amber-200/60 pb-3 flex justify-between items-center">
+                      <div>
+                        <p className="font-sans font-bold text-primary">Koperasi Mandiri KAMARA</p>
+                        <p className="text-[9px] text-gray-400">Bandung Barat, INA</p>
                       </div>
-                    ) : (
-                      <>
-                        <p className="flex justify-between text-xs font-bold text-primary">
-                          <span>{orderCompleted.item}</span>
-                          <span>x{orderCompleted.quantity}</span>
-                        </p>
-                        <p className="text-[10px] text-gray-400 italic">Satuan: {orderCompleted.price}</p>
-                      </>
-                    )}
-                  </div>
+                      <p className="font-bold text-right text-gray-700">#{orderCompleted.id}</p>
+                    </div>
 
-                  <div className="font-sans flex justify-between items-center pt-1">
-                    <span className="text-xs font-extrabold text-primary">Total Pembayaran</span>
-                    <span className="text-lg font-black text-rose-600 font-display">{orderCompleted.total}</span>
-                  </div>
+                    <div className="space-y-2">
+                      <p className="flex justify-between"><span>Tgl Pemesanan:</span> <strong className="text-primary">{orderCompleted.date}</strong></p>
+                      <p className="flex justify-between"><span>Nama Pembeli:</span> <strong className="text-primary">{orderCompleted.buyer}</strong></p>
+                      <p className="flex justify-between"><span>No. WhatsApp:</span> <strong className="text-primary">{orderCompleted.phone}</strong></p>
+                      <p className="flex justify-between"><span className="shrink-0 mr-4">Alamat Kirim:</span> <strong className="text-primary text-right break-words max-w-[200px]">{orderCompleted.address}</strong></p>
+                    </div>
 
-                  <div className="bg-white/80 p-3 rounded-xl border border-amber-100/60 font-sans leading-relaxed text-[11px] text-gray-500">
-                    <span className="block font-bold text-primary uppercase text-[9px] tracking-wider mb-0.5">Panduan Penyelesaian</span>
-                    {orderCompleted.id.startsWith("KONSUL-") ? (
-                      <p>Sesi Konsultasi Anda sepenuhnya <strong>Gratis</strong>. Silakan klik tombol di bawah untuk mengirim data ke admin WhatsApp agar jadwal sesi diskusi konsep bisa segera ditentukan.</p>
-                    ) : (
-                      <>
-                        {orderForm.paymentMethod === "BSI-Transfer" && (
-                          <p>Silakan lakukan transfer ke Bank BSI <strong>7212-009-292</strong> (an. Koperasi KAMARA KBB), lalu sertakan bukti transfer saat mengirim invoice di tombol WhatsApp di bawah.</p>
-                        )}
-                        {orderForm.paymentMethod === "EWallet-QRIS" && (
-                          <p>Silakan scan barcode QRIS resmi Koperasi KAMARA saat admin WhatsApp menanggapi detail pesanan digital Anda di chat.</p>
-                        )}
-                        {orderForm.paymentMethod === "COD" && (
-                          <p>Pembayaran akan dilunasi tunai saat penyerahan barang di Sekretariat IKA PMII Bandung Barat.</p>
-                        )}
-                      </>
-                    )}
+                    <div className="border-t border-b border-dashed border-amber-200/60 py-3 space-y-1.5 font-sans">
+                      {orderCompleted.isCart ? (
+                        <div className="space-y-2">
+                          {orderCompleted.itemsBreakdown.map((it: any, idx: number) => (
+                            <div key={idx} className="flex justify-between text-xs font-bold text-primary border-b border-gray-100/40 pb-1.5 last:border-0 last:pb-0">
+                              <div className="text-left pr-4">
+                                <span className="leading-tight block">{it.name}</span>
+                                <span className="text-[9px] text-gray-400 block font-semibold leading-none mt-1">Qty: {it.qty} x {it.price}</span>
+                              </div>
+                              <span className="text-gray-700 font-mono text-[11px] shrink-0">{it.subtotal}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <>
+                          <p className="flex justify-between text-xs font-bold text-primary">
+                            <span>{orderCompleted.item}</span>
+                            <span>x{orderCompleted.quantity}</span>
+                          </p>
+                          <p className="text-[10px] text-gray-400 italic">Satuan: {orderCompleted.price}</p>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="font-sans flex justify-between items-center pt-1">
+                      <span className="text-xs font-extrabold text-primary">Total Pembayaran</span>
+                      <span className="text-lg font-black text-rose-600 font-display">{orderCompleted.total}</span>
+                    </div>
+
+                    <div className="bg-white/80 p-3 rounded-xl border border-amber-100/60 font-sans leading-relaxed text-[11px] text-gray-500">
+                      <span className="block font-bold text-primary uppercase text-[9px] tracking-wider mb-0.5">Panduan Penyelesaian</span>
+                      {orderCompleted.id.startsWith("KONSUL-") ? (
+                        <p>Sesi Konsultasi Anda sepenuhnya <strong>Gratis</strong>. Silakan klik tombol di bawah untuk mengirim data ke admin WhatsApp agar jadwal sesi diskusi konsep bisa segera ditentukan.</p>
+                      ) : (
+                        <>
+                          {orderForm.paymentMethod === "BSI-Transfer" && (
+                            <p>Silakan lakukan transfer ke Bank BSI <strong>7212-009-292</strong> (an. Koperasi KAMARA KBB), lalu sertakan bukti transfer saat mengirim invoice di tombol WhatsApp di bawah.</p>
+                          )}
+                          {orderForm.paymentMethod === "EWallet-QRIS" && (
+                            <p>Silakan scan barcode QRIS resmi Koperasi KAMARA saat admin WhatsApp menanggapi detail pesanan digital Anda di chat.</p>
+                          )}
+                          {orderForm.paymentMethod === "COD" && (
+                            <p>Pembayaran akan dilunasi tunai saat penyerahan barang di Sekretariat IKA PMII Bandung Barat.</p>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {/* Final Checkout actions */}
-                <div className="flex flex-col gap-2.5 pt-2">
+                <div className="flex flex-col gap-2 pt-3 border-t border-gray-100 shrink-0">
                   <button
                     onClick={sendWhatsAppInvoice}
-                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-lg hover:shadow-emerald-100 flex items-center justify-center gap-2 uppercase tracking-wide cursor-pointer scale-102"
+                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-lg hover:shadow-emerald-100 flex items-center justify-center gap-2 uppercase tracking-wide cursor-pointer scale-102"
                   >
                     <MessageSquare size={16} /> {orderCompleted.id.startsWith("KONSUL-") ? "Hubungi Admin via WhatsApp" : "Kirim Nota ke WhatsApp"}
                   </button>
                   <button
                     onClick={() => { setOrderItem(null); setOrderCompleted(null); }}
-                    className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold text-xs rounded-xl transition-all uppercase tracking-wider"
+                    className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold text-xs rounded-xl transition-all uppercase tracking-wider cursor-pointer"
                   >
                     Kembali Belanja
                   </button>
@@ -1347,7 +1363,10 @@ _Terima kasih telah memesan melalui ekosistem alumni PMII Bandung Barat. Silakan
 
       {/* MODAL 3: SHOPPING CART OVERLAY AND CHECKOUT */}
       {isCartOpen && (
-        <div className="className-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/45 backdrop-blur-xs overflow-y-auto">
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setIsCartOpen(false); }}
+          className="className-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40 backdrop-blur-xs overflow-y-auto"
+        >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

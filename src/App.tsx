@@ -33,7 +33,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {!isSellerRoute && <Header />}
+      <Header />
       <main className="flex-grow">
         <AnimatePresence mode="wait">
           <Routes location={location}>

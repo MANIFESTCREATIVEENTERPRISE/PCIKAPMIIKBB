@@ -386,10 +386,10 @@ export default function SiapKolaborasiRoom() {
                       href={`https://wa.me/${item.whatsapp}?text=${encodeURIComponent(`Halo ${item.initiator}, saya alumni PMII Bandung Barat tertarik berdiskusi lebih lanjut mengenai gagasan kolaborasi Anda: "${item.title}". Mohon infonya, salam hangat!`)}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-4 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-[10px] uppercase tracking-wider hover:bg-emerald-700 transition-all flex items-center gap-1.5 shadow-sm"
+                      className="px-4 py-2.5 rounded-xl bg-primary text-accent hover:bg-accent hover:text-primary font-bold text-[10px] uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm"
                     >
                       <MessageSquare size={12} />
-                      Diskusi WA
+                      Kirim Pesan
                     </a>
                   </div>
                 </div>

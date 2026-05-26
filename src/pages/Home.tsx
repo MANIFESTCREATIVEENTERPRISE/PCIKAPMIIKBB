@@ -15,7 +15,7 @@ export default function Home() {
   const [stats, setStats] = useState<any>(null);
   const [news, setNews] = useState<any[]>([]);
   const [membersList, setMembersList] = useState<any[]>([]);
-  const [activeStatTab, setActiveStatTab] = useState<"kecamatan" | "potensi" | "profesi" | "kompetensi">("kecamatan");
+  const [activeStatTab, setActiveStatTab] = useState<"kecamatan" | "potensi" | "kompetensi">("kecamatan");
 
   useEffect(() => {
     // Synchronize with verified members stored in standard localStorage
@@ -163,7 +163,6 @@ export default function Home() {
   const tabsList = [
     { id: "kecamatan", title: "Kecamatan", desc: "Sebaran Daerah", icon: MapPin },
     { id: "potensi", title: "Potensi", desc: "Pilar Sumbangsih", icon: Sparkles },
-    { id: "profesi", title: "Profesi", desc: "Sektor Kontribusi", icon: Briefcase },
     { id: "kompetensi", title: "Keahlian", desc: "Spesialisasi Kader", icon: Award },
   ];
 
@@ -504,14 +503,14 @@ export default function Home() {
         </div>
         <div className="flex gap-8 overflow-x-auto pb-12 px-4 sm:px-6 lg:px-24 snap-x">
           {news.map((item, i) => (
-            <div key={i} className="min-w-[350px] snap-center">
-              <div className="aspect-[4/5] bg-white/10 rounded-[2rem] overflow-hidden relative group">
-                <img src={item.image} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" title={item.title} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-8">
-                  <span className="text-[10px] text-accent font-bold uppercase mb-2">{new Date(item.date).toLocaleDateString()}</span>
-                  <h3 className="font-bold text-xl leading-tight mb-4">{item.title}</h3>
-                  <button className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all">
-                    <ArrowRight size={20} />
+            <div key={i} className="min-w-[280px] md:min-w-[300px] snap-center shrink-0">
+              <div className="aspect-[3/2] bg-white/10 rounded-[2rem] overflow-hidden relative group">
+                <img src={item.image} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" title={item.title} referrerPolicy="no-referrer" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent flex flex-col justify-end p-5 md:p-6">
+                  <span className="text-[9px] text-accent font-bold uppercase mb-1.5">{new Date(item.date).toLocaleDateString("id-ID")}</span>
+                  <h3 className="font-bold text-sm md:text-base leading-snug mb-3 line-clamp-2 text-white">{item.title}</h3>
+                  <button className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                    <ArrowRight size={16} />
                   </button>
                 </div>
               </div>

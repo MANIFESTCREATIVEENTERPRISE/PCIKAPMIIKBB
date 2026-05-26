@@ -6,7 +6,7 @@ import {
   Trash2, ShieldCheck, Check, Edit3, Tag, Plus, CheckCircle, 
   X, AlertTriangle, Send, RefreshCw, Layers, ShieldCheck as ShieldIcon,
   BookOpen as BookIcon, CheckCircle2, TrendingUp, Sparkles, ZoomIn, Info,
-  Mail, Phone
+  Mail, Phone, Briefcase, GraduationCap, Calendar, ListOrdered, Heading, Image, Eye
 } from "lucide-react";
 
 interface EvaluationRating {
@@ -83,6 +83,141 @@ export default function AdminSiapPanels({
   const [pediaGender, setPediaGender] = useState<string[]>([]);
   const [pediaUmur, setPediaUmur] = useState<string[]>([]);
   const [revealPasswords, setRevealPasswords] = useState<Record<number, boolean>>({});
+
+  // States for SIAP Pedia member selection and actions (edit, delete, suspend)
+  const [selectedPediaMember, setSelectedPediaMember] = useState<any | null>(null);
+  const [isEditingPediaMember, setIsEditingPediaMember] = useState(false);
+  const [editPediaData, setEditPediaData] = useState<any>(null);
+  const [pediaDetailTab, setPediaDetailTab] = useState("profil");
+
+  // States for SIAP KONTEN Curation
+  const [readingPediaContent, setReadingPediaContent] = useState<any | null>(null);
+  const [editingPediaContent, setEditingPediaContent] = useState<any | null>(null);
+  const [selectedFullPediaContent, setSelectedFullPediaContent] = useState<any | null>(null);
+  const [activeWritingCategory, setActiveWritingCategory] = useState("Opini");
+  const [editorFont, setEditorFont] = useState("font-sans");
+  const [editorSpacing, setEditorSpacing] = useState("leading-relaxed");
+  const [editorHeadingStyle, setEditorHeadingStyle] = useState("normal");
+  const [editorPhoto, setEditorPhoto] = useState<string | null>(null);
+
+  // Unified publish curation item handler:
+  const handlePublishCurationItem = async (post: any) => {
+    const cleanCategory = post.category === "Pikiran Kritis" ? "Opini" : post.category;
+    
+    try {
+      await fetch("/api/submitted-contents/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: post.id, status: "Diterbitkan" })
+      });
+    } catch (e) {
+      console.error("Error setting curated content status:", e);
+    }
+
+    try {
+      await fetch("/api/content/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: post.title,
+          content: post.content,
+          author: post.author,
+          category: cleanCategory,
+          date: new Date().toISOString()
+        })
+      });
+    } catch (e) {
+      console.error("Error publishing to public stream:", e);
+    }
+
+    setSubmittedContents(prev => prev.map(c => c.id === post.id ? { ...c, status: "Diterbitkan" } : c));
+    setBulletins(prev => [{
+      id: Date.now(),
+      title: post.title,
+      author: post.author,
+      category: cleanCategory,
+      content: post.content,
+      date: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+    }, ...prev]);
+
+    // Update state of full reader if matching
+    if (selectedFullPediaContent && selectedFullPediaContent.id === post.id) {
+      setSelectedFullPediaContent({ ...selectedFullPediaContent, status: "Diterbitkan" });
+    }
+
+    triggerNotification("Karya alumni disetujui & otomatis diterbitkan ke beranda & laman publikasi!");
+  };
+
+  // Unified reject curation item handler:
+  const handleRejectCurationItem = async (post: any) => {
+    if (window.confirm("Apakah Anda yakin ingin menolak dan menghapus secara permanen karya tulisan ini?")) {
+      try {
+        await fetch("/api/submitted-contents/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: post.id })
+        });
+      } catch (e) {
+        console.error("Error deleting curation item on backend:", e);
+      }
+
+      setSubmittedContents(prev => prev.filter(c => c.id !== post.id));
+      if (selectedFullPediaContent && selectedFullPediaContent.id === post.id) {
+        setSelectedFullPediaContent(null);
+      }
+      triggerNotification("Karya berhasil ditolak dan dihapus permanen dari sistem.", "error");
+    }
+  };
+
+  // Unified update curation item handler:
+  const handleUpdateCurationItem = async (edited: any) => {
+    try {
+      await fetch("/api/submitted-contents/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(edited)
+      });
+    } catch (e) {
+      console.error("Error updating curation item on backend:", e);
+    }
+
+    setSubmittedContents(prev => prev.map(c => c.id === edited.id ? edited : c));
+    if (selectedFullPediaContent && selectedFullPediaContent.id === edited.id) {
+      setSelectedFullPediaContent(edited);
+    }
+    triggerNotification("Konten berhasil diubah & disimpan sebagai draf kurasi!");
+  };
+
+  const handleDeletePediaMember = (memberId: number) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus data alumni ini secara permanen dari sistem? Tindakan ini tidak dapat dibatalkan.")) {
+      setVerifiedAlumni(prev => prev.filter(m => m.id !== memberId));
+      triggerNotification("Data alumni berhasil dihapus secara permanen.", "error");
+      setSelectedPediaMember(null);
+    }
+  };
+
+  const handleToggleSuspendPediaMember = (member: any) => {
+    const currentStatus = member.accountStatus || 'Aktif';
+    const nextStatus = currentStatus === 'Ditangguhkan' ? 'Aktif' : 'Ditangguhkan';
+    
+    setVerifiedAlumni(prev => prev.map(m => m.id === member.id ? { ...m, accountStatus: nextStatus } : m));
+    setSelectedPediaMember((prev: any) => prev ? { ...prev, accountStatus: nextStatus } : null);
+    
+    const label = nextStatus === 'Ditangguhkan' ? 'ditangguhkan (suspen)' : 'diaktifkan kembali';
+    triggerNotification(`Akun ${member.name} berhasil ${label}.`, nextStatus === 'Ditangguhkan' ? 'error' : 'success');
+  };
+
+  const handleSaveEditPediaMember = () => {
+    if (!editPediaData || !editPediaData.name?.trim()) {
+      triggerNotification("Nama tidak boleh kosong!", "error");
+      return;
+    }
+    
+    setVerifiedAlumni(prev => prev.map(m => m.id === editPediaData.id ? { ...m, ...editPediaData } : m));
+    setSelectedPediaMember(editPediaData);
+    setIsEditingPediaMember(false);
+    triggerNotification("Perubahan profil alumni berhasil disimpan.", "success");
+  };
 
   // --- TAB 4: SIAP KONTEN ---
   const [contentFilter, setContentFilter] = useState("Semua");
@@ -176,6 +311,43 @@ export default function AdminSiapPanels({
     { name: "Sandi Supyandi, S.Kom., M.H", posts: 7, categories: "Opini, Advokasi" },
     { name: "Kader Advokasi PMII KBB", posts: 5, categories: "Berita, Informasi" }
   ];
+
+  // Dynamics based on registered members
+  const dynamicKecamatanList = Array.from(new Set([
+    "Ngamprah", "Padalarang", "Cipatat", "Lembang", "Cisarua", "Parongpong", "Batujajar",
+    ...verifiedAlumni.map(m => m.loc).filter(Boolean)
+  ])).filter(Boolean).sort();
+
+  const dynamicProfesiList = Array.from(new Set([
+    "Akademisi", "Praktisi Hukum", "Wirausaha", "Guru", "Mahasiswa", "PNS", "Wiraswasta", "Ekonomi",
+    "Anggota DPR", "PPPK", "ASN", "Pegawai Honorer", "TNI", "POLRI", "Karyawan Swasta", "Kepala Desa",
+    "Pegawasi PEMDA", "Pegawai BUMN", "Pegawai BUMD", "Pengusaha", "Pedagang", "Freelancer", "Pekerja Lepas",
+    "Dokter", "Pengacara", "Arsitek", "Konsultan", "Petani", "Nelayan", "Peternak", "Buruh", "Driver Ojek Online",
+    "Kurir", "Ibu Rumah Tangga", "Pelajar", "Belum/Tidak Bekerja",
+    ...verifiedAlumni.map(m => m.prof).filter(Boolean)
+  ])).map(p => p.trim()).filter(p => p && p !== "-" && p !== "Pegiat Alumni").sort();
+
+  const dynamicKompetensiList = Array.from(new Set([
+    "IT", "Ekonomi", "Hukum", "Pendidikan", "Sosial", "Keagamaan", "Ekonomi Madani", "Ulama",
+    ...verifiedAlumni.flatMap(m => {
+      const res: string[] = [];
+      if (m.kategoriKompetensi) res.push(m.kategoriKompetensi);
+      if (m.compe) res.push(m.compe);
+      if (Array.isArray(m.contrib)) res.push(...m.contrib);
+      if (Array.isArray(m.contributions)) res.push(...m.contributions);
+      return res;
+    }).filter(Boolean)
+  ])).map(c => c.trim()).filter(Boolean).sort();
+
+  const dynamicMinatList = Array.from(new Set([
+    "Bisnis", "Advokasi", "Keagamaan", "Riset", "Sosial", "Ekonomi", "Pendidikan", "Hukum", "Digitalisasi", "Politik", "Pertanian", "Investasi",
+    ...verifiedAlumni.flatMap(m => {
+      const res: string[] = [];
+      if (Array.isArray(m.interests)) res.push(...m.interests);
+      if (m.interest && typeof m.interest === 'string') res.push(m.interest);
+      return res;
+    }).filter(Boolean)
+  ])).map(m => m.trim()).filter(Boolean).sort();
 
   return (
     <div className="space-y-6 text-left">
@@ -1124,11 +1296,11 @@ export default function AdminSiapPanels({
       {/* TAB 3: ADMIN SIAP PEDIA (Database Verified alumni with directory Checkboxes) */}
       {/* ----------------------------------------------------------------- */}
       {activeTab === "siap_pedia" && (
-        <div className="space-y-6">
-          <div className="bg-white p-6 rounded-[2rem] border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="space-y-6 text-left">
+          <div className="bg-primary p-6 rounded-[2rem] border border-primary/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h3 className="text-2xl font-display font-black text-primary">Akses Direktori Utama Alumni (SIAP Pedia)</h3>
-              <p className="text-xs text-gray-400">Analisis profil, penyaringan dengan multi-checkbox, dan deteksi akun aman.</p>
+              <h3 className="text-2xl font-display font-black text-white">Akses Direktori Utama Alumni (SIAP Pedia)</h3>
+              <p className="text-xs text-white/75">Analisis profil, penyaringan dengan multi-checkbox, dan deteksi akun aman.</p>
             </div>
             <div className="flex gap-2">
               <button 
@@ -1137,134 +1309,172 @@ export default function AdminSiapPanels({
                   setPediaMinat([]); setPediaOrgs([]); setPediaGender([]); setPediaUmur([]);
                   triggerNotification("Saringan berhasil direset!");
                 }}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs cursor-pointer"
               >
                 Reset Saringan
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Filter Checkboxes Sidebar Area */}
-            <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-md space-y-6 text-xs max-h-[80vh] overflow-y-auto custom-scrollbar">
-              <h4 className="font-extrabold text-sm text-primary uppercase pb-2 border-b border-gray-50 flex items-center gap-2">
-                <Search size={16} /> Checkbox Saringan
+          {/* Landscape Filter Checkboxes Area */}
+          <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-md space-y-5 text-xs">
+            <div className="flex items-center gap-2 pb-3 border-b border-gray-50">
+              <Search size={15} className="text-accent" />
+              <h4 className="font-extrabold text-xs text-primary uppercase">
+                Panel Saringan Lanskap (Multi-Checkbox)
               </h4>
+            </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {/* 1. Wilayah Kecamatan */}
               <div className="space-y-2">
-                <p className="font-black text-slate-400 uppercase tracking-wider text-[10px]">Kecamatan KBB</p>
-                {["Ngamprah", "Padalarang", "Cipatat", "Lembang", "Cisarua", "Parongpong", "Batujajar"].map((w) => (
-                  <label key={w} className="flex items-center gap-2 font-bold text-slate-600 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4" 
-                      checked={pediaWilayah.includes(w)}
-                      onChange={() => toggleFilter(pediaWilayah, setPediaWilayah, w)}
-                    />
-                    <span>{w}</span>
-                  </label>
-                ))}
+                <p className="font-black text-slate-400 uppercase tracking-wider text-[9px]">Kecamatan KBB</p>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto custom-scrollbar pr-1">
+                  {dynamicKecamatanList.map((w) => (
+                    <label key={w} className="flex items-center gap-2 font-bold text-slate-600 hover:text-primary cursor-pointer transition-colors">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5" 
+                        checked={pediaWilayah.includes(w)}
+                        onChange={() => toggleFilter(pediaWilayah, setPediaWilayah, w)}
+                      />
+                      <span>{w}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               {/* 2. Profesi */}
-              <div className="space-y-2 pt-2 border-t border-gray-50">
-                <p className="font-black text-slate-400 uppercase tracking-wider text-[10px]">Kluster Profesi</p>
-                {["Akademisi", "Praktisi Hukum", "Wirausaha", "Guru", "Mahasiswa", "PNS", "Wiraswasta", "Ekonomi"].map((p) => (
-                  <label key={p} className="flex items-center gap-2 font-bold text-slate-600 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4" 
-                      checked={pediaProfesi.includes(p)}
-                      onChange={() => toggleFilter(pediaProfesi, setPediaProfesi, p)}
-                    />
-                    <span>{p}</span>
-                  </label>
-                ))}
+              <div className="space-y-2">
+                <p className="font-black text-slate-400 uppercase tracking-wider text-[9px]">Kluster Profesi</p>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto custom-scrollbar pr-1">
+                  {dynamicProfesiList.map((p) => (
+                    <label key={p} className="flex items-center gap-2 font-bold text-slate-600 hover:text-primary cursor-pointer transition-colors">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5" 
+                        checked={pediaProfesi.includes(p)}
+                        onChange={() => toggleFilter(pediaProfesi, setPediaProfesi, p)}
+                      />
+                      <span>{p}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               {/* 3. Kompetensi */}
-              <div className="space-y-2 pt-2 border-t border-gray-50">
-                <p className="font-black text-slate-400 uppercase tracking-wider text-[10px]">Kategori Kompetensi</p>
-                {["IT", "Ekonomi", "Hukum", "Pendidikan", "Sosial", "Keagamaan", "Ekonomi Madani", "Ulama"].map((c) => (
-                  <label key={c} className="flex items-center gap-2 font-bold text-slate-600 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4" 
-                      checked={pediaKompetensi.includes(c)}
-                      onChange={() => toggleFilter(pediaKompetensi, setPediaKompetensi, c)}
-                    />
-                    <span>{c}</span>
-                  </label>
-                ))}
+              <div className="space-y-2">
+                <p className="font-black text-slate-400 uppercase tracking-wider text-[9px]">Kategori Kompetensi</p>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto custom-scrollbar pr-1">
+                  {dynamicKompetensiList.map((c) => (
+                    <label key={c} className="flex items-center gap-2 font-bold text-slate-600 hover:text-primary cursor-pointer transition-colors">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5" 
+                        checked={pediaKompetensi.includes(c)}
+                        onChange={() => toggleFilter(pediaKompetensi, setPediaKompetensi, c)}
+                      />
+                      <span>{c}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               {/* 4. Minat Kolaborasi */}
-              <div className="space-y-2 pt-2 border-t border-gray-50">
-                <p className="font-black text-slate-400 uppercase tracking-wider text-[10px]">Minat Sinergi</p>
-                {["Bisnis", "Advokasi", "Keagamaan", "Riset", "Sosial"].map((m) => (
-                  <label key={m} className="flex items-center gap-2 font-bold text-slate-600 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4" 
-                      checked={pediaMinat.includes(m)}
-                      onChange={() => toggleFilter(pediaMinat, setPediaMinat, m)}
-                    />
-                    <span>{m}</span>
-                  </label>
-                ))}
+              <div className="space-y-2">
+                <p className="font-black text-slate-400 uppercase tracking-wider text-[9px]">Minat Sinergi</p>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto custom-scrollbar pr-1">
+                  {dynamicMinatList.map((m) => (
+                    <label key={m} className="flex items-center gap-2 font-bold text-slate-600 hover:text-primary cursor-pointer transition-colors">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5" 
+                        checked={pediaMinat.includes(m)}
+                        onChange={() => toggleFilter(pediaMinat, setPediaMinat, m)}
+                      />
+                      <span>{m}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
+            </div>
+          </div>
 
+          {/* Results Block */}
+          <div className="space-y-4">
+            <div className="bg-slate-50 p-4 rounded-xl flex items-center justify-between border border-slate-100 text-xs">
+              <div className="flex items-center gap-2">
+                <Search size={16} className="text-gray-400" />
+                <input 
+                  className="bg-transparent border-none focus:outline-none focus:ring-0 font-bold placeholder-stone-400 text-primary" 
+                  placeholder="Ketik kata kunci nama..."
+                  value={pediaSearch}
+                  onChange={(e) => setPediaSearch(e.target.value)}
+                />
+              </div>
+              <span className="font-mono text-gray-400 text-[10px] uppercase font-black">Interactive Query Engine</span>
             </div>
 
-            {/* Results Grid List */}
-            <div className="lg:col-span-3 space-y-4">
-              <div className="bg-slate-50 p-4 rounded-xl flex items-center justify-between border border-slate-100 text-xs">
-                <div className="flex items-center gap-2">
-                  <Search size={16} className="text-gray-400" />
-                  <input 
-                    className="bg-transparent border-none focus:outline-none focus:ring-0 font-bold placeholder-stone-400" 
-                    placeholder="Ketik kata kunci nama..."
-                    value={pediaSearch}
-                    onChange={(e) => setPediaSearch(e.target.value)}
-                  />
-                </div>
-                <span className="font-mono text-gray-400 text-[10px] uppercase font-black">Interactive Query Engine</span>
-              </div>
-
-              {/* Verified member listing cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
-                {verifiedAlumni
-                  .filter(m => !pediaSearch || m.name.toLowerCase().includes(pediaSearch.toLowerCase()))
-                  .filter(m => pediaWilayah.length === 0 || pediaWilayah.some(w => m.loc?.toLowerCase().includes(w.toLowerCase())))
-                  .filter(m => pediaProfesi.length === 0 || pediaProfesi.some(pf => m.prof?.toLowerCase().includes(pf.toLowerCase())))
-                  .filter(m => pediaKompetensi.length === 0 || pediaKompetensi.some(comp => {
-                    const c = m.kategoriKompetensi || m.compe || "Umum";
-                    return c.toLowerCase().includes(comp.toLowerCase());
-                  }))
-                  .map((member) => (
-                    <div 
-                      key={member.id}
-                      className="bg-white p-6 rounded-[1.75rem] border border-gray-100 shadow-md space-y-4 text-xs hover:shadow-lg transition-all"
-                    >
+            {/* Verified member listing cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {verifiedAlumni
+                .filter(m => !pediaSearch || m.name.toLowerCase().includes(pediaSearch.toLowerCase()))
+                .filter(m => pediaWilayah.length === 0 || pediaWilayah.some(w => m.loc?.toLowerCase().includes(w.toLowerCase())))
+                .filter(m => pediaProfesi.length === 0 || pediaProfesi.some(pf => m.prof?.toLowerCase().includes(pf.toLowerCase())))
+                .filter(m => pediaKompetensi.length === 0 || pediaKompetensi.some(comp => {
+                  const compLower = comp.toLowerCase();
+                  const c = (m.kategoriKompetensi || m.compe || "Umum").toLowerCase();
+                  if (c.includes(compLower)) return true;
+                  if (Array.isArray(m.contrib) && m.contrib.some((item: string) => item.toLowerCase().includes(compLower))) return true;
+                  if (Array.isArray(m.contributions) && m.contributions.some((item: string) => item.toLowerCase().includes(compLower))) return true;
+                  return false;
+                }))
+                .filter(m => pediaMinat.length === 0 || pediaMinat.some(interest => {
+                  const intLower = interest.toLowerCase();
+                  if (Array.isArray(m.interests) && m.interests.some((item: string) => item.toLowerCase().includes(intLower))) return true;
+                  if (m.interest && typeof m.interest === 'string' && m.interest.toLowerCase().includes(intLower)) return true;
+                  return false;
+                }))
+                .map((member) => (
+                  <div 
+                    key={member.id}
+                    className="relative bg-white p-6 rounded-[1.75rem] border border-gray-100 shadow-md space-y-4 text-xs hover:shadow-lg transition-all flex flex-col justify-between"
+                  >
+                    <div>
                       <div className="flex gap-4 items-center">
-                        <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-650 flex items-center justify-center font-extrabold font-mono text-sm uppercase shrink-0">
-                          {member.name.substring(0, 2)}
+                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-indigo-50 border border-indigo-100 flex items-center justify-center font-extrabold font-mono text-sm uppercase shrink-0">
+                          {member.img ? (
+                            <img 
+                              src={member.img} 
+                              alt={member.name} 
+                              className="w-full h-full object-cover" 
+                              referrerPolicy="no-referrer" 
+                            />
+                          ) : (
+                            <span className="text-indigo-650">{member.name.substring(0, 2)}</span>
+                          )}
                         </div>
                         <div>
-                          <h4 className="font-black text-sm text-slate-800">{member.name}</h4>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="font-black text-sm text-slate-800">{member.name}</h4>
+                            {member.accountStatus === 'Ditangguhkan' && (
+                              <span className="bg-rose-500/10 text-rose-600 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                                Suspended
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[10px] font-mono text-slate-400 uppercase">{member.loc || "KBB"} &bull; {member.alumniYear || member.year}</span>
                         </div>
                       </div>
 
-                      <div className="space-y-2 p-3.5 bg-slate-50/50 rounded-xl border border-stone-100">
+                      <div className="space-y-2 p-3.5 bg-slate-50/50 rounded-xl border border-stone-100 mt-4">
                         <div className="flex justify-between">
                           <span className="text-zinc-400">Kompetensi:</span>
-                          <span className="font-bold text-slate-800 font-mono">{member.kategoriKompetensi || member.compe || "Ekonomi/Sains"}</span>
+                          <span className="font-bold text-slate-800 font-mono text-right truncate max-w-[140px]">{member.kategoriKompetensi || member.compe || "Ekonomi/Sains"}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-zinc-400">Profesi:</span>
-                          <span className="font-bold text-slate-800 truncate max-w-[120px]">{member.prof || "Akademisi"}</span>
+                          <span className="font-bold text-slate-800 truncate max-w-[140px] text-right">{member.prof || "Akademisi"}</span>
                         </div>
                         <div className="flex justify-between items-center bg-white p-1.5 rounded border border-gray-100">
                           <span className="font-bold text-slate-700 text-[10px]">Username:</span>
@@ -1274,10 +1484,13 @@ export default function AdminSiapPanels({
                           <span className="font-bold text-slate-600 text-[10px]">Password:</span>
                           <div className="flex items-center gap-1">
                             <span className="font-mono font-black text-stone-700 text-[10px]">
-                              {revealPasswords[member.id] ? (member.password || "pmii"+member.id+"@kbb") : "•••••••••"}
+                              {revealPasswords[member.id] ? (member.password || "pmii"+member.id+"@kbb") : "•••••"}
                             </span>
                             <button 
-                              onClick={() => setRevealPasswords({ ...revealPasswords, [member.id]: !revealPasswords[member.id] })}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setRevealPasswords({ ...revealPasswords, [member.id]: !revealPasswords[member.id] });
+                              }}
                               className="text-gray-400 hover:text-slate-700 focus:outline-none"
                             >
                               🔍
@@ -1286,10 +1499,637 @@ export default function AdminSiapPanels({
                         </div>
                       </div>
                     </div>
-                  ))}
-              </div>
+
+                    <div className="pt-3">
+                      <button
+                        onClick={() => {
+                          setSelectedPediaMember(member);
+                          setEditPediaData({ ...member });
+                          setIsEditingPediaMember(false);
+                          setPediaDetailTab("profil");
+                        }}
+                        className="w-full py-2.5 px-3 rounded-xl font-bold text-center text-[10px] bg-primary text-white hover:bg-opacity-90 active:scale-[0.98] transition-all font-sans uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                      >
+                        <Info size={11} />
+                        Lihat Profil & Aksi
+                      </button>
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
+
+          {/* Modal Detail Profil Lengkap & Panel Aksi */}
+          {selectedPediaMember && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-[2rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-100 p-6 sm:p-8 space-y-6 shadow-2xl relative custom-scrollbar font-sans text-left text-slate-700"
+              >
+                {/* Close button */}
+                <button 
+                  onClick={() => setSelectedPediaMember(null)}
+                  className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+
+                {!isEditingPediaMember ? (
+                  // --- VIEW PROFILE DETAILS ---
+                  <div className="space-y-6">
+                    {/* Header */}
+                    <div className="flex gap-4 items-center border-b border-gray-100 pb-5">
+                      <div className="w-16 h-16 rounded-2xl overflow-hidden bg-indigo-50 border border-indigo-100 flex items-center justify-center font-extrabold font-mono text-lg uppercase shrink-0">
+                        {selectedPediaMember.img ? (
+                          <img 
+                            src={selectedPediaMember.img} 
+                            alt={selectedPediaMember.name} 
+                            className="w-full h-full object-cover" 
+                            referrerPolicy="no-referrer" 
+                          />
+                        ) : (
+                          <span className="text-indigo-650">{selectedPediaMember.name.substring(0, 2)}</span>
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-black text-lg text-slate-800 leading-tight">{selectedPediaMember.name}</h4>
+                          {selectedPediaMember.accountStatus === 'Ditangguhkan' ? (
+                            <span className="bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              Suspended
+                            </span>
+                          ) : (
+                            <span className="bg-emerald-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              Aktif
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-400 font-medium mt-0.5">
+                          Tahun Alumni/Anggota: <span className="font-mono font-bold text-primary">{selectedPediaMember.alumniYear || selectedPediaMember.year || "Unknown"}</span> &bull; Wilayah: <span className="font-bold text-slate-600">{selectedPediaMember.loc || "KBB"}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Integrated Sub-Tabs Navigation for Complete Registration Metadata */}
+                    <div className="flex flex-wrap gap-1.5 border-b border-gray-100 pb-3">
+                      {[
+                        { id: "profil", label: "👤 Profil & Kontak" },
+                        { id: "kaderisasi", label: "🎓 Kaderisasi & Pendidikan" },
+                        { id: "karir", label: "💼 Karir & Usaha" },
+                        { id: "jaringan", label: "🤝 Minat & Jaringan" }
+                      ].map((tab) => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setPediaDetailTab(tab.id)}
+                          className={`px-3 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                            pediaDetailTab === tab.id 
+                              ? "bg-primary text-white shadow-md active:scale-[0.97]" 
+                              : "bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200/50"
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Tab 1: Profil & Kontak */}
+                    {pediaDetailTab === "profil" && (
+                      <div className="space-y-4">
+                        {/* Biografi Section */}
+                        <div className="bg-gradient-to-br from-indigo-50/20 to-white p-4 rounded-2xl border border-indigo-100/50 space-y-1.5">
+                          <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest block">Deskripsi / Biografi Eksklusif</span>
+                          <p className="text-xs text-slate-700 italic leading-relaxed font-sans">
+                            &ldquo;{selectedPediaMember.bio || "Mengabdi sabilulungan di tatar pergerakan Bandung Barat."}&rdquo;
+                          </p>
+                        </div>
+
+                        {/* Identitas Utama */}
+                        <div className="bg-slate-50/50 p-4 rounded-2xl border border-gray-100 space-y-3.5 text-xs">
+                          <p className="font-black text-slate-400 uppercase tracking-wider text-[9px] mb-1">Identitas Biodata Anggota</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                            <div className="flex justify-between py-1 border-b border-dashed border-gray-200/60">
+                              <span className="text-slate-405 text-slate-500">Nama Lengkap:</span>
+                              <span className="font-bold text-slate-800 text-right">{selectedPediaMember.name}</span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-dashed border-gray-200/60">
+                              <span className="text-slate-405 text-slate-500">NIK (KTP):</span>
+                              <span className="font-mono font-bold text-slate-800">
+                                {selectedPediaMember.nikPrivacy === "private" ? "3217************" : (selectedPediaMember.nik || "Belum diisi")}
+                              </span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-dashed border-gray-200/60">
+                              <span className="text-slate-405 text-slate-500">Jenis Kelamin:</span>
+                              <span className="font-bold text-slate-800">
+                                {selectedPediaMember.gender === "P" || selectedPediaMember.gender?.toLowerCase() === "perempuan" ? "Perempuan" : "Laki-Laki"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-dashed border-gray-200/60">
+                              <span className="text-slate-405 text-slate-500">Tempat, Tgl Lahir:</span>
+                              <span className="font-bold text-slate-800 text-right">
+                                {selectedPediaMember.pob || selectedPediaMember.birthPlace || "Bandung Barat"}, {selectedPediaMember.dob || selectedPediaMember.birthDate || "2000-01-01"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-dashed border-gray-200/60 sm:col-span-2">
+                              <span className="text-slate-405 text-slate-500 shrink-0">Kecamatan Domisili:</span>
+                              <span className="font-extrabold text-primary uppercase text-[10px] bg-primary/10 px-2 py-0.5 rounded-full">{selectedPediaMember.loc || selectedPediaMember.district || "KBB"}</span>
+                            </div>
+                            <div className="flex flex-col gap-1 sm:col-span-2 pt-1">
+                              <span className="text-slate-405 text-slate-500 font-bold">Residensi Alamat Lengkap:</span>
+                              <span className="font-medium text-slate-700 leading-relaxed bg-white p-2.5 rounded-lg border border-gray-100">{selectedPediaMember.address || "Kabupaten Bandung Barat"}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Kontak & Kredensial */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="bg-slate-50 p-4 rounded-2xl border border-gray-150 space-y-2">
+                            <p className="font-black text-slate-400 uppercase tracking-wider text-[9px]">Akses Kontak</p>
+                            <div className="space-y-2 text-xs">
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-slate-500 font-bold flex items-center gap-1"><Phone size={11} /> No. WA:</span>
+                                <span className="font-mono font-bold text-slate-800">{selectedPediaMember.whatsapp || "-"}({selectedPediaMember.whatsappPrivacy})</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1 border-t border-gray-100">
+                                <span className="text-slate-500 font-bold flex items-center gap-1"><Mail size={11} /> Email:</span>
+                                <span className="font-mono font-bold text-slate-800 break-all text-right max-w-[140px] truncate">{selectedPediaMember.email || "-"}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="bg-slate-50 p-4 rounded-2xl border border-gray-150 space-y-2">
+                            <p className="font-black text-slate-400 uppercase tracking-wider text-[9px]">Sistem Login</p>
+                            <div className="space-y-2 text-xs">
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-slate-500 font-bold flex items-center gap-1"><Lock size={11} /> Username:</span>
+                                <span className="font-mono font-bold text-rose-700">{selectedPediaMember.username || selectedPediaMember.name.toLowerCase().replace(/\s+/g, "").substring(0, 10)}</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1 border-t border-gray-100">
+                                <span className="text-slate-500 font-bold flex items-center gap-1"><Lock size={11} /> Password:</span>
+                                <span className="font-mono font-black text-stone-700">{selectedPediaMember.password || "pmii"+selectedPediaMember.id+"@kbb"}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tab 2: Kaderisasi & Pendidikan */}
+                    {pediaDetailTab === "kaderisasi" && (
+                      <div className="space-y-5">
+                        {/* Kaderisasi PMII */}
+                        <div className="bg-indigo-50/30 rounded-2xl border border-indigo-100/50 p-5 space-y-3.5">
+                          <h5 className="font-black text-xs text-primary uppercase tracking-wider flex items-center gap-1.5 border-b border-indigo-100/30 pb-2">
+                            <ShieldCheck size={14} className="text-indigo-650" /> Kredensial & Status Kaderisasi PMII
+                          </h5>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Tingkatan Kaderisasi</span>
+                              <span className="font-extrabold text-indigo-750 text-sm mt-0.5 block flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+                                {selectedPediaMember.kaderisasi || "Kader Pratama"}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Angkatan Tahun</span>
+                              <span className="font-black text-slate-800 text-sm mt-0.5 block">{selectedPediaMember.alumniYear || selectedPediaMember.year || "Lembaga/PAC KBB"}</span>
+                            </div>
+                          </div>
+
+                          {/* Detail Pendaftaran Kaderisasi PMII */}
+                          <div className="space-y-2.5 pt-2 border-t border-indigo-100/20">
+                            <p className="text-[10px] font-bold text-slate-450 uppercase tracking-widest text-slate-400">Riwayat Jenjang/Level & Angkatan Kaderisasi</p>
+                            {Array.isArray(selectedPediaMember.pmiiHistory) && selectedPediaMember.pmiiHistory.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {selectedPediaMember.pmiiHistory.map((h: any, i: number) => (
+                                  <div key={i} className="bg-white/80 p-3 rounded-xl border border-indigo-100/60 leading-relaxed text-xs shadow-xs">
+                                    <div className="flex justify-between items-center border-b border-indigo-50 pb-1 mb-1">
+                                      <span className="font-black text-indigo-700 uppercase p-0.5 text-[9px] bg-indigo-50 rounded px-1.5">{h.level || "Tingkat"}</span>
+                                      <span className="font-mono font-bold text-slate-500">{h.year || "-"}</span>
+                                    </div>
+                                    <p className="text-slate-700 font-bold mt-1 text-[11px] truncate">Kampus: {h.campus || h.location || "-"}</p>
+                                    {h.structure && <p className="text-slate-500 font-medium text-[10px] mt-0.5 truncate">Struktur: {h.structure}</p>}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="bg-white/80 p-3.5 rounded-xl border border-indigo-50 text-xs flex justify-between items-center">
+                                <span className="font-bold text-slate-600">Simulasi / Flat Register Status:</span>
+                                <span className="font-mono font-black text-indigo-600 bg-indigo-50/65 px-2.5 py-1 rounded-lg text-[10px] uppercase">
+                                  {selectedPediaMember.kaderisasi || "Kader Pratama"}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Riwayat Pendidikan Formal */}
+                        <div className="space-y-3">
+                          <h5 className="font-bold text-xs text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                            <GraduationCap size={15} className="text-slate-500" /> Riwayat Pendidikan Formal (Anggota)
+                          </h5>
+
+                          {Array.isArray(selectedPediaMember.educationHistory) && selectedPediaMember.educationHistory.length > 0 ? (
+                            <div className="space-y-3">
+                              {selectedPediaMember.educationHistory.map((edu: any, i: number) => (
+                                <div key={i} className="bg-slate-50 p-3.5 rounded-2xl border border-gray-150 leading-relaxed text-xs hover:border-indigo-150 transition-colors">
+                                  <div className="flex justify-between items-start border-b border-gray-100 pb-1.5">
+                                    <div>
+                                      <span className="font-black text-rose-700 uppercase text-[9px] bg-rose-50 px-2 py-0.5 rounded-md mr-1.5">{edu.level}</span>
+                                      <span className="font-bold text-slate-800 text-[12px]">{edu.major && edu.major !== "-" ? edu.major : "Umum/Saintek"}</span>
+                                    </div>
+                                    <span className="font-mono text-zinc-400 font-bold text-[10px]">Lulus: {edu.gradYear || "-"}</span>
+                                  </div>
+                                  <div className="mt-2 text-slate-600 font-medium flex flex-wrap justify-between items-center text-[11px]">
+                                    <span className="font-bold">{edu.institution || "-"}</span>
+                                    {edu.degree && edu.degree !== "-" && (
+                                      <span className="text-slate-500 font-semibold bg-white px-2 py-0.5 rounded border border-gray-100">
+                                        Gelar: {edu.degree} &bull; ({edu.certType || "Ijazah"})
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="bg-slate-50 p-4 rounded-2xl border border-gray-150 text-xs text-slate-700 leading-relaxed">
+                              <p className="font-bold text-slate-800">Pendidikan Terakhir Terverifikasi:</p>
+                              <p className="text-primary font-black mt-1.5 text-sm">{selectedPediaMember.lastEdu || "S1 Sarjana Terapan"}</p>
+                              <p className="text-slate-400 text-[10px] mt-1 font-medium italic">Data lengkap berupa tabel histori ijazah formal belum diinput manual oleh alumni.</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tab 3: Pekerjaan & Bisnis */}
+                    {pediaDetailTab === "karir" && (
+                      <div className="space-y-5">
+                        {/* Riwayat Profesi / Karir */}
+                        <div className="space-y-3">
+                          <h5 className="font-bold text-xs text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                            <Briefcase size={15} className="text-slate-500" /> Profil Profesi, Karir & Instansi Saat Ini
+                          </h5>
+
+                          {Array.isArray(selectedPediaMember.professionHistory) && selectedPediaMember.professionHistory.length > 0 ? (
+                            <div className="space-y-3">
+                              {selectedPediaMember.professionHistory.map((prof: any, i: number) => (
+                                <div key={i} className="bg-indigo-50/10 p-4 rounded-2xl border border-indigo-150/40 text-xs leading-relaxed space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-extrabold text-indigo-750 text-[12px] uppercase">{prof.profession || "Profesi"}</span>
+                                    <span className="font-black text-[9px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md uppercase tracking-wider">{prof.status || "Aktif"}</span>
+                                  </div>
+                                  <div className="bg-white p-2.5 rounded-xl border border-gray-100 space-y-1">
+                                    <p className="text-slate-700 font-extrabold flex justify-between">
+                                      <span>Instansi/Perusahaan:</span>
+                                      <span className="text-slate-800 font-black">{prof.company || "-"}</span>
+                                    </p>
+                                    <p className="text-slate-500 font-bold flex justify-between">
+                                      <span>Jabatan/Posisi:</span>
+                                      <span className="text-primary font-extrabold">{prof.position || "-"}</span>
+                                    </p>
+                                  </div>
+                                  <div className="flex justify-between text-[10px] font-bold text-zinc-400 pt-0.5">
+                                    <span>Sektor: {prof.sector || "-"}</span>
+                                    <span>Wilayah: {prof.district || "-"}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="bg-slate-50 p-4 rounded-2xl border border-gray-150 text-xs text-slate-700 leading-relaxed">
+                              <p className="font-bold text-amber-900 flex items-center gap-1.5">
+                                <Briefcase size={13} /> Bidang Keahlian / Profesi Terdaftar:
+                              </p>
+                              <p className="font-black text-slate-800 mt-1.5 text-sm">{selectedPediaMember.prof || "Pegiat Alumni / Umum"}</p>
+                              {selectedPediaMember.gov && (
+                                <p className="text-slate-600 font-bold mt-1.5 bg-white p-2 rounded border border-gray-100">
+                                  Lembaga Afiliasi: <span className="text-primary font-black">{selectedPediaMember.gov}</span>
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Riwayat Usaha / UMKM */}
+                        <div className="space-y-3">
+                          <h5 className="font-bold text-xs text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                            <Layers size={15} className="text-slate-500" /> Analisis Bisnis Nyata & Kepemilikan UMKM
+                          </h5>
+
+                          {Array.isArray(selectedPediaMember.businessHistory) && selectedPediaMember.businessHistory.length > 0 ? (
+                            <div className="space-y-3">
+                              {selectedPediaMember.businessHistory.map((biz: any, i: number) => (
+                                <div key={i} className="bg-emerald-50/10 p-4 rounded-2xl border border-emerald-100/50 text-xs leading-relaxed space-y-2">
+                                  <div className="flex justify-between items-center bg-white p-2.5 rounded-xl border border-emerald-50 shadow-xs">
+                                    <span className="font-black text-emerald-800 text-[12px]">{biz.businessName}</span>
+                                    <span className="font-black text-[9px] bg-emerald-100/70 text-emerald-800 px-2 py-0.5 rounded-md uppercase tracking-wider">{biz.status || "Aktif"}</span>
+                                  </div>
+                                  <div className="space-y-1 bg-white p-2 rounded-xl border border-gray-150/70 text-[11px]">
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-500">Jabatan internal:</span>
+                                      <span className="font-bold text-slate-805">{biz.position || "Developer/Owner"}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-500">Sektor Industri:</span>
+                                      <span className="font-bold text-slate-805">{biz.sector || "Peternakan"}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-500 font-bold text-emerald-700">Jumlah Karyawan:</span>
+                                      <span className="font-mono font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">{biz.numEmployees || "0"} Karyawan</span>
+                                    </div>
+                                  </div>
+                                  <div className="text-[10px] text-zinc-400 font-semibold text-right">Kecamatan: {biz.district || "-"}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="bg-stone-50 p-4 rounded-2xl border border-gray-150 text-xs text-slate-400 italic text-center leading-relaxed">
+                              Tidak ada riwayat kepemilikan unit bisnis, perseroan, maupun UMKM yang didaftarkan.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tab 4: Minat & Jaringan */}
+                    {pediaDetailTab === "jaringan" && (
+                      <div className="space-y-5 text-xs text-slate-705">
+                        {/* Minat Sinergi Sabilulungan */}
+                        <div className="bg-slate-50 p-4 rounded-2xl border border-gray-150 space-y-2.5">
+                          <h6 className="font-black text-[10px] uppercase text-slate-400 tracking-wider">Minat Sinergi Sabilulungan (IKA PMII)</h6>
+                          <div className="flex flex-wrap gap-1.5">
+                            {Array.isArray(selectedPediaMember.interests) && selectedPediaMember.interests.length > 0 ? (
+                              selectedPediaMember.interests.map((itm: string) => (
+                                <span key={itm} className="bg-violet-50 text-violet-700 border border-violet-150 font-black text-[9px] uppercase px-2.5 py-1 rounded-lg">
+                                  {itm}
+                                </span>
+                              ))
+                            ) : selectedPediaMember.interest ? (
+                              <span className="bg-violet-50 text-violet-700 border border-violet-150 font-black text-[9px] uppercase px-2.5 py-1 rounded-lg">
+                                {selectedPediaMember.interest}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 text-[11px] italic font-medium p-1">Belum mendaftarkan minat sinergi khusus saat checklist pendaftaran.</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Sektor Kontribusi dan Keahlian Utama */}
+                        <div className="bg-slate-50 p-4 rounded-2xl border border-gray-150 space-y-2.5">
+                          <h6 className="font-black text-[10px] uppercase text-slate-400 tracking-wider">Kontribusi Keahlian & Sektor Kolaborasi</h6>
+                          <div className="flex flex-wrap gap-1.5">
+                            {((Array.isArray(selectedPediaMember.contrib) ? selectedPediaMember.contrib : (selectedPediaMember.contributions || selectedPediaMember.skills || []))).map((c: string) => (
+                              <span key={c} className="bg-indigo-50 text-indigo-700 border border-indigo-150 font-black text-[9px] uppercase px-2.5 py-1 rounded-lg">
+                                {c}
+                              </span>
+                            ))}
+                            {((Array.isArray(selectedPediaMember.contrib) ? selectedPediaMember.contrib : (selectedPediaMember.contributions || selectedPediaMember.skills || []))).length === 0 && (
+                              <span className="text-slate-400 text-[11px] italic font-medium p-1">Sektor kompetensi belum dirinci.</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Hubungan Jaringan Organisasi Eksternal */}
+                        <div className="space-y-3 pt-1">
+                          <h6 className="font-extrabold text-[10px] uppercase text-slate-400 tracking-wider flex items-center gap-1">
+                            <Globe size={13} className="text-slate-400" /> Jaringan Sinergitas Ormas / Organisasi Eksternal
+                          </h6>
+
+                          {Array.isArray(selectedPediaMember.networks) && selectedPediaMember.networks.length > 0 ? (
+                            <div className="space-y-3">
+                              {selectedPediaMember.networks.map((net: any, idx: number) => (
+                                <div key={idx} className="bg-white p-3.5 rounded-xl border border-gray-150 text-xs shadow-xs leading-relaxed space-y-1">
+                                  <p className="font-black text-[12px] text-slate-800">{net.name || "Organisasi Non-PMII"}</p>
+                                  <div className="flex justify-between text-[11px] pt-1 text-slate-500 border-t border-gray-50 mt-1">
+                                    <span className="font-medium">Jabatan: <span className="font-bold text-slate-700">{net.position || "-"}</span></span>
+                                    <span className="font-mono">Periode: <span className="font-bold text-slate-700">{net.period || "-"}</span></span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : selectedPediaMember.ormas ? (
+                            <div className="bg-white p-3.5 rounded-xl border border-gray-150 text-xs leading-relaxed">
+                              <p className="font-black text-slate-800 text-[12px]">{selectedPediaMember.ormas}</p>
+                              <p className="text-slate-500 font-medium mt-1">
+                                Jabatan Terdaftar: <span className="font-bold text-primary">{selectedPediaMember.activePos || "Pengurus / Anggota"}</span>
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="bg-stone-50 p-4 rounded-xl border border-gray-150 text-center text-[10px] text-slate-400 italic">
+                              Tidak ada afiliasi jaringan organisasi eksternal yang didata.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Actions Panel */}
+                    <div className="border-t border-gray-100 pt-5 space-y-3">
+                      <p className="font-black text-slate-400 uppercase tracking-wider text-[9px]">Otoritas Kelola Alumni (PC IKA PMII Bandung Barat)</p>
+                      <div className="flex flex-wrap gap-2.5">
+                        <button
+                          onClick={() => {
+                            setEditPediaData({ ...selectedPediaMember });
+                            setIsEditingPediaMember(true);
+                          }}
+                          className="flex-1 min-w-[120px] py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-indigo-200"
+                        >
+                          <Edit3 size={14} /> Sunting Profil
+                        </button>
+
+                        <button
+                          onClick={() => handleToggleSuspendPediaMember(selectedPediaMember)}
+                          className={`flex-1 min-w-[120px] py-3 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm ${
+                            selectedPediaMember.accountStatus === 'Ditangguhkan' 
+                              ? 'bg-emerald-600 hover:bg-emerald-700' 
+                              : 'bg-amber-500 hover:bg-amber-600'
+                          }`}
+                        >
+                          <AlertTriangle size={14} /> 
+                          {selectedPediaMember.accountStatus === 'Ditangguhkan' ? 'Aktifkan Akun' : 'Suspen Akun'}
+                        </button>
+
+                        <button
+                          onClick={() => handleDeletePediaMember(selectedPediaMember.id)}
+                          className="flex-1 min-w-[120px] py-3 bg-red-650 hover:bg-red-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                        >
+                          <Trash2 size={14} /> Hapus Alumni
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // --- EDIT PROFILE MODE ---
+                  <div className="space-y-5">
+                    <div className="border-b border-gray-100 pb-4">
+                      <h4 className="font-black text-lg text-slate-800">Sunting Profil Anggota SIAP</h4>
+                      <p className="text-xs text-gray-400 mt-1">Lakukan penyuntingan kualifikasi formal, status, serta informasi domisili alumni terverifikasi.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-700">
+                      {/* Name */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Nama Lengkap</label>
+                        <input
+                          type="text"
+                          value={editPediaData?.name || ""}
+                          onChange={(e) => setEditPediaData({ ...editPediaData, name: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3.5 py-2.5 font-bold focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      {/* Gender */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Jenis Kelamin</label>
+                        <select
+                          value={editPediaData?.gender || "L"}
+                          onChange={(e) => setEditPediaData({ ...editPediaData, gender: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3.5 py-2.5 font-bold focus:outline-none transition-all cursor-pointer"
+                        >
+                          <option value="L">Laki-laki</option>
+                          <option value="P">Perempuan</option>
+                        </select>
+                      </div>
+
+                      {/* Kecamatan */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Kecamatan Domisili</label>
+                        <select
+                          value={editPediaData?.loc || "Ngamprah"}
+                          onChange={(e) => setEditPediaData({ ...editPediaData, loc: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3.5 py-2.5 font-bold focus:outline-none transition-all cursor-pointer"
+                        >
+                          {["Ngamprah", "Padalarang", "Cipatat", "Lembang", "Cisarua", "Parongpong", "Batujajar", "Cihampelas", "Cililin", "Rongga", "Sindangkerta", "Gununghalu", "Cipeundeuy", "Saguling", "Cipongkor"].map((kec) => (
+                            <option key={kec} value={kec}>{kec}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Alumni Year */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Tahun Anggota / Alumni</label>
+                        <input
+                          type="number"
+                          value={editPediaData?.alumniYear || editPediaData?.year || ""}
+                          onChange={(e) => setEditPediaData({ 
+                            ...editPediaData, 
+                            alumniYear: parseInt(e.target.value) || 2020, 
+                            year: parseInt(e.target.value) || 2020 
+                          })}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3.5 py-2.5 font-bold focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      {/* Profesi */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Profesi Saat Ini</label>
+                        <input
+                          type="text"
+                          value={editPediaData?.prof || ""}
+                          onChange={(e) => setEditPediaData({ ...editPediaData, prof: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3.5 py-2.5 font-bold focus:outline-none transition-all"
+                          placeholder="e.g. Akademisi, Pengacara, PNS"
+                        />
+                      </div>
+
+                      {/* Kompetensi */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Kategori Kompetensi</label>
+                        <input
+                          type="text"
+                          value={editPediaData?.kategoriKompetensi || editPediaData?.compe || ""}
+                          onChange={(e) => setEditPediaData({ 
+                            ...editPediaData, 
+                            kategoriKompetensi: e.target.value, 
+                            compe: e.target.value 
+                          })}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3.5 py-2.5 font-bold focus:outline-none transition-all"
+                          placeholder="e.g. IT, Hukum Terapan, Pendidikan"
+                        />
+                      </div>
+
+                      {/* WhatsApp */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">No. WhatsApp</label>
+                        <input
+                          type="text"
+                          value={editPediaData?.whatsapp || ""}
+                          onChange={(e) => setEditPediaData({ ...editPediaData, whatsapp: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3.5 py-2.5 font-bold focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      {/* Email */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Alamat Email</label>
+                        <input
+                          type="email"
+                          value={editPediaData?.email || ""}
+                          onChange={(e) => setEditPediaData({ ...editPediaData, email: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3.5 py-2.5 font-bold focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      {/* Address */}
+                      <div className="space-y-1 sm:col-span-2">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Alamat Lengkap Mandiri</label>
+                        <textarea
+                          rows={2}
+                          value={editPediaData?.address || ""}
+                          onChange={(e) => setEditPediaData({ ...editPediaData, address: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-3.5 py-2.5 font-bold focus:outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Password Credentials */}
+                    <div className="bg-slate-50 p-4 rounded-xl border border-gray-200 space-y-3 font-bold text-xs">
+                      <p className="font-extrabold text-[10px] text-slate-400 uppercase tracking-wider">Kredensial Login Akun</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-slate-400 uppercase tracking-wider">Username Akun</label>
+                          <input
+                            type="text"
+                            value={editPediaData?.username || ""}
+                            onChange={(e) => setEditPediaData({ 
+                              ...editPediaData, 
+                              username: e.target.value.toLowerCase().replace(/\s+/g, "") 
+                            })}
+                            className="w-full bg-white border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3 py-1.5 font-bold focus:outline-none transition-all"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-slate-400 uppercase tracking-wider">Password Akun</label>
+                          <input
+                            type="text"
+                            value={editPediaData?.password || ""}
+                            onChange={(e) => setEditPediaData({ ...editPediaData, password: e.target.value })}
+                            className="w-full bg-white border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3 py-1.5 font-bold focus:outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
+                      <button
+                        onClick={() => setIsEditingPediaMember(false)}
+                        className="py-2.5 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        onClick={handleSaveEditPediaMember}
+                        className="py-2.5 px-5 bg-primary hover:bg-opacity-90 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+                      >
+                        Simpan Perubahan
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1297,8 +2137,8 @@ export default function AdminSiapPanels({
       {/* TAB 4: ADMIN SIAP KONTEN                                         */ }
       {/* ----------------------------------------------------------------- */}
       {activeTab === "siap_konten" && (
-        <div className="space-y-6">
-          <div className="bg-white p-6 rounded-[2rem] border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="space-y-4">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h3 className="text-2xl font-display font-black text-primary">Manajemen Berita & Publikasi Anggota</h3>
               <p className="text-xs text-gray-400">Kurasi, sunting, setujui tulisan karya alumni, atau buat rilis informasi publik.</p>
@@ -1309,8 +2149,8 @@ export default function AdminSiapPanels({
                 <button
                   key={cat}
                   onClick={() => setContentFilter(cat)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    contentFilter === cat ? "bg-primary text-accent text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    contentFilter === cat ? "bg-primary text-accent text-white shadow-md font-black" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
                   {cat}
@@ -1319,136 +2159,561 @@ export default function AdminSiapPanels({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Member Created Submission List */}
-            <div className="space-y-4">
-              <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Karya Menunggu Kurasi</h4>
-              <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-                {submittedContents
-                  .filter(c => contentFilter === "Semua" || c.category === contentFilter)
-                  .map((post) => (
-                    <div key={post.id} className="bg-white p-6 rounded-[1.75rem] border border-gray-100 shadow-md space-y-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="text-[9px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-mono font-black uppercase tracking-wider">{post.category}</span>
-                          <h4 className="font-black text-slate-800 text-sm mt-1.5">{post.title}</h4>
-                        </div>
-                        <span className="text-[10px] text-zinc-400 tracking-tight shrink-0">{post.date}</span>
-                      </div>
-                      <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed font-sans">{post.content}</p>
-                      
-                      <div className="flex justify-between items-center pt-3 border-t border-slate-50 text-[11px] font-bold">
-                        <span className="text-slate-600">Oleh: <span className="text-slate-800 font-extrabold">{post.author}</span></span>
-                        
-                        <div className="flex gap-2 text-xs">
-                          {post.status === "Menunggu Kurasi" ? (
-                            <>
-                              <button
-                                onClick={() => {
-                                  setSubmittedContents(submittedContents.map(c => c.id === post.id ? { ...c, status: "Diterbitkan" } : c));
-                                  setBulletins([...bulletins, { id: bulletins.length+1, title: post.title, date: post.date, author: post.author, category: post.category === "Pikiran Kritis" ? "Opini" : post.category, content: post.content }]);
-                                  triggerNotification("Karya alumni disetujui terbitkan!");
-                                }}
-                                className="bg-emerald-600 text-white font-extrabold px-3 py-1.5 rounded-lg"
-                              >
-                                Terbitkan
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSubmittedContents(submittedContents.filter(c => c.id !== post.id));
-                                  triggerNotification("Berkas tulisan didelete curations");
-                                }}
-                                className="bg-rose-50 text-rose-700 px-2.5 py-1.5 rounded-lg border border-rose-100 font-bold"
-                              >
-                                Tolak
-                              </button>
-                            </>
-                          ) : (
-                            <span className="text-emerald-600 flex items-center gap-1 font-black">
-                              &bull; Berhasil Terbit
+          {/* KARYA MENUNGGU KURASI - LANDSCAPE / HORIZONTAL LIST WITH COLUMNS */}
+          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-sm space-y-3 text-left">
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              Karya Menunggu Kurasi
+            </h4>
+            
+            <div className="overflow-x-auto rounded-[1.5rem] border border-gray-100 custom-scrollbar">
+              <table className="w-full text-left border-collapse text-xs font-sans">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-gray-150 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <th className="py-2.5 px-3 w-[50px] text-center font-bold">No.</th>
+                    <th className="py-2.5 px-3 min-w-[280px]">Judul Tulisan</th>
+                    <th className="py-2.5 px-3 min-w-[150px]">Kategori Kreator</th>
+                    <th className="py-2.5 px-3 min-w-[150px]">Nama Penulis</th>
+                    <th className="py-2.5 px-3 text-center min-w-[280px]">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {submittedContents
+                    .filter(c => contentFilter === "Semua" || c.category === contentFilter || 
+                      (contentFilter === "Opini" && c.category === "Pikiran Kritis") ||
+                      (contentFilter === "Artikel" && c.category === "Ekonomi")
+                    )
+                    .length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400 italic font-medium">
+                        Tidak ada karya yang sedang menunggu kurasi saat ini untuk kategori: {contentFilter}
+                      </td>
+                    </tr>
+                  ) : (
+                    submittedContents
+                      .filter(c => contentFilter === "Semua" || c.category === contentFilter || 
+                        (contentFilter === "Opini" && c.category === "Pikiran Kritis") ||
+                        (contentFilter === "Artikel" && c.category === "Ekonomi")
+                      )
+                      .map((post, index) => (
+                        <tr key={post.id} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-400 text-[11px]">
+                            {index + 1}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <p className="font-extrabold text-slate-800 text-xs sm:text-sm line-clamp-1">{post.title}</p>
+                            <p className="text-[10px] text-zinc-400 font-medium mt-0.5">{post.date || "25 Mei 2026"}</p>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span className="inline-block text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-850 border border-amber-200">
+                              {post.category === "Pikiran Kritis" ? "Opini" : post.category}
                             </span>
-                          )}
-                        </div>
-                      </div>
+                          </td>
+                          <td className="py-2.5 px-3 font-bold text-slate-650">
+                            {post.author}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <div className="flex items-center justify-center gap-1 flex-wrap">
+                              {/* Baca Action */}
+                              <button
+                                onClick={() => {
+                                  setReadingPediaContent(post);
+                                  setSelectedFullPediaContent(post);
+                                }}
+                                className={`px-2.5 py-1.5 rounded-lg transition-all font-black text-[9px] uppercase tracking-wider flex items-center gap-1 cursor-pointer ${
+                                  selectedFullPediaContent?.id === post.id 
+                                    ? "bg-primary text-white shadow-sm" 
+                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                }`}
+                                title="Baca & Pilih Tulisan Lengkap"
+                              >
+                                <Eye size={11} /> Baca
+                              </button>
+                              
+                              {/* Edit Action */}
+                              <button
+                                onClick={() => setEditingPediaContent(post)}
+                                className="px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-750 hover:bg-indigo-150 transition-all font-black text-[9px] uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                                title="Sunting Karya"
+                              >
+                                <Edit3 size={11} /> Edit
+                              </button>
+                              
+                              {/* Terbitkan Action */}
+                              {post.status === "Menunggu Kurasi" ? (
+                                <button
+                                  onClick={() => handlePublishCurationItem(post)}
+                                  className="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-all font-black text-[9px] uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                                  title="Setujui Terbitkan"
+                                >
+                                  <Check size={11} /> Terbitkan
+                                </button>
+                              ) : (
+                                <span className="text-[9px] bg-emerald-50 text-emerald-700 font-extrabold px-2 py-1 rounded-md uppercase tracking-wider">&bull; Terbit</span>
+                              )}
+                              
+                              {/* Tolak Hapus Action */}
+                              <button
+                                onClick={() => handleRejectCurationItem(post)}
+                                className="px-2.5 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all font-black text-[9px] uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                                title="Tolak & Hapus Karya"
+                              >
+                                <Trash2 size={11} /> Tolak Hapus
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* DETIL & PRATAMPIL PEMBACA NASKAH LENGKAP (TANPA RINGKASAN) */}
+          {(() => {
+            const currentPost = selectedFullPediaContent || submittedContents.filter(c => contentFilter === "Semua" || c.category === contentFilter)[0] || submittedContents[0];
+            if (!currentPost) return null;
+
+            return (
+              <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                key={currentPost.id}
+                className="bg-white rounded-2xl border border-gray-150/90 shadow-xl overflow-hidden text-left"
+              >
+                {/* Header Banner info */}
+                <div className="bg-gradient-to-r from-primary/5 via-accent/5 to-transparent px-5 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-sans">
+                  <div className="space-y-1">
+                    <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-850 border border-emerald-200 px-3 py-1 rounded-full uppercase">
+                      📖 PEMBACA NASKAH UTUH (TANPA SINGKATAN / RINGKASAN)
+                    </span>
+                    <h4 className="text-lg font-display font-black text-primary leading-tight mt-0.5">{currentPost.title}</h4>
+                    <p className="text-xs text-slate-500 font-sans font-medium flex flex-wrap items-center gap-2 mt-0.5">
+                      <span>Oleh: <strong className="text-slate-700 font-extrabold">{currentPost.author}</strong></span>
+                      <span>&bull;</span>
+                      <span>Draf Masuk: <strong className="font-mono text-slate-500 font-bold">{currentPost.date || "25 Mei 2026"}</strong></span>
+                      <span>&bull;</span>
+                      <span>Kategori: <strong className="text-accent uppercase font-black">{currentPost.category}</strong></span>
+                    </p>
+                  </div>
+                  
+                  {/* Status label */}
+                  <div className="shrink-0 flex items-center gap-2 font-sans">
+                    <span className="text-[10px] font-bold text-gray-400">Status Kurasi:</span>
+                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${
+                      currentPost.status === "Diterbitkan" 
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 animate-pulse" 
+                        : "bg-amber-50 text-amber-805 border-amber-200"
+                    }`}>
+                      {currentPost.status || "Menunggu Kurasi"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Main scrollable body page with simulated print-paper layout */}
+                <div className="p-4 sm:p-5 bg-slate-50/40 relative">
+                  {/* Styling Controls for reader layout */}
+                  <div className="flex flex-wrap items-center justify-end gap-2 mb-3 bg-white border border-slate-100 px-3 py-1.5 rounded-xl shadow-sm text-[10px] font-black uppercase text-slate-500 font-sans">
+                    <span className="text-gray-400 font-bold mr-1">Tampilan Membaca:</span>
+                    <button 
+                      onClick={() => setEditorFont("font-serif")}
+                      className={`px-2 py-0.5 rounded transition-colors cursor-pointer text-[9px] font-black uppercase ${editorFont === "font-serif" ? "bg-primary text-white" : "hover:bg-slate-100"}`}
+                    >
+                      Buku (Serif)
+                    </button>
+                    <button 
+                      onClick={() => setEditorFont("font-sans")}
+                      className={`px-2 py-0.5 rounded transition-colors cursor-pointer text-[9px] font-black uppercase ${editorFont === "font-sans" ? "bg-primary text-white" : "hover:bg-slate-100"}`}
+                    >
+                      Modern (Sans)
+                    </button>
+                    <button 
+                      onClick={() => setEditorFont("font-mono")}
+                      className={`px-2 py-0.5 rounded transition-colors cursor-pointer text-[9px] font-black uppercase ${editorFont === "font-mono" ? "bg-primary text-white" : "hover:bg-slate-100"}`}
+                    >
+                      Arsip (Mono)
+                    </button>
+                    <div className="w-px h-3 bg-slate-200 mx-0.5"></div>
+                    <button 
+                      onClick={() => setEditorSpacing("leading-relaxed")}
+                      className={`px-2 py-0.5 rounded transition-colors cursor-pointer text-[9px] font-black uppercase ${editorSpacing === "leading-relaxed" ? "bg-primary text-white" : "hover:bg-slate-100"}`}
+                    >
+                      Renggang
+                    </button>
+                    <button 
+                      onClick={() => setEditorSpacing("leading-loose")}
+                      className={`px-2 py-0.5 rounded transition-colors cursor-pointer text-[9px] font-black uppercase ${editorSpacing === "leading-loose" ? "bg-primary text-white" : "hover:bg-slate-100"}`}
+                    >
+                      Sangat Renggang
+                    </button>
+                  </div>
+
+                  <div className="bg-white border border-gray-150 rounded-xl p-5 sm:p-6 shadow-inner min-h-[220px] flex flex-col justify-between">
+                    {/* The Complete Text Display from start to end */}
+                    <div className={`text-sm sm:text-base text-slate-805 whitespace-pre-wrap leading-relaxed tracking-normal transition-all duration-300 ${editorFont} ${editorSpacing}`}>
+                      {currentPost.content}
                     </div>
-                  ))}
+
+                    <div className="mt-8 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4 text-[10px] font-mono text-slate-400 uppercase">
+                      <span>Jumlah Kata: <strong className="text-slate-600">{currentPost.content ? currentPost.content.trim().split(/\s+/).length : 0} Kata</strong></span>
+                      <span>Sistem Informasi Alumni &amp; Pemberdayaan (SIAP)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Operations Toolbar immediately under the read block */}
+                <div className="px-5 py-4 bg-slate-50 border-t border-gray-100 flex flex-col sm:flex-row gap-2.5 items-center justify-between font-sans">
+                  <div className="text-xs text-slate-500 font-sans font-bold italic text-center sm:text-left">
+                    Tindakan cepat kurasi untuk draf di atas:
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
+                    {/* 1. BACA / PRATAMPIL UTUH */}
+                    <button
+                      onClick={() => {
+                        setReadingPediaContent(currentPost);
+                        setSelectedFullPediaContent(currentPost);
+                      }}
+                      className="px-3.5 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95"
+                      title="Lihat Pratinjau Pop-up"
+                    >
+                      <Eye size={12} /> Baca Pop-up
+                    </button>
+
+                    {/* 2. SUNTING / EDIT */}
+                    <button
+                      onClick={() => setEditingPediaContent(currentPost)}
+                      className="px-3.5 py-2.5 rounded-lg bg-indigo-50 text-indigo-750 hover:bg-indigo-100 font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95"
+                      title="Edit naskah ini sebelum diterbitkan"
+                    >
+                      <Edit3 size={12} /> Edit Tulisan
+                    </button>
+
+                    {/* 3. TOLAK / REJECT */}
+                    <button
+                      onClick={() => handleRejectCurationItem(currentPost)}
+                      className="px-3.5 py-2.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95"
+                      title="Tolak tulisan & hapus"
+                    >
+                      <Trash2 size={12} /> Tolak Hapus
+                    </button>
+
+                    {/* 4. TERBITKAN */}
+                    {currentPost.status !== "Diterbitkan" ? (
+                      <button
+                        onClick={() => handlePublishCurationItem(currentPost)}
+                        className="px-4.5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md shadow-emerald-500/15 active:scale-95 border-b-2 border-emerald-800"
+                        title="Setujui dan terbitkan langsung agar tampil di publik"
+                      >
+                        <Check size={12} /> Terbitkan Karya
+                      </button>
+                    ) : (
+                      <div className="px-4.5 py-2.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-150 font-black text-xs uppercase tracking-wider flex items-center gap-1.5">
+                        <Check size={12} /> Sudah Terbit Ke Publik
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })()}
+
+          <div className="bg-slate-50 border border-slate-200 p-4 sm:p-5 rounded-2xl space-y-4 shadow-sm text-left">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+              <div>
+                <h4 className="text-sm font-black text-slate-800">⚡ Quick Action: Buat Konten Baru</h4>
+                <p className="text-[11px] text-slate-500 font-sans">Pilih kategori langsung untuk diredireksi ke lembar editor kepenulisan resmi Admin.</p>
+              </div>
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <select
+                  value={activeWritingCategory}
+                  onChange={(e) => setActiveWritingCategory(e.target.value)}
+                  className="bg-white border border-slate-300 px-3 py-2.5 rounded-xl text-xs font-black text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary min-w-[150px]"
+                >
+                  <option value="Opini">Opini</option>
+                  <option value="Berita">Berita</option>
+                  <option value="Pengumuman">Pengumuman</option>
+                  <option value="Artikel">Artikel / Jurnal</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewPost({ 
+                      title: "", 
+                      content: "", 
+                      category: activeWritingCategory, 
+                      author: "Admin SIAP" 
+                    });
+                    triggerNotification(`Kategori aktif berpindah ke: ${activeWritingCategory}. Silakan ketik rilis tulisan Anda di kolom bawah.`);
+                  }}
+                  className="px-4 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-sm shrink-0 font-sans"
+                >
+                  Pilih Kategori & Tulis
+                </button>
               </div>
             </div>
 
-            {/* Direct Admin Publication Writer Form */}
-            <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-lg space-y-6">
-              <h3 className="text-lg font-black text-primary border-b border-gray-50 pb-3 flex items-center gap-2">
-                <Plus size={20} className="text-accent" /> Editor Formulir Rilis Resmi Admin SIAP
-              </h3>
+            {/* Direct Admin Editor Form with rich options */}
+            <div className="bg-white p-6 sm:p-8 rounded-[1.75rem] border border-gray-150 shadow-md space-y-6 text-xs text-slate-700">
+              <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h5 className="font-extrabold text-sm text-primary flex items-center gap-2">
+                  <Edit3 size={16} /> Lembaran Kerja Editor Rilis Oficial ({newPost.category})
+                </h5>
+                <span className="bg-primary/10 text-primary font-mono font-black py-1 px-3 rounded-full text-[10px] uppercase">
+                  ADMIN KREATIF SIAP
+                </span>
+              </div>
 
-              <div className="space-y-4 text-xs font-sans">
-                <div className="space-y-1">
-                  <label className="font-bold text-gray-500">Judul Informasi / Kabar Utama</label>
-                  <input 
-                    className="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl font-bold focus:ring-1 focus:ring-primary" 
-                    placeholder="Contoh: Konsolidasi Strategis Pendidikan Menuju Transformasi..."
-                    value={newPost.title}
-                    onChange={(e) => setNewPost({...newPost, title: e.target.value})}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Editor Inputs (Col 1 & 2) */}
+                <div className="md:col-span-2 space-y-4">
                   <div className="space-y-1">
-                    <label className="font-bold text-gray-500">Kategori Publikasi</label>
-                    <select 
-                      className="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl font-bold"
-                      value={newPost.category}
-                      onChange={(e) => setNewPost({...newPost, category: e.target.value})}
-                    >
-                      <option value="Berita">Rilis Berita</option>
-                      <option value="Pengumuman">Pengumuman Resmi</option>
-                      <option value="Artikel">Artikel & Karya Ilmiah</option>
-                      <option value="Opini">Opini Anggota</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="font-bold text-gray-500">Author</label>
+                    <label className="font-bold text-gray-400 text-[10px] uppercase tracking-wider block">Judul Informasi / Kabar Utama</label>
                     <input 
-                      className="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl font-bold"
-                      value={newPost.author}
-                      onChange={(e) => setNewPost({...newPost, author: e.target.value})}
+                      className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl font-bold font-sans text-sm focus:ring-2 focus:ring-primary focus:outline-none text-slate-800" 
+                      placeholder="Contoh: Konsolidasi Strategis Pendidikan Menuju Transformasi..."
+                      value={newPost.title}
+                      onChange={(e) => setNewPost({...newPost, title: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="font-bold text-gray-400 text-[10px] uppercase tracking-wider block">Kategori Publikasi</label>
+                      <select 
+                        className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl font-bold font-sans"
+                        value={newPost.category}
+                        onChange={(e) => {
+                          setNewPost({...newPost, category: e.target.value});
+                          setActiveWritingCategory(e.target.value);
+                        }}
+                      >
+                        <option value="Opini">Opini</option>
+                        <option value="Berita">Rilis Berita</option>
+                        <option value="Pengumuman">Pengumuman Resmi</option>
+                        <option value="Artikel">Artikel & Karya Ilmiah</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="font-bold text-gray-400 text-[10px] uppercase tracking-wider block">Nama Penulis / Rilis</label>
+                      <input 
+                        className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl font-bold font-sans"
+                        value={newPost.author}
+                        onChange={(e) => setNewPost({...newPost, author: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Formatting Toolbar */}
+                  <div className="bg-slate-50 border border-gray-200 rounded-xl p-3 flex flex-wrap items-center gap-3">
+                    {/* Numeric (formatted number items insertion) */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const numericPattern = "1. Poin Pertama...\n2. Poin Kedua...\n3. Poin Ketiga...";
+                        setNewPost({
+                          ...newPost,
+                          content: newPost.content + (newPost.content ? "\n" : "") + numericPattern
+                        });
+                        triggerNotification("Format urutan numerik disisipkan!");
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded bg-white hover:bg-slate-100 border border-gray-200 font-bold text-[10px] text-slate-700 cursor-pointer transition-colors"
+                      title="Sisipkan Urutan Numerik"
+                    >
+                      <ListOrdered size={12} className="text-indigo-600" /> Numerik
+                    </button>
+
+                    {/* Paragraph types format option */}
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-slate-400 font-bold">Paragraf:</span>
+                      <select
+                        value={editorHeadingStyle}
+                        onChange={(e) => {
+                          const style = e.target.value;
+                          setEditorHeadingStyle(style);
+                          let suffix = "";
+                          if (style === "h1") suffix = "\n# ";
+                          else if (style === "h2") suffix = "\n## ";
+                          else if (style === "quote") suffix = "\n> ";
+                          
+                          if (suffix) {
+                            setNewPost({
+                              ...newPost,
+                              content: newPost.content + suffix
+                            });
+                            triggerNotification(`Tipe paragraf ${style.toUpperCase()} ditambahkan!`);
+                          }
+                        }}
+                        className="bg-white border border-gray-200 px-2 py-1 rounded text-[10px] font-bold text-slate-700 focus:outline-none"
+                      >
+                        <option value="normal">Normal</option>
+                        <option value="h1">Heading 1</option>
+                        <option value="h2">Heading 2</option>
+                        <option value="quote">Kutipan / Quote</option>
+                      </select>
+                    </div>
+
+                    {/* Font families */}
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-slate-400 font-bold">Font:</span>
+                      <select
+                        value={editorFont}
+                        onChange={(e) => {
+                          setEditorFont(e.target.value);
+                          triggerNotification(`Mengubah font editor menjadi ${e.target.value}`);
+                        }}
+                        className="bg-white border border-gray-200 px-2 py-1 rounded text-[10px] font-bold text-slate-700 focus:outline-none"
+                      >
+                        <option value="font-sans">Inter (Sans)</option>
+                        <option value="font-serif">Playfair (Serif)</option>
+                        <option value="font-mono font-bold">JetBrains (Mono)</option>
+                        <option value="tracking-tight antialiased">Space Grotesk</option>
+                      </select>
+                    </div>
+
+                    {/* Line spacings */}
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-slate-400 font-bold">Spasi:</span>
+                      <select
+                        value={editorSpacing}
+                        onChange={(e) => {
+                          setEditorSpacing(e.target.value);
+                          triggerNotification(`Jarak baris diset: ${e.target.value}`);
+                        }}
+                        className="bg-white border border-gray-200 px-2 py-1 rounded text-[10px] font-bold text-slate-700 focus:outline-none"
+                      >
+                        <option value="leading-normal">Sempit / Cozy</option>
+                        <option value="leading-relaxed">Normal</option>
+                        <option value="leading-loose">Longgar / Spacious</option>
+                      </select>
+                    </div>
+
+                    {/* Simulated Upload Foto */}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const samplePhotos = [
+                            "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop"
+                          ];
+                          const randomPhoto = samplePhotos[Math.floor(Math.random() * samplePhotos.length)];
+                          setEditorPhoto(randomPhoto);
+                          triggerNotification("Cover foto berhasil diunggah untuk tulisan ini!");
+                        }}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 font-bold text-[10px] text-emerald-800 cursor-pointer transition-colors"
+                      >
+                        <Image size={12} className="text-emerald-700" /> Upload Foto
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Textarea */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-400 text-[10px] uppercase tracking-wider block">Isi Naskah / Informasi Detail</label>
+                    <textarea 
+                      rows={8}
+                      className={`w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-800 focus:ring-2 focus:ring-primary focus:outline-none focus:bg-white transition-all text-xs sm:text-sm ${editorFont} ${editorSpacing}`} 
+                      placeholder="Tuliskan naskah lengkap rilis kabar pmii di sini. Gunakan toolbar di atas untuk mengatur numerik, format paragraf, font, spasi baris, dan menyematkan upload foto rilis..."
+                      value={newPost.content}
+                      onChange={(e) => setNewPost({...newPost, content: e.target.value})}
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="font-bold text-gray-500">Isi Naskah / Informasi Detail</label>
-                  <textarea 
-                    rows={6}
-                    className="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-slate-800 leading-relaxed focus:ring-1 focus:ring-primary focus:outline-none" 
-                    placeholder="Tuliskan naskah lengkap rilis kabar pmii di sini..."
-                    value={newPost.content}
-                    onChange={(e) => setNewPost({...newPost, content: e.target.value})}
-                  />
-                </div>
+                {/* Sidebar Preview Column (Col 3) */}
+                <div className="bg-slate-50/50 p-5 rounded-[1.5rem] border border-gray-150 flex flex-col justify-between space-y-4 text-left">
+                  <div>
+                    <span className="text-[9px] font-black text-slate-400 tracking-widest uppercase block mb-3">Tinjauan Pratinjau Rilis</span>
+                    
+                    <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-3 min-h-[160px]">
+                      {editorPhoto ? (
+                        <div className="w-full h-24 rounded-lg overflow-hidden border border-gray-100 relative group">
+                          <img src={editorPhoto} alt="Cover Preview" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-slate-900/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-white font-mono font-black text-[9px] uppercase">TERUNGGAH</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full h-20 rounded-lg bg-slate-100 border border-dashed border-slate-200 flex flex-col justify-center items-center text-slate-400 gap-1 italic text-[9px]">
+                          <Image size={14} /> Belum ada foto terupload
+                        </div>
+                      )}
+                      
+                      <div>
+                        <span className="text-[8px] bg-primary/10 text-primary px-2 py-0.5 rounded font-bold uppercase tracking-wide inline-block">{newPost.category}</span>
+                        <h6 className="font-black text-slate-805 text-xs mt-1 leading-snug line-clamp-2">{newPost.title || "Rilis Masih Kosong"}</h6>
+                        <p className="text-[9px] text-zinc-400 mt-0.5">Oleh: <span className="font-bold text-slate-600">{newPost.author || "Admin"}</span></p>
+                      </div>
 
-                <button
-                  onClick={() => {
-                    if (!newPost.title || !newPost.content) {
-                      triggerNotification("Judul dan Konten wajib diisi!", "error");
-                      return;
-                    }
-                    const compiled = {
-                      id: bulletins.length + 1,
-                      title: newPost.title,
-                      date: "24 Mei 2026",
-                      author: newPost.author,
-                      category: newPost.category,
-                      content: newPost.content
-                    };
-                    setBulletins([compiled, ...bulletins]);
-                    setNewPost({ title: "", content: "", category: "Berita", author: "Admin SIAP" });
-                    triggerNotification("Konten Rilis berhasil dipasang langsung ke halaman website utama!");
-                  }}
-                  className="w-full py-4 bg-primary text-accent text-xs font-black uppercase tracking-wider rounded-xl shadow-md hover:shadow-xl transition-all active:scale-95"
-                >
-                  Publikasikan Berita Langsung
-                </button>
+                      <p className={`text-[10px] text-slate-600 line-clamp-4 leading-relaxed border-t border-dashed border-gray-100 pt-2 ${editorFont} ${editorSpacing}`}>
+                        {newPost.content || "Naskah yang Anda ketik akan terproyeksi dalam mode preview ini secara instan..."}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Publish & Reset CTA action creators */}
+                  <div className="space-y-2 pt-4 border-t border-gray-150">
+                    {editorPhoto && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditorPhoto(null);
+                          triggerNotification("Penyematan foto ditiadakan.");
+                        }}
+                        className="w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-black border border-rose-100 rounded-xl tracking-wide uppercase text-[8px] transition-all cursor-pointer"
+                      >
+                        Hapus Foto Sampul
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!newPost.title || !newPost.content) {
+                          triggerNotification("Judul dan Konten naskah wajib diisi!", "error");
+                          return;
+                        }
+                        const compiled = {
+                          id: bulletins.length + 1,
+                          title: newPost.title,
+                          date: "26 Mei 2026",
+                          author: newPost.author,
+                          category: newPost.category,
+                          content: newPost.content,
+                          image: editorPhoto,
+                          metaFont: editorFont,
+                          metaSpacing: editorSpacing
+                        };
+                        
+                        // Send to backend server to persist across Home/Publications
+                        fetch("/api/content/publish", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            title: newPost.title,
+                            content: newPost.content,
+                            author: newPost.author,
+                            category: newPost.category,
+                            date: new Date().toISOString()
+                          })
+                        }).then(res => res.json())
+                          .catch(e => console.error("Error publishing official post to backend server:", e));
+
+                        setBulletins([compiled, ...bulletins]);
+                        setNewPost({ title: "", content: "", category: activeWritingCategory, author: "Admin SIAP" });
+                        setEditorPhoto(null);
+                        triggerNotification("Rilis artikel resmi berhasil ditayangkan langsung ke portal website utama!");
+                      }}
+                      className="w-full py-3 bg-primary text-white text-[10px] font-black uppercase tracking-wider rounded-xl shadow-md hover:shadow-lg hover:bg-opacity-95 transition-all text-center cursor-pointer"
+                    >
+                      🚀 Terbitkan Tulisan Resmi
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2177,15 +3442,170 @@ export default function AdminSiapPanels({
                   href={`https://wa.me/${dispatchLog.phone.replace(/^0/, '62').replace(/[^\d]/g, '')}?text=${encodeURIComponent(dispatchLog.whatsappMessage)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex-grow py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase text-center rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+                  className="flex-grow py-3.5 bg-primary hover:bg-accent hover:text-primary text-white text-xs font-black uppercase text-center rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
                 >
-                  <MessageCircle size={16} /> Hubungi & Kirim via WhatsApp &rarr;
+                  <MessageCircle size={16} /> Hubungi & Kirim Pesan &rarr;
                 </a>
                 <button
                   onClick={() => setDispatchLog(null)}
                   className="px-6 py-3.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-black uppercase rounded-xl transition-all cursor-pointer"
                 >
                   Tutup Notifikasi
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* MODAL BACA TULISAN KURASI */}
+        {readingPediaContent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-[2rem] max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-gray-100 shadow-2xl relative custom-scrollbar font-sans text-left text-slate-700 p-6 sm:p-8 space-y-5"
+            >
+              <button 
+                onClick={() => setReadingPediaContent(null)}
+                className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="space-y-2">
+                <span className="inline-block text-[10px] bg-primary/10 text-primary px-3 py-1 rounded-full font-black uppercase tracking-wider">
+                  {readingPediaContent.category === "Pikiran Kritis" ? "Opini" : readingPediaContent.category}
+                </span>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-800 leading-snug">{readingPediaContent.title}</h3>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 border-b border-gray-100 pb-3 font-semibold">
+                  <span>Penulis: <span className="text-slate-700 font-extrabold">{readingPediaContent.author}</span></span>
+                  <span>&bull;</span>
+                  <span>Tanggal: <span className="font-mono">{readingPediaContent.date || "26 Mei 2026"}</span></span>
+                </div>
+              </div>
+
+              {/* Body Text */}
+              <div className="text-sm font-sans text-slate-700 leading-relaxed whitespace-pre-wrap py-2 font-medium">
+                {readingPediaContent.content}
+              </div>
+
+              <div className="flex justify-end pt-4 border-t border-gray-100 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setReadingPediaContent(null)}
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer transition-colors text-xs"
+                >
+                  Tutup Bacaan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePublishCurationItem(readingPediaContent);
+                    setReadingPediaContent(null);
+                  }}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black cursor-pointer transition-colors text-xs flex items-center gap-1.5"
+                >
+                  <Check size={14} /> Terbitkan Karya Ini
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* MODAL EDIT TULISAN KURASI */}
+        {editingPediaContent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-[2rem] max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-gray-100 shadow-2xl relative custom-scrollbar font-sans text-left text-slate-700 p-6 sm:p-8 space-y-4"
+            >
+              <button 
+                onClick={() => setEditingPediaContent(null)}
+                className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+
+              <h3 className="text-lg font-black text-primary border-b border-gray-100 pb-2 flex items-center gap-1.5">
+                <Edit3 size={18} /> Edit Karya Sebelum Kurasi
+              </h3>
+
+              <div className="space-y-4 text-xs font-sans">
+                <div className="space-y-1">
+                  <label className="font-bold text-gray-400">Judul Tulisan</label>
+                  <input
+                    className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl font-bold text-slate-800 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                    value={editingPediaContent.title}
+                    onChange={(e) => setEditingPediaContent({ ...editingPediaContent, title: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-400">Kategori</label>
+                    <select
+                      className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl font-bold text-xs"
+                      value={editingPediaContent.category}
+                      onChange={(e) => setEditingPediaContent({ ...editingPediaContent, category: e.target.value })}
+                    >
+                      <option value="Opini">Opini</option>
+                      <option value="Berita">Berita</option>
+                      <option value="Pengumuman">Pengumuman</option>
+                      <option value="Artikel">Artikel</option>
+                      <option value="Pikiran Kritis">Pikiran Kritis</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-400">Nama Penulis</label>
+                    <input
+                      className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl font-bold text-xs"
+                      value={editingPediaContent.author}
+                      onChange={(e) => setEditingPediaContent({ ...editingPediaContent, author: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-gray-400">Isi Konten Utama</label>
+                  <textarea
+                    rows={8}
+                    className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl leading-relaxed text-slate-800 font-medium text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                    value={editingPediaContent.content}
+                    onChange={(e) => setEditingPediaContent({ ...editingPediaContent, content: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4 border-t border-gray-100 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setEditingPediaContent(null)}
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleUpdateCurationItem(editingPediaContent);
+                    setEditingPediaContent(null);
+                  }}
+                  className="px-5 py-2.5 bg-primary text-white rounded-xl font-black cursor-pointer hover:bg-opacity-95"
+                >
+                  Simpan Draf Perubahan
                 </button>
               </div>
             </motion.div>

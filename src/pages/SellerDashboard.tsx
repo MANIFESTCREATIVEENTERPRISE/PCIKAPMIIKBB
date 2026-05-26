@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Bell, Info, Grid, ShieldAlert, Award, FileText, CheckCircle, 
-  HelpCircle, Sparkles, Plus, AlertCircle, ShoppingBag, Box, Landmark, Link as LinkIcon, Lock
+  HelpCircle, Sparkles, Plus, AlertCircle, ShoppingBag, Box, Landmark, Link as LinkIcon, Lock,
+  Mail, Key, ShieldCheck, Loader2, ArrowRight, User, Phone, MapPin, Store
 } from "lucide-react";
 
 // Import core seller components
@@ -32,6 +33,52 @@ import {
 } from "../data/sellerMockData";
 
 export default function SellerDashboard() {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return localStorage.getItem("seller_logged_in") === "true";
+  });
+
+  // Login & Registration Panel States
+  const [authMode, setAuthMode] = useState<"login" | "register">(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("mode") === "register" || localStorage.getItem("seller_register_mode") === "true") {
+        localStorage.removeItem("seller_register_mode");
+        return "register";
+      }
+    }
+    return "login";
+  });
+  const [loginEmail, setLoginEmail] = useState<string>("");
+  const [loginPassword, setLoginPassword] = useState<string>("");
+  const [otpStage, setOtpStage] = useState<boolean>(false);
+  const [enteredOtp, setEnteredOtp] = useState<string>("");
+  const [countdown, setCountdown] = useState<number>(60);
+  const [authLoading, setAuthLoading] = useState<boolean>(false);
+  const [loginError, setLoginError] = useState<string>("");
+
+  // New Registration Form States
+  const [regName, setRegName] = useState<string>("");
+  const [regEmail, setRegEmail] = useState<string>("");
+  const [regPhone, setRegPhone] = useState<string>("");
+  const [regStoreName, setRegStoreName] = useState<string>("");
+  const [regCategory, setRegCategory] = useState<string>("Makanan & Minuman (Kuliner)");
+  const [regDescription, setRegDescription] = useState<string>("");
+  const [regAddress, setRegAddress] = useState<string>("");
+  const [regAgreed, setRegAgreed] = useState<boolean>(false);
+  const [regSuccess, setRegSuccess] = useState<boolean>(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (otpStage && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [otpStage, countdown]);
+
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [currentRole, setCurrentRole] = useState<"Seller" | "Admin Toko" | "Staff Operasional">("Seller");
@@ -292,8 +339,509 @@ export default function SellerDashboard() {
     }
   };
 
+  const handlePasswordLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail.trim()) {
+      setLoginError("Kolom Email / Username wajib diisi.");
+      return;
+    }
+    if (!loginPassword.trim()) {
+      setLoginError("Kolom Password wajib diisi.");
+      return;
+    }
+    setLoginError("");
+    setAuthLoading(true);
+
+    setTimeout(() => {
+      localStorage.setItem("seller_logged_in", "true");
+      setIsLoggedIn(true);
+      setAuthLoading(false);
+      handleTriggerNotification("Selamat Datang! Anda berhasil masuk ke Portal Admin Mitra.");
+    }, 1200);
+  };
+
+  const handleLoadDemoCredentials = () => {
+    setLoginEmail("mitra_kamara");
+    setLoginPassword("kamara123");
+    setLoginError("");
+    handleTriggerNotification("Akun demo berhasil dimuat! Silakan klik tombol Masuk.");
+  };
+
+  const handleRegisterSeller = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regName.trim() || !regEmail.trim() || !regPhone.trim() || !regStoreName.trim() || !regAddress.trim()) {
+      setLoginError("Semua kolom formulir pendaftaran wajib diisi.");
+      return;
+    }
+    if (!regAgreed) {
+      setLoginError("Anda harus menyetujui Syarat & Ketentuan Koperasi KAMARA.");
+      return;
+    }
+    setLoginError("");
+    setAuthLoading(true);
+
+    setTimeout(() => {
+      setAuthLoading(false);
+      setRegSuccess(true);
+      handleTriggerNotification(`Pengajuan Toko "${regStoreName}" berhasil dikirim untuk verifikasi.`);
+    }, 1800);
+  };
+
+  const handleLogoutSeller = () => {
+    localStorage.removeItem("seller_logged_in");
+    setIsLoggedIn(false);
+    setLoginEmail("");
+    setLoginPassword("");
+    handleTriggerNotification("Sesi Anda telah diakhiri secara aman.");
+  };
+
+  if (!isLoggedIn) {
+    if (regSuccess) {
+      return (
+        <div className="min-h-[calc(100vh-80px)] w-full flex items-center justify-center p-6 md:p-12 bg-surface transition-colors duration-300 relative overflow-hidden">
+          {/* Background glow effects */}
+          <div className="absolute top-20 left-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute bottom-10 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl pointer-events-none"></div>
+
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="max-w-md w-full bg-card rounded-[2.5rem] border border-border-color shadow-2xl p-8 md:p-10 relative z-10 text-center space-y-6"
+          >
+            <div className="w-20 h-20 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto border border-green-500/20">
+              <CheckCircle size={44} className="text-green-500 animate-pulse" />
+            </div>
+            <div className="space-y-2">
+              <span className="text-[10px] text-green-600 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/10 font-black uppercase tracking-widest font-sans">Registrasi Berhasil</span>
+              <h3 className="text-2xl font-display font-black text-text-base mt-2">Pendaftaran Toko Dikirim!</h3>
+              <p className="text-xs text-text-muted leading-relaxed">
+                Pengajuan kemitraan toko <strong className="text-text-base font-extrabold">"{regStoreName}"</strong> oleh <strong className="text-text-base font-extrabold">{regName}</strong> telah berhasil dikirim ke Pengurus Koperasi KAMARA.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-surface border border-border-color text-left space-y-2 text-xs">
+              <div className="flex justify-between border-b border-border-color pb-1.5">
+                <span className="text-text-muted">Kategori Toko:</span>
+                <span className="font-bold text-text-base">{regCategory}</span>
+              </div>
+              <div className="flex justify-between border-b border-border-color pb-1.5">
+                <span className="text-text-muted">No. WhatsApp:</span>
+                <span className="font-bold text-text-base font-mono">{regPhone}</span>
+              </div>
+              <div className="flex justify-between pb-0.5">
+                <span className="text-text-muted">Status Akun:</span>
+                <span className="font-black text-amber-500 uppercase tracking-wider text-[10px]">Menunggu Verifikasi AI/Admin</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-text-muted leading-relaxed">
+              Tim admin akan memverifikasi berkas & menghubungi WhatsApp Anda dalam waktu 1x24 jam untuk pengaktifan toko resmi. Silakan coba masuk via mode demo untuk eksplorasi dashboard terlebih dahulu.
+            </p>
+
+            <div className="space-y-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthLoading(true);
+                  setTimeout(() => {
+                    localStorage.setItem("seller_logged_in", "true");
+                    setIsLoggedIn(true);
+                    setAuthLoading(false);
+                    handleTriggerNotification("Selamat Datang! Masuk via Demo Simulasi Admin Penjual berhasil.");
+                  }, 1000);
+                }}
+                className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase tracking-wider rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/10"
+              >
+                <Sparkles size={14} className="animate-pulse" />
+                Selesai & Masuk via Demo [Simulasi]
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRegSuccess(false);
+                  setAuthMode("login");
+                  setRegName("");
+                  setRegEmail("");
+                  setRegPhone("");
+                  setRegStoreName("");
+                  setRegAddress("");
+                  setRegAgreed(false);
+                }}
+                className="w-full py-3 bg-surface hover:bg-neutral-100 border border-border-color text-text-base text-xs font-black uppercase tracking-wider rounded-2xl transition-all cursor-pointer"
+              >
+                Kembali ke Login Penjual
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-[calc(100vh-80px)] w-full flex items-center justify-center p-6 md:p-12 bg-surface transition-colors duration-300 relative overflow-hidden">
+        {/* Background glow effects */}
+        <div className="absolute top-20 left-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className={`w-full bg-card rounded-[2.5rem] border border-border-color shadow-2xl p-8 md:p-10 relative z-10 transition-all duration-300 ${
+            authMode === "register" ? "max-w-xl" : "max-w-md"
+          }`}
+        >
+          {/* Logo / Brand identifier */}
+          <div className="text-center space-y-3 mb-6">
+            <div className="w-16 h-16 bg-primary/5 text-primary rounded-[1.25rem] flex items-center justify-center mx-auto border border-border-color">
+              <ShoppingBag size={28} />
+            </div>
+            <div>
+              <span className="text-[10px] text-primary font-black uppercase tracking-[0.2em] font-sans">Portal Koperasi KAMARA</span>
+              <h2 className="text-2xl font-display font-black leading-tight mt-1 text-text-base">
+                {authMode === "register" ? "Daftar Toko / Mitra Baru" : "Login Penjual / Mitra"}
+              </h2>
+              <p className="text-xs text-text-muted max-w-xs mx-auto mt-1.5 leading-relaxed">
+                {authMode === "register" 
+                  ? "Buka toko Anda sendiri di Koperasi KAMARA dan pasarkan produk fisik atau jasa Anda ke ribuan anggota."
+                  : "Kelola penjualan produk, jasa, promosi, dan pesanan toko Anda secara profesional dalam satu sistem integrasi."
+                }
+              </p>
+            </div>
+          </div>
+
+          {/* Core Mode Switcher Tab */}
+          <div className="mb-6 flex p-1.5 bg-surface rounded-2xl border border-border-color">
+            <button
+              onClick={() => { setAuthMode("login"); setLoginError(""); }}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                authMode === "login" 
+                  ? "bg-primary text-white shadow-md shadow-primary/10" 
+                  : "text-text-muted hover:text-text-base"
+              }`}
+            >
+              Portal Masuk
+            </button>
+            <button
+              onClick={() => { setAuthMode("register"); setLoginError(""); }}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                authMode === "register" 
+                  ? "bg-primary text-white shadow-md shadow-primary/10" 
+                  : "text-text-muted hover:text-text-base"
+              }`}
+            >
+              Daftar Jadi Mitra
+            </button>
+          </div>
+
+          {loginError && (
+            <div className="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900 text-xs font-bold text-red-650 dark:text-red-400 text-center flex items-center justify-center gap-2">
+              <AlertCircle size={14} className="shrink-0" />
+              <span>{loginError}</span>
+            </div>
+          )}
+
+          <AnimatePresence mode="wait">
+            {authMode === "login" ? (
+              <motion.div
+                key="login-section"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-5"
+              >
+                <form onSubmit={handlePasswordLogin} className="space-y-4">
+                  {/* Username/Email Input */}
+                  <div className="space-y-1.5 text-left">
+                    <label className="text-[10px] font-black text-text-muted uppercase tracking-wider block">Username / Email Penjual</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-3 bg-transparent text-text-muted">
+                        <Mail size={16} />
+                      </span>
+                      <input
+                        type="text"
+                        required
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                        placeholder="cth: mitra_kamara atau maretoko@gmail.com"
+                        className="w-full pl-11 pr-4 py-3 bg-surface border border-border-color rounded-2xl text-xs font-bold text-text-base placeholder-text-muted/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password Input */}
+                  <div className="space-y-1.5 text-left">
+                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-text-muted">
+                      <label className="block">Password Akun</label>
+                      <button 
+                        type="button" 
+                        onClick={handleLoadDemoCredentials}
+                        className="text-primary hover:text-accent font-black normal-case font-mono border-none bg-transparent cursor-pointer"
+                      >
+                        [Gunakan Akun Demo]
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-4 top-3 bg-transparent text-text-muted">
+                        <Lock size={16} />
+                      </span>
+                      <input
+                        type="password"
+                        required
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        placeholder="Masukkan password akun Anda"
+                        className="w-full pl-11 pr-4 py-3 bg-surface border border-border-color rounded-2xl text-xs font-bold text-text-base placeholder-text-muted/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full py-4 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-2xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-primary/10 mt-2"
+                  >
+                    {authLoading ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin text-white block" />
+                        Mengautentikasi...
+                      </>
+                    ) : (
+                      <>
+                        Masuk Ke Portal Penjual <ArrowRight size={14} />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Account Info / Demo credentials block */}
+                <div className="p-3.5 rounded-2xl bg-amber-550/5 dark:bg-amber-500/5 border border-amber-500/20 text-center text-[11px] font-bold text-text-base leading-relaxed">
+                  <span className="text-amber-600 block mb-1">🔑 DETAIL AKUN DEMO INSTAN</span>
+                  Username: <code className="bg-amber-500/10 px-1 py-0.5 rounded font-mono font-extrabold text-amber-600">mitra_kamara</code> | Password: <code className="bg-amber-500/10 px-1 py-0.5 rounded font-mono font-extrabold text-amber-600">kamara123</code>
+                </div>
+
+                {/* Direct Demo Entrance */}
+                <div className="mt-4 pt-4 border-t border-dashed border-border-color space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthLoading(true);
+                      setTimeout(() => {
+                        localStorage.setItem("seller_logged_in", "true");
+                        setIsLoggedIn(true);
+                        setAuthLoading(false);
+                        handleTriggerNotification("Selamat Datang! Masuk via Demo Simulasi Admin Penjual berhasil.");
+                      }, 1000);
+                    }}
+                    className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase tracking-wider rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/10"
+                  >
+                    <Sparkles size={14} className="animate-pulse animate-spin" />
+                    Masuk Instan via Demo [Simulasi] ✨
+                  </button>
+                </div>
+
+                {/* Link to Registration Form */}
+                <div className="mt-4 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/30 dark:border-blue-900/40 text-center font-sans">
+                  <button
+                    type="button"
+                    onClick={() => setAuthMode("register")}
+                    className="text-xs text-primary dark:text-blue-400 hover:text-accent font-extrabold transition-all inline-block hover:underline leading-relaxed cursor-pointer"
+                  >
+                     Belum Terdaftar? Klik Di Sini untuk Mengisi Formulir Pendaftaran Mitra Penjual KAMARA 📝
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="register-section"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <form onSubmit={handleRegisterSeller} className="space-y-4 text-left">
+                  {/* Nama Pemilik */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-text-muted uppercase tracking-wider block">Nama Lengkap Pemilik</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-3 bg-transparent text-text-muted">
+                        <User size={16} />
+                      </span>
+                      <input
+                        type="text"
+                        required
+                        value={regName}
+                        onChange={(e) => setRegName(e.target.value)}
+                        placeholder="Masukkan nama lengkap Anda"
+                        className="w-full pl-11 pr-4 py-3 bg-surface border border-border-color rounded-2xl text-xs font-semibold text-text-base placeholder-text-muted/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email & WhatsApp Link */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-text-muted uppercase tracking-wider block">Email Aktif</label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-3 bg-transparent text-text-muted">
+                          <Mail size={16} />
+                        </span>
+                        <input
+                          type="email"
+                          required
+                          value={regEmail}
+                          onChange={(e) => setRegEmail(e.target.value)}
+                          placeholder="cth: email@kontak.com"
+                          className="w-full pl-11 pr-4 py-3 bg-surface border border-border-color rounded-2xl text-xs font-semibold text-text-base placeholder-text-muted/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-text-muted uppercase tracking-wider block">No. WhatsApp / HP</label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-3 bg-transparent text-text-muted">
+                          <Phone size={16} />
+                        </span>
+                        <input
+                          type="tel"
+                          required
+                          value={regPhone}
+                          onChange={(e) => setRegPhone(e.target.value)}
+                          placeholder="cth: 08123456789"
+                          className="w-full pl-11 pr-4 py-3 bg-surface border border-border-color rounded-2xl text-xs font-semibold text-text-base placeholder-text-muted/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Nama Toko & Kategori dropdown */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-text-muted uppercase tracking-wider block">Nama Toko / Usaha</label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-3 bg-transparent text-text-muted">
+                          <Store size={16} />
+                        </span>
+                        <input
+                          type="text"
+                          required
+                          value={regStoreName}
+                          onChange={(e) => setRegStoreName(e.target.value)}
+                          placeholder="cth: Warung Kamara Sejahtera"
+                          className="w-full pl-11 pr-4 py-3 bg-surface border border-border-color rounded-2xl text-xs font-semibold text-text-base placeholder-text-muted/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-text-muted uppercase tracking-wider block">Kategori Produk</label>
+                      <select
+                        value={regCategory}
+                        onChange={(e) => setRegCategory(e.target.value)}
+                        className="w-full px-4 py-3 bg-surface border border-border-color rounded-2xl text-xs font-semibold text-text-base focus:outline-none focus:ring-1 focus:ring-primary"
+                      >
+                        <option value="Makanan & Minuman (Kuliner)">Makanan & Minuman (Kuliner)</option>
+                        <option value="Kerajinan & Kesenian">Kerajinan & Kesenian</option>
+                        <option value="Pakaian & Fashion (UMKM)">Pakaian & Fashion (UMKM)</option>
+                        <option value="Hasil Pertanian & Perkebunan">Hasil Pertanian & Perkebunan</option>
+                        <option value="Jasa Profesional & Jasa Kreatif">Jasa Profesional & Jasa Kreatif</option>
+                        <option value="Lainnya">Kategori Lainnya</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Deskripsi Usaha */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-text-muted uppercase tracking-wider block">Deskripsi Singkat Toko / Produk</label>
+                    <textarea
+                      value={regDescription}
+                      onChange={(e) => setRegDescription(e.target.value)}
+                      placeholder="Tulis singkat produk unggulan dan layanan utama toko Anda"
+                      rows={2}
+                      className="w-full px-4 py-2.5 bg-surface border border-border-color rounded-2xl text-xs font-semibold text-text-base placeholder-text-muted/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+
+                  {/* Alamat Toko */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-text-muted uppercase tracking-wider block">Alamat Toko / Rumah Produksi</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-3 bg-transparent text-text-muted">
+                        <MapPin size={16} />
+                      </span>
+                      <input
+                        type="text"
+                        required
+                        value={regAddress}
+                        onChange={(e) => setRegAddress(e.target.value)}
+                        placeholder="cth: Depan Lapangan RT 02/09 Padalarang"
+                        className="w-full pl-11 pr-4 py-3 bg-surface border border-border-color rounded-2xl text-xs font-semibold text-text-base placeholder-text-muted/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Aturan Checkbox */}
+                  <div className="flex items-start gap-2.5 pt-1">
+                    <input
+                      type="checkbox"
+                      id="regAgreed"
+                      required
+                      checked={regAgreed}
+                      onChange={(e) => setRegAgreed(e.target.checked)}
+                      className="mt-0.5 rounded border-border-color text-primary focus:ring-primary cursor-pointer w-4 h-4"
+                    />
+                    <label htmlFor="regAgreed" className="text-[11px] text-text-muted leading-tight font-bold cursor-pointer select-none">
+                      Saya bersedia mematuhi standard perdagangan bersih, kualitas produk, dan ketetapan Koperasi KAMARA.
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full py-4 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-2xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-primary/10 mt-3"
+                  >
+                    {authLoading ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin text-white" />
+                        Mengirim Berkas...
+                      </>
+                    ) : (
+                      <>
+                        Kirim Pendaftaran Toko <CheckCircle size={14} />
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMode("login"); setLoginError(""); }}
+                    className="w-full text-center text-xs text-text-muted hover:text-text-base transition-colors font-bold mt-2 cursor-pointer border-none bg-transparent"
+                  >
+                    Sudah punya toko? ← Kembali ke Halaman Login
+                  </button>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="mt-6 pt-5 border-t border-border-color text-center">
+            <Link 
+              to="/" 
+              className="text-xs text-primary hover:text-accent font-extrabold transition-all"
+            >
+              ← Kembali ke Beranda Utama
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen font-sans bg-surface text-text-base overflow-x-hidden transition-colors duration-300">
+    <div className="flex min-h-[calc(100vh-80px)] font-sans bg-surface text-text-base overflow-x-hidden transition-colors duration-300">
       {/* 1. COLLAPSIBLE PORTAL SIDEBAR */}
       <SellerSidebar 
         activeTab={activeTab}
@@ -301,10 +849,11 @@ export default function SellerDashboard() {
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
         isDarkMode={isDarkMode}
+        onLogout={handleLogoutSeller}
       />
 
       {/* 2. MAIN WORKING PANEL CARD VIEW */}
-      <div className="flex-grow flex flex-col h-screen overflow-y-auto w-full">
+      <div className="flex-grow flex flex-col h-[calc(100vh-80px)] overflow-y-auto w-full">
         {/* 2.1 MODERN SAAS COMPRESSED HEADER */}
         <SellerHeader 
           currentRole={currentRole}
@@ -322,7 +871,7 @@ export default function SellerDashboard() {
         <div className="px-8 py-3.5 flex items-center justify-between border-b text-xs font-bold leading-relaxed shrink-0 transition-colors bg-card border-border-color text-text-base">
           <div className="flex items-center gap-2">
             <Sparkles size={14} className="animate-spin" />
-            <span>Maretoko Portal Admin Marketplace. Mode Integrasi Tunggal Koperasi KAMARA Aktif.</span>
+            <span>Admin Mitra Portal Marketplace. Mode Integrasi Tunggal Koperasi KAMARA Aktif.</span>
           </div>
           <Link 
             to="/produk-umkm/katalog" 

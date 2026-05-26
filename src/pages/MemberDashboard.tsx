@@ -91,6 +91,27 @@ export default function MemberDashboard() {
   const [selectedProfession, setSelectedProfession] = useState("");
   const [selectedSector, setSelectedSector] = useState("");
 
+  React.useEffect(() => {
+    const handleTabChange = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail) {
+        setActiveTab(customEvent.detail);
+      }
+    };
+    window.addEventListener("change-siap-tab", handleTabChange);
+
+    // Initial check of local storage to set active tab
+    const initial = localStorage.getItem("siap_active_tab");
+    if (initial) {
+      setActiveTab(initial);
+      localStorage.removeItem("siap_active_tab");
+    }
+
+    return () => {
+      window.removeEventListener("change-siap-tab", handleTabChange);
+    };
+  }, []);
+
   // Loaded custom products managed dynamically by Mitra KAMARA
   const [customProducts, setCustomProducts] = useState<any[]>(() => {
     try {

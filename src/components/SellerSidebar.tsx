@@ -1,6 +1,6 @@
 import { 
   BarChart3, Box, ShoppingBag, Users, MessageSquare, Wallet, Megaphone, 
-  Settings, UserCheck, ShieldAlert, Award, Grid, Menu, X, Landmark, ClipboardList, Info, Link, Lock
+  Settings, UserCheck, ShieldAlert, Award, Grid, Menu, X, Landmark, ClipboardList, Info, Link, Lock, LogOut
 } from "lucide-react";
 
 interface SellerSidebarProps {
@@ -9,6 +9,7 @@ interface SellerSidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
   isDarkMode: boolean;
+  onLogout?: () => void;
 }
 
 export default function SellerSidebar({
@@ -16,7 +17,8 @@ export default function SellerSidebar({
   setActiveTab,
   isCollapsed,
   setIsCollapsed,
-  isDarkMode
+  isDarkMode,
+  onLogout
 }: SellerSidebarProps) {
   
   const mainMenuItems = [
@@ -28,26 +30,9 @@ export default function SellerSidebar({
     { id: "chat", label: "Live Chat", icon: MessageSquare },
     { id: "finance", label: "Keuangan & Penarikan", icon: Wallet },
     { id: "promo", label: "Promosi & Marketing", icon: Megaphone },
-    { id: "analytics", label: "Analytics & Report", icon: Award },
-    { id: "reputation", label: "Ulasan & Sentimen AI", icon: ShieldAlert },
-    { id: "settings", label: "Manajemen Toko", icon: Settings },
-    { id: "staff", label: "Staff & Akses", icon: UserCheck }
+    { id: "settings", label: "Manajemen Toko", icon: Settings }
   ];
 
-  const subDashboards = [
-    { id: "sub_affiliate", label: "Affiliate Dashboard", icon: Link },
-    { id: "sub_supplier", label: "Supplier Dashboard", icon: Landmark },
-    { id: "sub_warehouse", label: "Gudang & Stok", icon: Grid },
-    { id: "sub_installer", label: "Kurir & Pengiriman", icon: Landmark },
-    { id: "sub_marketplace_admin", label: "Admin Marketplace", icon: Lock }
-  ];
-
-  const systemItems = [
-    { id: "integrations", label: "Integrasi API & Sync", icon: Info },
-    { id: "blueprint", label: "Blueprint & Sitemap", icon: Grid },
-    { id: "help", label: "Pusat Bantuan & AI Chat", icon: Info },
-    { id: "login", label: "Login & Autentikasi", icon: Lock }
-  ];
 
   // Dynamic style class based on dark mode
   const bgClass = "bg-card border-border-color text-text-base";
@@ -55,7 +40,7 @@ export default function SellerSidebar({
   const activeClass = "bg-primary text-white shadow-lg shadow-primary/20";
 
   return (
-    <aside id="seller-sidebar" className={`h-screen flex flex-col border-r transition-all duration-300 ${isCollapsed ? "w-20" : "w-72"} ${bgClass} shrink-0 overflow-y-auto z-40 relative`}>
+    <aside id="seller-sidebar" className={`h-[calc(100vh-80px)] flex flex-col border-r transition-all duration-300 ${isCollapsed ? "w-20" : "w-72"} ${bgClass} shrink-0 overflow-y-auto z-40 relative`}>
       {/* Brand Logo Header */}
       <div className="p-5 flex items-center justify-between border-b border-border-color">
         <div className="flex items-center gap-3 overflow-hidden">
@@ -64,8 +49,8 @@ export default function SellerSidebar({
           </div>
           {!isCollapsed && (
             <div className="flex flex-col text-left">
-              <span className="font-sans font-extrabold text-sm tracking-tight leading-none">Maretoko Seller</span>
-              <span className="text-[10px] text-blue-500 font-bold uppercase tracking-wider mt-1">SaaS Portal</span>
+              <span className="font-sans font-extrabold text-sm tracking-tight leading-none">Admin Mitra</span>
+              <span className="text-[10px] text-blue-500 font-bold uppercase tracking-wider mt-1">Mitra Portal</span>
             </div>
           )}
         </div>
@@ -107,75 +92,30 @@ export default function SellerSidebar({
           </nav>
         </div>
 
-        {/* Sub Dashboards */}
-        <div>
-          {!isCollapsed && (
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest pl-3 block mb-3">
-              Halaman Tambahan
-            </span>
-          )}
-          <nav className="space-y-1">
-            {subDashboards.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  id={`sidebar-item-${item.id}`}
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  title={item.label}
-                  className={`w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                    isActive ? activeClass : hoverClass
-                  }`}
-                >
-                  <Icon size={18} className={isActive ? "text-white" : isDarkMode ? "text-slate-400" : "text-slate-500"} />
-                  {!isCollapsed && <span className="truncate">{item.label}</span>}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
 
-        {/* System & Integrations & Login */}
-        <div>
-          {!isCollapsed && (
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest pl-3 block mb-3">
-              Informasi & Integrasi
-            </span>
-          )}
-          <nav className="space-y-1">
-            {systemItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  id={`sidebar-item-${item.id}`}
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  title={item.label}
-                  className={`w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                    isActive ? activeClass : hoverClass
-                  }`}
-                >
-                  <Icon size={18} className={isActive ? "text-white" : isDarkMode ? "text-slate-400" : "text-slate-500"} />
-                  {!isCollapsed && <span className="truncate">{item.label}</span>}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
       </div>
 
       {/* Footer Profile State */}
-      <div className="p-4 border-t border-border-color bg-surface/30 shrink-0 flex items-center gap-3 overflow-hidden">
-        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-sm shrink-0">
-          WS
-        </div>
-        {!isCollapsed && (
-          <div className="flex flex-col text-left">
-            <span className="text-xs font-bold leading-none">Wahyu Setiawan</span>
-            <span className="text-[10px] text-slate-400 mt-1 leading-none">Mitra Seller Aktif</span>
+      <div className="p-4 border-t border-border-color bg-surface/30 shrink-0 flex items-center justify-between overflow-hidden">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div className="w-10 h-10 rounded-full bg-blue-100/80 text-blue-700 flex items-center justify-center font-black text-sm shrink-0 font-sans">
+            WS
           </div>
+          {!isCollapsed && (
+            <div className="flex flex-col text-left">
+              <span className="text-xs font-bold leading-none text-text-base">Wahyu Setiawan</span>
+              <span className="text-[10px] text-text-muted mt-1 leading-none">Mitra Seller Aktif</span>
+            </div>
+          )}
+        </div>
+        {!isCollapsed && onLogout && (
+          <button 
+            onClick={onLogout}
+            title="Keluar / Logout"
+            className="p-2 rounded-lg text-red-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          >
+            <LogOut size={16} />
+          </button>
         )}
       </div>
     </aside>

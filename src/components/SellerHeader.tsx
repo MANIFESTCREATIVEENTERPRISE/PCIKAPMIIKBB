@@ -178,41 +178,7 @@ export default function SellerHeader({
           )}
         </div>
 
-        {/* Vertical divider */}
-        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
 
-        {/* Active Multi-Role Switcher */}
-        <div className="relative">
-          <button 
-            onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-            className="px-3.5 py-2 rounded-xl border border-border-color bg-surface hover:bg-card text-text-base flex items-center gap-2.5 text-xs font-extrabold cursor-pointer transition-all"
-          >
-            <div className="flex flex-col text-right">
-              <span className="text-[9px] font-black uppercase tracking-wider leading-none text-primary">Hak Akses</span>
-              <span className="mt-1 leading-none">{currentRole}</span>
-            </div>
-            <ChevronDown size={14} className="text-slate-400" />
-          </button>
-          
-          {showRoleDropdown && (
-            <div className="absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl border p-2 flex flex-col gap-1 z-50 bg-card border-border-color">
-              {roles.map((r) => (
-                <button
-                  key={r}
-                  onClick={() => handleRoleChange(r)}
-                  className={`w-full px-3 py-2.5 rounded-xl text-left text-[11px] font-bold transition-all cursor-pointer ${
-                    currentRole === r 
-                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" 
-                      : "hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300"
-                  }`}
-                >
-                  {r}
-                  {r === "Seller" && <span className="text-[9px] bg-amber-500 text-white px-1.5 py-0.5 rounded-md font-black float-right uppercase">Owner</span>}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </header>
   );
