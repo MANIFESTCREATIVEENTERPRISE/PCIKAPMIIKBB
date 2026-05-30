@@ -15,6 +15,7 @@ interface EvaluationRating {
 }
 
 interface AdminSiapPanelsProps {
+  key?: any;
   activeTab: string;
   setActiveTab: (tab: string) => void;
   pendingApplicants: any[];
@@ -2184,7 +2185,7 @@ export default function AdminSiapPanels({
                       (contentFilter === "Artikel" && c.category === "Ekonomi")
                     )
                     .length === 0 ? (
-                    <tr>
+                    <tr key="empty-curation">
                       <td colSpan={5} className="py-8 text-center text-slate-400 italic font-medium">
                         Tidak ada karya yang sedang menunggu kurasi saat ini untuk kategori: {contentFilter}
                       </td>
@@ -2942,7 +2943,7 @@ export default function AdminSiapPanels({
                     }}
                     value={selectedKtaId || ""}
                   >
-                    <option value="">-- PILIH ANGGOTA VERIFIED --</option>
+                    <option key="placeholder-verified-alumni" value="">-- PILIH ANGGOTA VERIFIED --</option>
                     {verifiedAlumni.map(member => (
                       <option key={member.id} value={member.id}>{member.name} ({member.loc || "KBB"})</option>
                     ))}

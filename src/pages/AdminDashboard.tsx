@@ -1147,6 +1147,7 @@ export default function AdminDashboard() {
             {/* SIAP CONSOLE RENDER BLOCKS VIA ENHANCED MODULAR COMPONENT */}
             {currentRole === "siap" && (
               <AdminSiapPanels
+                key="admin-siap-panels"
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 pendingApplicants={pendingApplicants}
