@@ -1,4 +1,5 @@
 import { useState, FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { User, ClipboardList, GraduationCap, Briefcase, Store, Heart, Network, Share2, Upload, Plus, Trash2, Lock } from "lucide-react";
 
@@ -458,12 +459,12 @@ export default function MemberRegistration() {
           <p className="text-gray-600 leading-relaxed mb-8">
             Data pendaftaran Anda telah kami terima dengan sukses. Admin IKA PMII Kabupaten Bandung Barat akan meninjau kontribusi data Anda. Anda akan menerima username dan password melalui email setelah diverifikasi.
           </p>
-          <button
-            onClick={() => window.location.href = "/"}
-            className="w-full bg-primary text-white font-bold py-4 rounded-2xl shadow-xl hover:brightness-110 mb-4"
+          <Link
+            to="/"
+            className="block text-center w-full bg-primary text-white font-bold py-4 rounded-2xl shadow-xl hover:brightness-110 mb-4"
           >
             Kembali ke Beranda
-          </button>
+          </Link>
         </motion.div>
       </div>
     );

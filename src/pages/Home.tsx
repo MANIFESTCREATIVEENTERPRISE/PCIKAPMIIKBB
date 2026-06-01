@@ -504,16 +504,19 @@ export default function Home() {
         <div className="flex gap-8 overflow-x-auto pb-12 px-4 sm:px-6 lg:px-24 snap-x">
           {news.map((item, i) => (
             <div key={i} className="min-w-[280px] md:min-w-[300px] snap-center shrink-0">
-              <div className="aspect-[3/2] bg-white/10 rounded-[2rem] overflow-hidden relative group">
+              <Link
+                to={item.category === "Artikel" ? "/publikasi/artikel" : item.category === "Pengumuman" ? "/publikasi/pengumuman" : item.category === "Opini" ? "/publikasi/opini" : "/publikasi/berita"}
+                className="block aspect-[3/2] bg-white/10 rounded-[2rem] overflow-hidden relative group"
+              >
                 <img src={item.image} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" title={item.title} referrerPolicy="no-referrer" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent flex flex-col justify-end p-5 md:p-6">
                   <span className="text-[9px] text-accent font-bold uppercase mb-1.5">{new Date(item.date).toLocaleDateString("id-ID")}</span>
                   <h3 className="font-bold text-sm md:text-base leading-snug mb-3 line-clamp-2 text-white">{item.title}</h3>
-                  <button className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                  <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
                     <ArrowRight size={16} />
-                  </button>
+                  </div>
                 </div>
-              </div>
+              </Link>
             </div>
           ))}
         </div>
