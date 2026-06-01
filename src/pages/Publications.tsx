@@ -510,9 +510,12 @@ function GaleriView() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      <div className="flex md:grid overflow-x-auto md:overflow-x-visible pb-8 md:pb-0 snap-x snap-mandatory gap-6 md:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 scrollbar-none">
         {galeriItems.map((item) => (
-          <div key={item.id} className="group bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-500 flex flex-col h-full hover:-translate-y-2">
+          <div 
+            key={item.id} 
+            className="w-[calc(100vw-3rem)] md:w-auto shrink-0 snap-center md:shrink md:snap-align-none group bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-500 flex flex-col h-full hover:-translate-y-2"
+          >
             <div className="aspect-[4/3] overflow-hidden relative">
               <img 
                 src={item.image} 

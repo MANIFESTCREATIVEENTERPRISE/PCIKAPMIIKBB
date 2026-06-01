@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, User, ShieldCheck, Globe, Moon, Sun } from "lucide-react";
+import { Menu, X, ChevronDown, User, ShieldCheck, Globe, Moon, Sun, Search } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import logoImg from "../assets/images/logo.png";
 
@@ -78,7 +78,42 @@ export default function Header() {
     }
     return false;
   });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [allContent, setAllContent] = useState<any[]>([]);
+  const [searchActive, setSearchActive] = useState(false);
+  const [mobileSearchActive, setMobileSearchActive] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    // Fetch all content items for search (news & articles)
+    Promise.all([
+      fetch("/api/content/news").then(r => r.json()).catch(() => []),
+      fetch("/api/content/articles").then(r => r.json()).catch(() => []),
+      fetch("/api/content/announcements").then(r => r.json()).catch(() => [])
+    ]).then(([newsData, articlesData, announcementsData]) => {
+      const combined = [
+        ...newsData.map((x: any) => ({ ...x, type: "Berita", url: `/publikasi/berita` })),
+        ...articlesData.map((x: any) => ({ ...x, type: x.category || "Artikel", url: x.category === "Opini" ? `/publikasi/opini` : `/publikasi/artikel` })),
+        ...announcementsData.map((x: any) => ({ ...x, type: "Pengumuman", url: `/publikasi/pengumuman` }))
+      ];
+      setAllContent(combined);
+    }).catch(err => console.error("Error loaded search content db:", err));
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const q = searchQuery.toLowerCase();
+    const filtered = allContent.filter(item => 
+      (item.title && item.title.toLowerCase().includes(q)) || 
+      (item.content && item.content.toLowerCase().includes(q)) ||
+      (item.author && item.author.toLowerCase().includes(q))
+    );
+    setSearchResults(filtered.slice(0, 5));
+  }, [searchQuery, allContent]);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -202,6 +237,46 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Desktop Search Bar */}
+            <div className="relative hidden xl:flex items-center">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Cari berita & opini..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setSearchActive(true)}
+                  onBlur={() => setTimeout(() => setSearchActive(false), 200)}
+                  className="bg-white/10 text-white placeholder-white/40 text-xs px-4 py-2 pl-9 rounded-full border border-white/10 focus:border-accent focus:bg-white/15 focus:outline-none transition-all w-48 focus:w-64 font-sans"
+                />
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
+              </div>
+
+              {/* Suggestions Dropdown */}
+              <AnimatePresence>
+                {searchActive && searchResults.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full mt-2 right-0 w-80 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden z-50 p-2 text-left"
+                  >
+                    <div className="px-3 py-1.5 text-[10px] text-gray-400 font-bold uppercase tracking-wider">Hasil Pencarian</div>
+                    {searchResults.map((item) => (
+                      <Link
+                        key={item.id}
+                        to={item.url}
+                        className="block px-3 py-2 hover:bg-gray-50 rounded-xl transition-all"
+                      >
+                        <span className="block text-[9px] uppercase font-bold text-accent">{item.type}</span>
+                        <span className="block text-xs font-bold text-gray-800 line-clamp-1">{item.title}</span>
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <div className="hidden lg:flex items-center gap-4 border-l border-white/20 pl-4 ml-4">
               <button 
                 onClick={() => setLanguage(language === "ID" ? "EN" : "ID")}
@@ -221,9 +296,18 @@ export default function Header() {
             </div>
 
             <div className="lg:hidden flex items-center gap-3">
+              {/* Mobile Search Icon Trigger */}
+              <button 
+                onClick={() => setMobileSearchActive(!mobileSearchActive)}
+                className="text-white/70 hover:text-accent transition-colors bg-white/5 p-1.5 rounded-full cursor-pointer"
+                aria-label="Cari Berita"
+              >
+                <Search size={16} />
+              </button>
+
               <button 
                 onClick={() => setLanguage(language === "ID" ? "EN" : "ID")}
-                className="flex items-center gap-1 text-white/70 hover:text-accent transition-colors font-bold text-xs bg-white/5 px-2 py-1 rounded-full"
+                className="flex items-center gap-1 text-white/70 hover:text-accent transition-colors font-bold text-xs bg-white/5 px-2 py-1 rounded-full animate-none"
               >
                 <Globe size={14} />
                 <span>{language}</span>
@@ -240,6 +324,59 @@ export default function Header() {
             </div>
           </div>
         </div>
+
+        {/* Mobile Search Input subheader dropbar */}
+        <AnimatePresence>
+          {mobileSearchActive && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="lg:hidden border-t border-white/5 py-3 relative z-20 px-1"
+            >
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Cari berita & opini..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white/10 text-white placeholder-white/40 text-sm px-4 py-3 pl-10 rounded-2xl border border-white/10 focus:border-accent focus:outline-none focus:bg-white/15 transition-all font-sans"
+                  autoFocus
+                />
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")} 
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+
+              {/* Suggestions overlay for Mobile */}
+              {searchResults.length > 0 && (
+                <div className="mt-3 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden p-2 text-left">
+                  <div className="px-3 py-1.5 text-[9px] text-gray-400 font-bold uppercase tracking-wider">Hasil Pencarian</div>
+                  {searchResults.map((item) => (
+                    <Link
+                      key={item.id}
+                      to={item.url}
+                      onClick={() => {
+                        setMobileSearchActive(false);
+                        setSearchQuery("");
+                      }}
+                      className="block px-3 py-2.5 hover:bg-gray-55 rounded-xl transition-all"
+                    >
+                      <span className="block text-[9px] uppercase font-bold text-accent">{item.type}</span>
+                      <span className="block text-xs font-bold text-gray-805 line-clamp-1">{item.title}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Mobile menu */}

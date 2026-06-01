@@ -259,8 +259,8 @@ export default function Home() {
           </marquee>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-12 items-center relative z-10">
-          <div className="lg:w-3/5 space-y-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 relative z-10 text-left">
+          <div className="max-w-3xl space-y-6">
             <div className="flex flex-wrap gap-2.5">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -277,77 +277,119 @@ export default function Home() {
               >
                 #AlumniSinergiPMIIBerdikari
               </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="inline-block px-4 py-1.5 bg-accent/10 text-accent rounded-full text-xs font-bold uppercase tracking-widest border border-accent/20"
-              >
-                #PMIIBandungBarat
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.15 }}
-                className="inline-block px-4 py-1.5 bg-accent/10 text-accent rounded-full text-xs font-bold uppercase tracking-widest border border-accent/20"
-              >
-                #SinergiDalamAksi
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="inline-block px-4 py-1.5 bg-accent/10 text-accent rounded-full text-xs font-bold uppercase tracking-widest border border-accent/20"
-              >
-                #BerdayaDalamKarsa
-              </motion.div>
             </div>
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-6xl lg:text-8xl font-display font-bold leading-[0.9] text-accent"
+              className="text-5xl md:text-7xl font-display font-bold leading-[1.0] text-accent uppercase"
             >
-              SINERGI <span className="text-surface italic">&</span> <br />
-              <span className="text-surface">KOLABORASI</span>
+              SINERGI <span className="text-surface italic text-4xl md:text-5xl">&amp;</span> <span className="text-surface">KOLABORASI</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-xl text-surface/80 max-w-xl leading-relaxed"
+              className="text-base md:text-lg text-surface/80 max-w-2xl leading-relaxed font-sans"
             >
               Mengajak seluruh alumni PMII Kabupaten Bandung Barat untuk bersinergi membangun peradaban, intelektualitas, dan kemandirian ekonomi daerah.
             </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="flex flex-wrap gap-4"
-            >
-              <Link to="/daftar-anggota" className="bg-accent text-primary px-8 py-4 rounded-full font-bold shadow-xl shadow-accent/20 hover:scale-105 transition-all flex items-center gap-2">
-                Bergabung dalam Jaringan <ArrowRight size={18} />
-              </Link>
-            </motion.div>
           </div>
+        </div>
 
-          <div className="lg:w-2/5 w-full space-y-6">
-            <div className="bg-white/5 backdrop-blur-xl rounded-[3rem] p-10 border border-white/10 shadow-2xl">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="font-display font-bold text-xl uppercase tracking-tighter text-accent">Berita Terkini</h3>
-                <Link to="/publikasi/berita" className="text-[10px] bg-accent/10 text-accent border border-accent/20 hover:bg-accent hover:text-primary transition-all px-4 py-1.5 rounded-full font-bold uppercase tracking-widest">
+        {/* Responsive news portal layout block */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
+            
+            {/* 1. Berita Utama Besar */}
+            <div className="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col">
+              {news[0] ? (
+                <Link 
+                  to="/publikasi/berita"
+                  className="group relative flex flex-col bg-white/5 backdrop-blur-md rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl h-full focus:ring-2 focus:ring-accent outline-none min-h-[440px]"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <img 
+                      src={news[0].image || "/src/assets/images/pmii_meeting_cooperation_1779609727304.png"} 
+                      alt={news[0].title} 
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 duration-700 transition-transform"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/25 to-transparent"></div>
+                    <span className="absolute top-6 left-6 bg-accent text-primary text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
+                      {news[0].category || "BERITA UTAMA"}
+                    </span>
+                  </div>
+                  <div className="p-8 flex flex-col justify-between flex-grow text-left">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 text-xs text-white/50 font-bold">
+                        <span>{new Date(news[0].date).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        <span>&bull;</span>
+                        <span>Oleh: {news[0].author || "Redaksi"}</span>
+                      </div>
+                      <h2 className="text-2xl md:text-3.5xl font-display font-black text-white leading-tight group-hover:text-accent transition-colors line-clamp-3">
+                        {news[0].title}
+                      </h2>
+                      <p className="text-white/60 text-sm line-clamp-2 md:line-clamp-3 leading-relaxed">
+                        {news[0].content}
+                      </p>
+                    </div>
+                    <div className="pt-6 border-t border-white/10 flex items-center justify-between">
+                      <span className="text-accent text-xs font-black uppercase tracking-widest inline-flex items-center gap-2">
+                        Baca Selengkapnya <ArrowRight size={14} className="group-hover:translate-x-1.5 duration-200 transition-transform" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ) : (
+                <div className="bg-white/5 backdrop-blur-md rounded-[2.5rem] p-12 text-center text-white/40 border border-white/10 flex items-center justify-center min-h-[440px]">
+                  Memuat Berita Utama...
+                </div>
+              )}
+            </div>
+
+            {/* 2. Berita Pendamping */}
+            <div className="col-span-1 md:col-span-1 lg:col-span-2 flex flex-col gap-5">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-display font-black text-lg text-accent uppercase tracking-wider">Berita Pendamping</h3>
+                <Link to="/publikasi/berita" className="text-[10px] bg-accent/10 hover:bg-accent hover:text-primary text-accent border border-accent/20 transition-all font-black px-4 py-2 rounded-full uppercase tracking-widest">
                   Lihat Semua
                 </Link>
               </div>
-              <div className="space-y-8">
-                {news.slice(0, 3).map((item, i) => (
-                  <div key={i} className="group cursor-pointer border-b border-white/5 pb-4 last:border-0 last:pb-0">
-                    <p className="text-[10px] text-accent/50 font-bold uppercase mb-2">{new Date(item.date).toLocaleDateString()}</p>
-                    <h4 className="text-base font-bold leading-tight text-surface group-hover:text-accent transition-colors line-clamp-2">{item.title}</h4>
-                  </div>
+              
+              <div className="flex flex-col gap-4 flex-grow justify-between">
+                {news.slice(1, 5).map((item, i) => (
+                  <Link 
+                    key={item.id}
+                    to="/publikasi/berita"
+                    className={`group bg-white/5 backdrop-blur-sm hover:bg-white/10 border border-white/10 rounded-2xl p-4 flex gap-4 transition-all hover:scale-[1.02] items-center text-left ${
+                      i >= 2 ? "md:hidden lg:flex pointer-events-auto" : "flex pointer-events-auto"
+                    }`}
+                  >
+                    <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 relative bg-white/10">
+                      <img 
+                        src={item.image} 
+                        alt={item.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 duration-300 transition-transform" 
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <span className="text-[9px] text-accent font-black uppercase tracking-widest block">
+                        {item.category || "BERITA"}
+                      </span>
+                      <h4 className="text-white font-bold text-sm leading-snug line-clamp-2 group-hover:text-accent transition-all">
+                        {item.title}
+                      </h4>
+                      <span className="text-[9.5px] text-white/40 block">
+                        {new Date(item.date).toLocaleDateString("id-ID")}
+                      </span>
+                    </div>
+                  </Link>
                 ))}
               </div>
             </div>
+
           </div>
         </div>
       </section>
