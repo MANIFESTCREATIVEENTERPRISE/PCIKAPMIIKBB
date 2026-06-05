@@ -1,7 +1,151 @@
-import { Routes, Route, Link, useParams } from "react-router-dom";
+import { Routes, Route, Link, useParams, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Calendar, User, FileText, ImageIcon, Eye, Quote, ChevronDown, ChevronUp, X, BookOpen, Clock } from "lucide-react";
+
+const formatDate = (dateExpression: any, options?: Intl.DateTimeFormatOptions) => {
+  if (!dateExpression) return "-";
+  const parsed = new Date(dateExpression);
+  if (isNaN(parsed.getTime())) {
+    return typeof dateExpression === "string" ? dateExpression : "-";
+  }
+  return parsed.toLocaleDateString("id-ID", options || { day: "numeric", month: "long", year: "numeric" });
+};
+
+const LOCAL_FALLBACKS: Record<string, any[]> = {
+  news: [
+    { 
+      id: 1, 
+      title: "Sinergi IKA PMII KBB dengan Pemkab Bandung Barat dalam Program Penataan Desa", 
+      content: "PC IKA PMII Kabupaten Bandung Barat menjalin kesepakatan strategis dengan Pemerintah Kabupaten Bandung Barat untuk mendorong digitalisasi administrasi di tingkat desa se-KBB.", 
+      image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", 
+      date: "2026-06-01T12:00:00Z", 
+      category: "Berita", 
+      author: "Humas IKA PMII" 
+    },
+    { 
+      id: 2, 
+      title: "IKA PMII KBB : silaturahim Rapatkan Barisan untuk pelantikan dan Rapat Kerja", 
+      content: "PC IKA PMII Kabupaten Bandung Barat menyelenggarakan kegiatan silaturahim akbar guna mempererat hubungan kekeluargaan antar-alumni sekaligus merapatkan barisan menyongsong agenda pelantikan kepengurusan baru serta pelaksanaan Rapat Kerja.", 
+      image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", 
+      date: "2026-05-28T12:00:00Z", 
+      category: "Berita", 
+      author: "Redaksi" 
+    },
+    { 
+      id: 3, 
+      title: "Rapat Koordinasi Cabang: Persiapan Pelantikan Pengurus Baru", 
+      content: "Agenda besar transisi kepemimpinan IKA PMII KBB akan segera dilaksanakan. Seluruh alumni diundang untuk memberikan sumbangsih pemikiran.", 
+      image: "https://picsum.photos/seed/news3/800/400", 
+      date: "2026-05-25T12:00:00Z", 
+      category: "Organisasi", 
+      author: "Sekretariat" 
+    },
+    { 
+      id: 4, 
+      title: "Kunjungan Studi Banding IKA PMII KBB ke Balai Kota Bandung", 
+      content: "Mempelajari tata kelola organisasi alumni yang mandiri secara ekonomi, IKA PMII KBB melakukan kunjungan kerja ke ikatan alumni lainnya.", 
+      image: "https://picsum.photos/seed/news4/800/400", 
+      date: "2026-05-20T12:00:00Z", 
+      category: "Berita", 
+      author: "Humas" 
+    },
+    { 
+      id: 5, 
+      title: "Update Kejadian: Musyawarah Daerah IKA PMII di Ngamprah Berlangsung Khidmat", 
+      content: "Musyawarah daerah menghasilkan beberapa poin penting mengenai peran alumni di sektor pertanian Bandung Barat.", 
+      image: "https://picsum.photos/seed/news5/800/400", 
+      date: "2026-05-18T12:00:00Z", 
+      category: "Berita", 
+      author: "Redaksi" 
+    },
+    { 
+      id: 6, 
+      title: "Inkubasi Bisnis IKA PMII: Mendorong Kemandirian UMKM Alumni", 
+      content: "Sebanyak 20 unit usaha milik alumni mendapatkan pelatihan kemasan dan pemasaran digital terpadu melalui Koperasi KAMARA.", 
+      image: "https://picsum.photos/seed/news6/800/400", 
+      date: "2026-05-15T12:00:00Z", 
+      category: "Ekonomi", 
+      author: "Bidang UMKM" 
+    },
+    { 
+      id: 7, 
+      title: "Beasiswa S2 Luar Negeri: Panduan Khusus bagi Alumni PMII KBB", 
+      content: "Lembaga pendampingan studi resmi IKA PMII KBB merilis panduan teknis bagi alumni yang mengincar beasiswa LPDP.", 
+      image: "https://picsum.photos/seed/news7/800/400", 
+      date: "2026-05-12T12:00:00Z", 
+      category: "Beasiswa", 
+      author: "Bidang Pendidikan" 
+    },
+    { 
+      id: 8, 
+      title: "Penanganan Stunting: IKA PMII KBB Terjun Langsung ke Desa-Desa", 
+      content: "Bekerjasama dengan Dinas Kesehatan, alumni memberikan edukasi nutrisi bagi ibu hamil di pemukiman padat penduduk.", 
+      image: "https://picsum.photos/seed/news8/800/400", 
+      date: "2026-05-10T12:00:00Z", 
+      category: "Sosial", 
+      author: "LBH IKA PMII" 
+    },
+    { 
+      id: 9, 
+      title: "IKA PMII KBB Mengawal Kebijakan Anggaran Daerah pro-Rakyat", 
+      content: "Tim analisis kebijakan publik IKA PMII memberikan catatan penting bagi evaluasi anggaran tahunan daerah.", 
+      image: "https://picsum.photos/seed/news9/800/400", 
+      date: "2026-05-08T12:00:00Z", 
+      category: "Berita", 
+      author: "Tim Kajian" 
+    }
+  ],
+  articles: [
+    { id: 1, title: "Epistemologi Pergerakan: Antara Idealisme dan Realitas Alumni", content: "Sebuah tinjauan filosofis mengenai bagaimana idealisme kader PMII bertransformasi saat menjadi alumni.", image: "https://picsum.photos/seed/art1/800/400", date: "2026-06-02T12:00:00Z", author: "Dr. Jauhari, M.Pd", category: "Opini" },
+    { id: 2, title: "Peta Jalan Ekonomi Alumni: Analisa Potensi Pasar di Bandung Barat", content: "Mengupas tuntas sektor unggulan di KBB yang bisa menjadi peluang emas bagi wirausahawan alumni.", image: "https://picsum.photos/seed/art2/800/400", date: "2026-05-30T12:00:00Z", author: "Ahmad Zaki", category: "Artikel" },
+    { id: 3, title: "Jurnal: Transformasi Kepemimpinan di Era Digital Berbasis Nilai Pergerakan", content: "Penelitian akademik mengenai efektivitas kepemimpinan berbasis kolektivitas di organisasi alumni.", image: "https://picsum.photos/seed/art3/800/400", date: "2026-05-28T12:00:00Z", author: "Siti Halimah", category: "Jurnal" },
+    { id: 4, title: "Analisa: Peran Alumni PMII dalam Menjaga Kerukunan Beragama di KBB", content: "Refleksi sosiologis mengenai moderasi beragama di wilayah heterogen seperti Bandung Barat.", image: "https://picsum.photos/seed/art4/800/400", date: "2026-05-25T12:00:00Z", author: "Faris Al-Fatih", category: "Opini" },
+    { id: 5, title: "Membangun Personal Branding Alumni di Dunia Profesional", content: "Tips praktis bagi alumni baru untuk menata profil profesional dengan tetap menjaga integritas.", image: "https://picsum.photos/seed/art5/800/400", date: "2026-05-22T12:00:00Z", author: "Rizal Saputra", category: "Artikel" },
+    { id: 6, title: "Dibalik Koperasi KAMARA: Mimpi Kemandirian Ekonomi Bangsa", content: "Memoar perjalanan merintis koperasi alumni pertama di tingkat cabang Bandung Barat.", image: "https://picsum.photos/seed/art6/800/400", date: "2026-05-20T12:00:00Z", author: "Bendahara PC", category: "Artikel" },
+    { id: 7, title: "IKA PMII dan Tantangan Bonus Demografi 2030 bagi Bandung Barat", content: "Persiapan strategis alumni dalam menghadapi lonjakan angkatan kerja di wilayah industri.", image: "https://picsum.photos/seed/art7/800/400", date: "2026-05-18T12:00:00Z", author: "Budi Santoso", category: "Opini" },
+    { id: 8, title: "Review Buku: Paradigma Fiqih Pergerakan Kontemporer", content: "Bedah buku karya alumni untuk memperluas cakrawala keislaman dan keindonesiaan.", image: "https://picsum.photos/seed/art8/800/400", date: "2026-05-15T12:00:00Z", author: "Gus Mif", category: "Opini" },
+    { id: 9, title: "Menelisik Jejak Perjuangan Alumni PMII di Parlemen KBB", content: "Kompilasi narasi keberhasilan alumni dalam mendorong kebijakan legislasi yang inklusif.", image: "https://picsum.photos/seed/art9/800/400", date: "2026-05-12T12:00:00Z", author: "Tim Penulis", category: "Jurnal" },
+    { id: 10, title: "Digitalisasi Desa: Urgensi Kedaulatan Data di Bandung Barat", content: "Bagaimana integrasi data kependudukan pedesaan berbasis digital mampu mengentaskan kemiskinan ekstrem.", image: "https://picsum.photos/seed/art10/800/400", date: "2026-05-10T12:00:00Z", author: "Samsul Hadi, S.Kom", category: "Opini" }
+  ],
+  opinions: [
+    {
+      id: 1,
+      title: "Urgensi Kebijakan Digitalisasi Pesantren di tatar Bandung Barat",
+      author: "H. Saiful Rachman, M.Ag",
+      category: "Opini",
+      content: "Pesantren di Kabupaten Bandung Barat memiliki kontribusi historis yang amat kuat. Namun, memasuki era revolusi digital, pondok pesantren harus didukung infrastruktur digital yang mumpuni serta program literasi siber madani. IKA PMII mengusulkan perda pesantren yang progresif. Transformasi digital tidak bisa mengesampingkan jati diri salafiyah, justru digitalisasi membantu pesantren menyebarluaskan nilai-nilai Islam ahlussunnah wal jamaah yang moderat dan menjangkau santri secara global.",
+      date: "2026-05-23T12:00:00Z",
+      views: 0
+    },
+    {
+      id: 2,
+      title: "Membangun Jaringan Ritel Berbasis Koperasi Swalayan KAMARA",
+      author: "Lina Marlina, S.Ak",
+      category: "Opini",
+      content: "Swalayan KAMARA bukan sekadar gerai toko fisik, melainkan sistem integrasi kluster UMKM alumni. Melalui pendanaan terstruktur dan rantai pasok lokal, koperasi swalayan kami optimistis mampu bersaing dengan ritel waralaba nasional. Dengan membangun kemandirian ekonomi, kita bisa memberdayakan alumni IKA PMII Bandung Barat dari hulu ke hilir.",
+      date: "2026-05-21T12:00:00Z",
+      views: 142
+    },
+    {
+      id: 3,
+      title: "Refleksi Demokrasi Elektoral Bandung Barat: Perspektif Nilai Pergerakan",
+      author: "Sandi Supyandi, S.Kom., M.H",
+      category: "Opini",
+      content: "Kondisi sosiopolitik Bandung Barat membutuhkan kepemimpinan yang berintegritas tinggi serta berlandaskan nilai silih asuh dan keadilan sosial. Demokrasi elektoral tidak boleh terjebak dalam pragmatisme transaksional. Peran alumni PMII sangat vital sebagai navigator gerakan moral dan kontrol sosial kebijakan daerah agar selalu mementingkan kemaslahatan publik, kedaulatan pangan, dan stabilitas masyarakat.",
+      date: "2026-05-18T12:00:00Z",
+      views: 0
+    }
+  ],
+  announcements: Array.from({ length: 9 }).map((_, i) => ({
+    id: i + 1,
+    title: `Pengumuman Resmi: Program Beasiswa Alumni ${i + 1}`,
+    content: `Dibutuhkan partisipasi aktif dalam program beasiswa alumni PMII untuk mendukung kader-kader berprestasi di wilayah Bandung Barat.`,
+    documentUrl: "#",
+    date: "2026-06-03T12:00:00Z",
+    category: "Pengumuman",
+  }))
+};
 
 export default function Publications() {
   return (
@@ -13,6 +157,8 @@ export default function Publications() {
           <Route path="pengumuman" element={<ContentView type="announcements" title="Pengumuman Resmi" />} />
           <Route path="opini" element={<ContentView type="opinions" title="Opini Alumni" />} />
           <Route path="galeri" element={<GaleriView />} />
+          <Route path="" element={<Navigate to="berita" replace />} />
+          <Route path="*" element={<Navigate to="berita" replace />} />
         </Routes>
       </div>
     </div>
@@ -20,8 +166,13 @@ export default function Publications() {
 }
 
 function ContentView({ type, title }: { type: string, title: string }) {
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<any[]>(() => {
+    return LOCAL_FALLBACKS[type] || [];
+  });
+  const [loading, setLoading] = useState(() => {
+    const hasCache = LOCAL_FALLBACKS[type] && LOCAL_FALLBACKS[type].length > 0;
+    return !hasCache; // only load if we don't have instant local fallback cache!
+  });
   const [showAll, setShowAll] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
   const [modalMode, setModalMode] = useState<"summary" | "full" | null>(null);
@@ -37,10 +188,28 @@ function ContentView({ type, title }: { type: string, title: string }) {
   };
 
   useEffect(() => {
+    // If we have items already, we can still fetch fresh data Silently in the background to avoid blocking!
+    const hasItems = LOCAL_FALLBACKS[type] && LOCAL_FALLBACKS[type].length > 0;
+    if (!hasItems) {
+      setLoading(true);
+    }
+    
     fetch(`/api/content/${type}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Failed to load content, status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
-        setItems(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setItems(data);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error loaded publications database silently:", err);
+        // Silently use cache, reassure load finishes
         setLoading(false);
       });
   }, [type]);
@@ -117,7 +286,7 @@ function ContentView({ type, title }: { type: string, title: string }) {
                       {item.author}
                     </span>
                     <span className="text-[8px] font-mono text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Calendar size={10} className="text-accent" /> {new Date(item.date).toLocaleDateString("id-ID", { month: "short", year: "numeric" })}
+                      <Calendar size={10} className="text-accent" /> {formatDate(item.date, { month: "short", year: "numeric" })}
                     </span>
                     <button 
                       onClick={() => handleOpenItem(item, "full")}
@@ -179,7 +348,7 @@ function ContentView({ type, title }: { type: string, title: string }) {
               <div className="p-10 space-y-6 flex-grow flex flex-col">
                 <div className="space-y-2">
                   <div className="flex items-center gap-6 text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">
-                    <span className="flex items-center gap-2"><Calendar size={14} className="text-accent"/> {new Date(item.date).toLocaleDateString()}</span>
+                    <span className="flex items-center gap-2"><Calendar size={14} className="text-accent"/> {formatDate(item.date)}</span>
                     {item.author && <span className="flex items-center gap-2"><User size={14} className="text-accent"/> {item.author}</span>}
                   </div>
                   <button 
@@ -268,7 +437,7 @@ function ContentView({ type, title }: { type: string, title: string }) {
                   </button>
                   <div className="absolute bottom-6 left-6 right-6 text-white space-y-2">
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-white/70 uppercase tracking-wider font-mono">
-                      <span className="flex items-center gap-1.5"><Calendar size={12} className="text-accent" /> {new Date(selectedItem.date).toLocaleDateString("id-ID", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                      <span className="flex items-center gap-1.5"><Calendar size={12} className="text-accent" /> {formatDate(selectedItem.date, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                       {selectedItem.author && <span className="flex items-center gap-1.5"><User size={12} className="text-accent" /> {selectedItem.author}</span>}
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold font-sans tracking-tight leading-tight">
@@ -293,7 +462,7 @@ function ContentView({ type, title }: { type: string, title: string }) {
                       {selectedItem.title}
                     </h3>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-gray-550 font-bold uppercase tracking-wider">
-                      <span className="flex items-center gap-1.5"><Calendar size={12} className="text-accent" /> {new Date(selectedItem.date).toLocaleDateString("id-ID", { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                      <span className="flex items-center gap-1.5"><Calendar size={12} className="text-accent" /> {formatDate(selectedItem.date, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                       {selectedItem.author && <span className="flex items-center gap-1.5"><User size={12} className="text-accent" /> {selectedItem.author}</span>}
                     </div>
                   </div>

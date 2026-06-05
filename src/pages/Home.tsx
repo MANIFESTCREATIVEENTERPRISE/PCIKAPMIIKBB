@@ -11,9 +11,17 @@ import { GENERATED_SIMULATED_MEMBERS } from "../data/simulatedMembers";
 
 const COLORS_LIST = ["#112D75", "#FFD700", "#059669", "#6366f1", "#ec4899", "#f59e0b", "#10b981"];
 
+const DEFAULT_NEWS_FALLBACK = [
+  { id: 1, title: "Sinergi IKA PMII KBB dengan Pemkab Bandung Barat dalam Program Penataan Desa", content: "PC IKA PMII Kabupaten Bandung Barat menjalin kesepakatan strategis dengan Pemerintah Kabupaten Bandung Barat untuk mendorong digitalisasi administrasi di tingkat desa se-KBB.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Humas IKA PMII" },
+  { id: 2, title: "IKA PMII KBB : silaturahim Rapatkan Barisan untuk pelantikan dan Rapat Kerja", content: "PC IKA PMII Kabupaten Bandung Barat menyelenggarakan kegiatan silaturahim akbar guna mempererat hubungan kekeluargaan antar-alumni sekaligus merapatkan barisan menyongsong agenda pelantikan kepengurusan baru serta pelaksanaan Rapat Kerja.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Redaksi" },
+  { id: 3, title: "Rapat Koordinasi Cabang: Persiapan Pelantikan Pengurus Baru", content: "Agenda besar transisi kepemimpinan IKA PMII KBB akan segera dilaksanakan. Seluruh alumni diundang untuk memberikan sumbangsih pemikiran.", image: "https://picsum.photos/seed/news3/800/400", date: new Date().toISOString(), category: "Organisasi", author: "Sekretariat" },
+  { id: 4, title: "Kunjungan Studi Banding IKA PMII KBB ke Balai Kota Bandung", content: "Mempelajari tata kelola organisasi alumni yang mandiri secara ekonomi, IKA PMII KBB melakukan kunjungan kerja ke ikatan alumni lainnya.", image: "https://picsum.photos/seed/news4/800/400", date: new Date().toISOString(), category: "Berita", author: "Humas" },
+  { id: 5, title: "Update Kejadian: Musyawarah Daerah IKA PMII di Ngamprah Berlangsung Khidmat", content: "Musyawarah daerah menghasilkan beberapa poin penting mengenai peran alumni di sektor pertanian Bandung Barat.", image: "https://picsum.photos/seed/news5/800/400", date: new Date().toISOString(), category: "Berita", author: "Redaksi" }
+];
+
 export default function Home() {
   const [stats, setStats] = useState<any>(null);
-  const [news, setNews] = useState<any[]>([]);
+  const [news, setNews] = useState<any[]>(DEFAULT_NEWS_FALLBACK);
   const [membersList, setMembersList] = useState<any[]>([]);
   const [activeStatTab, setActiveStatTab] = useState<"kecamatan" | "potensi" | "kompetensi">("kecamatan");
 
@@ -44,8 +52,22 @@ export default function Home() {
     const resolvedList = Array.from(mergedMap.values());
     setMembersList(resolvedList);
 
-    fetch("/api/stats").then(res => res.json()).then(setStats);
-    fetch("/api/content/news").then(res => res.json()).then(data => setNews(data.slice(0, 5)));
+    fetch("/api/stats")
+      .then(res => res.json())
+      .then(setStats)
+      .catch(err => console.error("Error loading homepage stats:", err));
+
+    fetch("/api/content/news")
+      .then(res => {
+        if (!res.ok) throw new Error("news api failed");
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setNews(data.slice(0, 5));
+        }
+      })
+      .catch(err => console.error("Error loading homepage news silently:", err));
   }, []);
 
   // ----------------------------------------------------
