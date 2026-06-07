@@ -71,7 +71,7 @@ export default function Footer() {
         {/* Column 2: Quick Links */}
         <div className="space-y-6">
           <h3 className="font-display font-bold text-xl border-l-4 border-accent pl-4 text-accent">Profil Organisasi</h3>
-          <ul className="space-y-3 text-sm text-white/70">
+          <ul id="footer-organisasi-links" className="space-y-3 text-sm text-white/70">
             <li><Link to="/profil/pc" className="hover:text-accent transition-colors">Pengurus Cabang</Link></li>
             <li><Link to="/profil/pac" className="hover:text-accent transition-colors">Pengurus Anak Cabang</Link></li>
             <li><Link to="/profil/ranting" className="hover:text-accent transition-colors">Pengurus Ranting</Link></li>

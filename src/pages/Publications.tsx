@@ -149,7 +149,7 @@ const LOCAL_FALLBACKS: Record<string, any[]> = {
 
 export default function Publications() {
   return (
-    <div className="py-20 bg-surface min-h-screen">
+    <div className="py-12 bg-surface min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Routes>
           <Route path="berita" element={<ContentView type="news" title="Berita Terkini" />} />
@@ -215,9 +215,9 @@ function ContentView({ type, title }: { type: string, title: string }) {
   }, [type]);
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center py-40 gap-6">
-       <div className="w-16 h-16 border-4 border-primary border-t-accent rounded-full animate-spin"></div>
-       <p className="text-primary font-bold text-lg animate-pulse">Menghimpun Berkas Digital...</p>
+    <div className="flex flex-col items-center justify-center py-32 gap-4">
+       <div className="w-12 h-12 border-4 border-primary border-t-accent rounded-full animate-spin"></div>
+       <p className="text-primary font-bold text-sm animate-pulse">Menghimpun Berkas Digital...</p>
     </div>
   );
 
@@ -226,13 +226,13 @@ function ContentView({ type, title }: { type: string, title: string }) {
     : items;
 
   return (
-    <div className="space-y-20">
-      <div className="flex flex-col gap-6 items-center text-center">
-        <div className="space-y-4">
-          <h2 className="text-6xl font-display font-bold text-primary italic leading-tight">{title}</h2>
-          <div className="w-24 h-1.5 bg-accent mx-auto rounded-full shadow-lg shadow-accent/20"></div>
+    <div className="space-y-12">
+      <div className="flex flex-col gap-4 items-center text-center">
+        <div className="space-y-3">
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-primary italic leading-tight">{title}</h2>
+          <div className="w-16 h-1 bg-accent mx-auto rounded-full shadow-lg shadow-accent/20"></div>
         </div>
-        <p className="text-gray-500 text-xl max-w-2xl font-medium leading-relaxed italic">
+        <p className="text-gray-500 text-sm sm:text-base max-w-2xl font-medium leading-relaxed italic">
           {type === "opinions" 
             ? "Arsip pemikiran kritis, kontribusi gagasan, dan opini solutif dari para alumni IKA PMII Bandung Barat."
             : "Arsip gagasan dan warta pergerakan IKA PMII Kabupaten Bandung Barat."}
@@ -240,7 +240,7 @@ function ContentView({ type, title }: { type: string, title: string }) {
       </div>
 
       {type === "opinions" ? (
-        <div className="space-y-12">
+        <div className="space-y-8">
           {/* 10 Items in exactly 5 columns on desktop, making 2 rows of 5! */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {displayedItems.map((item, i) => {
@@ -254,21 +254,21 @@ function ContentView({ type, title }: { type: string, title: string }) {
                   viewport={{ once: true }}
                   transition={{ delay: (i % 5) * 0.08 }}
                   whileHover={{ y: -6 }}
-                  className="group bg-white rounded-[2rem] border border-gray-150/85 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full overflow-hidden p-6 relative justify-between text-left"
+                  className="group bg-white rounded-3xl border border-gray-150/85 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full overflow-hidden p-5 relative justify-between text-left"
                 >
-                  <div className="space-y-4 flex-grow flex flex-col justify-between">
+                  <div className="space-y-3 flex-grow flex flex-col justify-between">
                     <div>
                       {/* Quiet header accent */}
-                      <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center justify-between mb-3">
                         <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center text-[10px] font-black text-primary uppercase">
                           {initials}
                         </div>
-                        <Quote size={18} className="text-accent/40 group-hover:text-accent group-hover:rotate-12 transition-all duration-300 transform" />
+                        <Quote size={16} className="text-accent/30 group-hover:text-accent group-hover:rotate-12 transition-all duration-300 transform" />
                       </div>
                       
                       <h3 
                         onClick={() => handleOpenItem(item, "summary")}
-                        className="text-base font-bold font-sans tracking-tight text-primary leading-snug hover:text-accent transition-colors line-clamp-3 cursor-pointer"
+                        className="text-[13px] sm:text-sm font-bold font-sans tracking-tight text-primary leading-snug hover:text-accent transition-colors line-clamp-3 cursor-pointer"
                         title="Klik untuk Ringkasan Tulisan"
                       >
                         {item.title}
@@ -281,7 +281,7 @@ function ContentView({ type, title }: { type: string, title: string }) {
                   </div>
 
                   {/* Divider and clean micro meta */}
-                  <div className="pt-4 mt-5 border-t border-gray-50 flex flex-col gap-1 shrink-0">
+                  <div className="pt-3 mt-4 border-t border-gray-50 flex flex-col gap-1 shrink-0">
                     <span className="text-[10px] font-bold text-primary truncate" title={item.author}>
                       {item.author}
                     </span>
@@ -301,18 +301,18 @@ function ContentView({ type, title }: { type: string, title: string }) {
           </div>
 
           {items.length > 10 && (
-            <div className="flex justify-center pt-8">
+            <div className="flex justify-center pt-4">
               <button
                 onClick={() => setShowAll(!showAll)}
-                className="inline-flex items-center gap-3 bg-primary text-accent hover:bg-primary/95 text-xs font-bold px-8 py-3.5 rounded-full transition-all duration-350 shadow-lg shadow-primary/20 cursor-pointer active:scale-95"
+                className="inline-flex items-center gap-2.5 bg-primary text-accent hover:bg-primary/95 text-xs font-bold px-6 py-3 rounded-full transition-all duration-350 shadow-lg shadow-primary/20 cursor-pointer active:scale-95"
               >
                 {showAll ? (
                   <>
-                    Sembunyikan Opini Lainnya <ChevronUp size={16} />
+                    Sembunyikan Opini Lainnya <ChevronUp size={14} />
                   </>
                 ) : (
                   <>
-                    Tampilkan Seluruh Opini ({items.length} Konten) <ChevronDown size={16} />
+                    Tampilkan Seluruh Opini ({items.length} Konten) <ChevronDown size={14} />
                   </>
                 )}
               </button>
@@ -320,68 +320,65 @@ function ContentView({ type, title }: { type: string, title: string }) {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {displayedItems.map((item, i) => (
             <motion.article
               key={item.id}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 25 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ y: -12 }}
-              className="group bg-white rounded-[3.5rem] overflow-hidden border border-gray-100 shadow-2xl flex flex-col h-full hover:shadow-primary/10 transition-all duration-500"
+              transition={{ delay: (i % 3) * 0.08 }}
+              whileHover={{ y: -8 }}
+              className="group bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-xl flex flex-col h-full hover:shadow-primary/10 transition-all duration-500"
             >
               {item.image && (
-                 <div className="aspect-[4/3] overflow-hidden relative">
+                 <div className="aspect-[16/10] overflow-hidden relative">
                    <img 
                      src={item.image} 
-                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
+                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                      alt={item.title} 
                      referrerPolicy="no-referrer"
                    />
-                   <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                   <div className="absolute top-6 left-6 bg-accent text-primary text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-xl">
+                   <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350" />
+                   <div className="absolute top-4 left-4 bg-accent text-primary text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
                      {item.category || type}
                    </div>
                  </div>
               )}
-              <div className="p-10 space-y-6 flex-grow flex flex-col">
+              <div className="p-6 sm:p-7 space-y-4 flex-grow flex flex-col justify-between">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-6 text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">
-                    <span className="flex items-center gap-2"><Calendar size={14} className="text-accent"/> {formatDate(item.date)}</span>
-                    {item.author && <span className="flex items-center gap-2"><User size={14} className="text-accent"/> {item.author}</span>}
+                  <div className="flex items-center gap-4 text-[9px] text-gray-400 font-bold uppercase tracking-wider">
+                    <span className="flex items-center gap-1.5"><Calendar size={12} className="text-accent"/> {formatDate(item.date, { day: "numeric", month: "short", year: "numeric" })}</span>
+                    {item.author && <span className="flex items-center gap-1.5"><User size={12} className="text-accent"/> {item.author.split(" ").slice(0, 2).join(" ")}</span>}
                   </div>
-                  <button 
-                    onClick={() => handleOpenItem(item, "full")}
-                    className="text-left text-[9px] font-black text-accent hover:text-primary uppercase tracking-widest hover:underline cursor-pointer transition-colors"
+                  
+                  <h3 
+                    onClick={() => handleOpenItem(item, "summary")}
+                    className="text-base sm:text-[17px] font-bold font-display leading-snug text-primary hover:text-accent transition-colors cursor-pointer line-clamp-2"
+                    title="Klik untuk Ringkasan Tulisan"
                   >
-                    Baca Selengkapnya &rarr;
-                  </button>
+                    {item.title}
+                  </h3>
+                  
+                  <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed">
+                    {item.content}
+                  </p>
                 </div>
-                <h3 
-                  onClick={() => handleOpenItem(item, "summary")}
-                  className="text-2xl font-bold font-display leading-tight text-primary hover:text-accent transition-colors cursor-pointer"
-                  title="Klik untuk Ringkasan Tulisan"
-                >
-                  {item.title}
-                </h3>
-                <p className="text-sm text-gray-400 line-clamp-3 leading-relaxed font-medium">
-                  {item.content}
-                </p>
-                <div className="pt-8 mt-auto flex items-center justify-between border-t border-gray-50">
+
+                <div className="pt-4 border-t border-gray-50 shrink-0 flex items-center justify-between">
                   {type === "announcements" ? (
                      <div className="flex gap-2 w-full">
-                       <a href={item.documentUrl} className="bg-primary text-accent px-6 py-3 rounded-xl font-bold text-[10px] flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 transition-all uppercase tracking-widest">Unduh <FileText size={14}/></a>
-                       <button onClick={() => handleOpenItem(item, "full")} className="border border-gray-200 text-primary px-6 py-3 rounded-xl font-bold text-[10px] flex items-center gap-2 hover:bg-gray-100/10 hover:border-primary transition-all uppercase tracking-widest cursor-pointer">Baca <Eye size={14}/></button>
+                       <a href={item.documentUrl} className="bg-primary text-accent px-4 py-2.5 rounded-xl font-bold text-[9px] flex items-center gap-1.5 shadow-md shadow-primary/15 hover:scale-105 transition-all uppercase tracking-wider">Unduh <FileText size={12}/></a>
+                       <button onClick={() => handleOpenItem(item, "full")} className="border border-gray-200 text-primary px-4 py-2.5 rounded-xl font-bold text-[9px] flex items-center gap-1.5 hover:bg-gray-50 hover:border-primary transition-all uppercase tracking-wider cursor-pointer">Baca <Eye size={12}/></button>
                      </div>
                   ) : (
                     <button 
                       onClick={() => handleOpenItem(item, "full")}
-                      className="text-primary font-bold text-[10px] uppercase tracking-widest flex items-center gap-3 group/btn cursor-pointer"
+                      className="text-primary font-bold text-[9px] uppercase tracking-wider flex items-center gap-2 group/btn cursor-pointer"
                     >
                       Selengkapnya 
-                      <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center group-hover/btn:bg-accent group-hover/btn:border-accent transition-all">
-                        <Eye size={14} className="group-hover/btn:scale-110 transition-transform"/>
+                      <div className="w-7 h-7 rounded-full border border-gray-150 flex items-center justify-center group-hover/btn:bg-accent group-hover/btn:border-accent transition-all">
+                        <Eye size={12} className="group-hover/btn:scale-110 transition-transform"/>
                       </div>
                     </button>
                   )}
@@ -670,46 +667,50 @@ function GaleriView() {
   ];
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-12">
       <div className="flex flex-col gap-4 items-center text-center">
-        <h2 className="text-6xl font-display font-bold text-primary italic leading-tight">Galeri Kegiatan</h2>
-        <div className="w-24 h-1.5 bg-accent rounded-full shadow-lg shadow-accent/20"></div>
-        <p className="text-gray-500 text-lg max-w-2xl font-medium leading-relaxed italic mt-2">
+        <div className="space-y-3">
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-primary italic leading-tight">Galeri Kegiatan</h2>
+          <div className="w-16 h-1 bg-accent rounded-full shadow-lg shadow-accent/20 mx-auto"></div>
+        </div>
+        <p className="text-gray-500 text-sm sm:text-base max-w-2xl font-medium leading-relaxed italic">
           Melalui lensa pergerakan, abadikan dedikasi, silaturahmi, dan kontribusi nyata alumni PMII Kabupaten Bandung Barat.
         </p>
       </div>
 
-      <div className="flex md:grid overflow-x-auto md:overflow-x-visible pb-8 md:pb-0 snap-x snap-mandatory gap-6 md:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 scrollbar-none">
+      <div className="flex md:grid overflow-x-auto md:overflow-x-visible pb-6 md:pb-0 snap-x snap-mandatory gap-6 md:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 scrollbar-none">
         {galeriItems.map((item) => (
           <div 
             key={item.id} 
-            className="w-[calc(100vw-3rem)] md:w-auto shrink-0 snap-center md:shrink md:snap-align-none group bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-500 flex flex-col h-full hover:-translate-y-2"
+            className="w-[calc(100vw-3rem)] md:w-auto shrink-0 snap-center md:shrink md:snap-align-none group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-500 flex flex-col h-full hover:-translate-y-1.5"
           >
-            <div className="aspect-[4/3] overflow-hidden relative">
+            <div className="aspect-[16/11] overflow-hidden relative">
               <img 
                 src={item.image} 
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                 alt={item.title} 
                 title={item.title}
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute top-6 left-6 bg-accent text-primary text-[9px] font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-xl">
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350" />
+              <div className="absolute top-4 left-4 bg-accent text-primary text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-xl">
                 {item.location}
               </div>
             </div>
             
-            <div className="p-8 space-y-4 flex-grow flex flex-col">
-              <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                {item.date}
+            <div className="p-6 space-y-3 flex-grow flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="text-[9px] text-gray-450 font-bold uppercase tracking-wider">
+                  {item.date}
+                </div>
+                
+                <h3 className="text-sm sm:text-base font-bold font-display text-primary leading-snug group-hover:text-accent transition-colors line-clamp-2">
+                  {item.title}
+                </h3>
               </div>
               
-              <h3 className="text-lg font-bold font-display text-primary leading-snug group-hover:text-accent transition-colors">
-                {item.title}
-              </h3>
-              
               {/* Keterangan singkat aktifitas kegiatan */}
-              <p className="text-xs text-gray-550 leading-relaxed font-sans line-clamp-3 bg-surface/40 p-4 rounded-2xl border border-gray-50 flex-grow text-gray-500">
+              <p className="text-xs text-gray-400 leading-relaxed font-sans line-clamp-3 bg-surface/30 p-3 rounded-xl border border-gray-50 text-gray-500">
                 {item.desc}
               </p>
             </div>

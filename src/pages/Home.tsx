@@ -19,9 +19,17 @@ const DEFAULT_NEWS_FALLBACK = [
   { id: 5, title: "Update Kejadian: Musyawarah Daerah IKA PMII di Ngamprah Berlangsung Khidmat", content: "Musyawarah daerah menghasilkan beberapa poin penting mengenai peran alumni di sektor pertanian Bandung Barat.", image: "https://picsum.photos/seed/news5/800/400", date: new Date().toISOString(), category: "Berita", author: "Redaksi" }
 ];
 
+const DEFAULT_ANNOUNCEMENTS_FALLBACK = [
+  { id: 1, title: "Pendaftaran Verifikasi Hak Pilih Musyawarah Cabang Pembentukan Komda Kepengurusan KBB", content: "Instruksi pendaftaran ulang bagi seluruh delegasi alumni di 16 kecamatan guna menyusun daftar pemilih sah Musyawarah Cabang.", date: "2026-06-03T12:00:00Z", category: "Pengumuman" },
+  { id: 2, title: "Wakaf Produktif pembangunan Graha IKA PMII Bandung Barat", content: "Mengundang keikhlasan segenap alumni untuk wakaf pembangunan sekretariat bersama/Graha IKA PMII KBB guna menunjang sentra kegiatan kader.", date: "2026-06-01T12:00:00Z", category: "Pembangunan" },
+  { id: 3, title: "Beasiswa S2/S3 Luar Negeri: Program Kemitraan Khusus bagi Alumni PMII KBB", content: "DPC IKA PMII Bandung Barat membuka program pendampingan beasiswa pascasarjana (S2/S3) bekerjasama dengan LPDP untuk alumni berprestasi.", date: "2026-05-28T12:00:00Z", category: "Beasiswa" },
+  { id: 4, title: "Rapat Kerja Daerah ke-I DPC IKA PMII Bandung Barat Tahun 2026", content: "Pemberitahuan kepada seluruh pengurus harian dan dewan penasihat untuk menghadiri konsolidasi program kerja terpadu.", date: "2026-05-25T12:00:00Z", category: "Organisasi" }
+];
+
 export default function Home() {
   const [stats, setStats] = useState<any>(null);
   const [news, setNews] = useState<any[]>(DEFAULT_NEWS_FALLBACK);
+  const [announcements, setAnnouncements] = useState<any[]>(DEFAULT_ANNOUNCEMENTS_FALLBACK);
   const [membersList, setMembersList] = useState<any[]>([]);
   const [activeStatTab, setActiveStatTab] = useState<"kecamatan" | "potensi" | "kompetensi">("kecamatan");
 
@@ -68,6 +76,18 @@ export default function Home() {
         }
       })
       .catch(err => console.error("Error loading homepage news silently:", err));
+
+    fetch("/api/content/announcements")
+      .then(res => {
+        if (!res.ok) throw new Error("announcements api failed");
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setAnnouncements(data.slice(0, 4));
+        }
+      })
+      .catch(err => console.error("Error loading homepage announcements silently:", err));
   }, []);
 
   // ----------------------------------------------------
@@ -282,40 +302,95 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 relative z-10 text-left">
-          <div className="max-w-3xl space-y-6">
-            <div className="flex flex-wrap gap-2.5">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="inline-block px-4 py-1.5 bg-accent/10 text-accent rounded-full text-xs font-bold uppercase tracking-widest border border-accent/20"
+          <div className="flex flex-col lg:flex-row gap-10 items-start justify-between">
+            {/* Left Column: Heading & Description */}
+            <div className="max-w-3xl space-y-6 lg:w-3/5">
+              <div className="flex flex-wrap gap-2.5">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="inline-block px-4 py-1.5 bg-accent/10 text-accent rounded-full text-xs font-bold uppercase tracking-widest border border-accent/20"
+                >
+                  #KolaborasiAksiNyata
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.05 }}
+                  className="inline-block px-4 py-1.5 bg-accent/10 text-accent rounded-full text-xs font-bold uppercase tracking-widest border border-accent/20"
+                >
+                  #AlumniSinergiPMIIBerdikari
+                </motion.div>
+              </div>
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-3xl sm:text-5xl md:text-7xl font-display font-bold leading-tight md:leading-[1.0] text-accent uppercase"
               >
-                #KolaborasiAksiNyata
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.05 }}
-                className="inline-block px-4 py-1.5 bg-accent/10 text-accent rounded-full text-xs font-bold uppercase tracking-widest border border-accent/20"
+                SINERGI <span className="text-surface italic text-2xl sm:text-4xl md:text-5xl">&amp;</span> <span className="text-surface">KOLABORASI</span>
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-base md:text-lg text-surface/80 max-w-2xl leading-relaxed font-sans"
               >
-                #AlumniSinergiPMIIBerdikari
-              </motion.div>
+                Mengajak seluruh alumni PMII Kabupaten Bandung Barat untuk bersinergi membangun peradaban, intelektualitas, dan kemandirian ekonomi daerah.
+              </motion.p>
             </div>
-            <motion.h1
+
+            {/* Right Column: Ringkasan Berita Terkini Quick Portal Links Box */}
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-display font-bold leading-[1.0] text-accent uppercase"
+              transition={{ delay: 0.25 }}
+              className="w-full lg:w-2/5 xl:w-[35%] bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 shadow-2xl flex flex-col gap-4 self-stretch justify-between"
             >
-              SINERGI <span className="text-surface italic text-4xl md:text-5xl">&amp;</span> <span className="text-surface">KOLABORASI</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-base md:text-lg text-surface/80 max-w-2xl leading-relaxed font-sans"
-            >
-              Mengajak seluruh alumni PMII Kabupaten Bandung Barat untuk bersinergi membangun peradaban, intelektualitas, dan kemandirian ekonomi daerah.
-            </motion.p>
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-accent animate-pulse shrink-0"></span>
+                  <span className="font-display font-black text-xs text-accent uppercase tracking-widest">Ringkasan Berita Terkini</span>
+                </div>
+                <Link to="/publikasi/berita" className="text-[10px] text-white/50 hover:text-accent font-black uppercase tracking-wider transition-all inline-flex items-center gap-1">
+                  Selengkapnya <ArrowRight size={10} />
+                </Link>
+              </div>
+
+              <div className="flex flex-col gap-3.5 divide-y divide-white/5 flex-grow justify-center">
+                {news.slice(0, 3).map((item, idx) => (
+                  <Link
+                    key={item.id}
+                    to="/publikasi/berita"
+                    className="flex gap-4 pt-3 first:pt-0 group text-left transition-transform duration-200 hover:translate-x-1"
+                  >
+                    {item.image && (
+                      <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-white/10 border border-white/10 relative">
+                        <img 
+                          src={item.image} 
+                          alt={item.title} 
+                          className="w-full h-full object-cover group-hover:scale-110 duration-300 transition-transform" 
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-grow space-y-1.5 my-auto">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] bg-accent/10 border border-accent/20 px-2 py-0.5 rounded-full text-accent font-black uppercase tracking-wider">
+                          {item.category || "Berita"}
+                        </span>
+                        <span className="text-[9.5px] text-white/40 font-semibold font-mono">
+                          {new Date(item.date).toLocaleDateString("id-ID", { month: "short", day: "numeric" })}
+                        </span>
+                      </div>
+                      <h4 className="text-white font-bold text-xs leading-snug line-clamp-2 group-hover:text-accent transition-colors">
+                        {item.title}
+                      </h4>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </div>
 
@@ -328,7 +403,7 @@ export default function Home() {
               {news[0] ? (
                 <Link 
                   to="/publikasi/berita"
-                  className="group relative flex flex-col bg-white/5 backdrop-blur-md rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl h-full focus:ring-2 focus:ring-accent outline-none min-h-[440px]"
+                  className="group relative flex flex-col bg-white/5 backdrop-blur-md rounded-3xl md:rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl h-full focus:ring-2 focus:ring-accent outline-none min-h-[360px] md:min-h-[440px]"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <img 
@@ -338,25 +413,25 @@ export default function Home() {
                       referrerPolicy="no-referrer"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/25 to-transparent"></div>
-                    <span className="absolute top-6 left-6 bg-accent text-primary text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
+                    <span className="absolute top-4 left-4 md:top-6 md:left-6 bg-accent text-primary text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
                       {news[0].category || "BERITA UTAMA"}
                     </span>
                   </div>
-                  <div className="p-8 flex flex-col justify-between flex-grow text-left">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-xs text-white/50 font-bold">
+                  <div className="p-5 sm:p-8 flex flex-col justify-between flex-grow text-left">
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs text-white/50 font-bold">
                         <span>{new Date(news[0].date).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                         <span>&bull;</span>
                         <span>Oleh: {news[0].author || "Redaksi"}</span>
                       </div>
-                      <h2 className="text-2xl md:text-3.5xl font-display font-black text-white leading-tight group-hover:text-accent transition-colors line-clamp-3">
+                      <h2 className="text-xl sm:text-2xl md:text-3.5xl font-display font-black text-white leading-tight group-hover:text-accent transition-colors line-clamp-3">
                         {news[0].title}
                       </h2>
-                      <p className="text-white/60 text-sm line-clamp-2 md:line-clamp-3 leading-relaxed">
+                      <p className="text-white/60 text-xs sm:text-sm line-clamp-2 md:line-clamp-3 leading-relaxed">
                         {news[0].content}
                       </p>
                     </div>
-                    <div className="pt-6 border-t border-white/10 flex items-center justify-between">
+                    <div className="pt-4 sm:pt-6 border-t border-white/10 flex items-center justify-between">
                       <span className="text-accent text-xs font-black uppercase tracking-widest inline-flex items-center gap-2">
                         Baca Selengkapnya <ArrowRight size={14} className="group-hover:translate-x-1.5 duration-200 transition-transform" />
                       </span>
@@ -364,48 +439,45 @@ export default function Home() {
                   </div>
                 </Link>
               ) : (
-                <div className="bg-white/5 backdrop-blur-md rounded-[2.5rem] p-12 text-center text-white/40 border border-white/10 flex items-center justify-center min-h-[440px]">
+                <div className="bg-white/5 backdrop-blur-md rounded-3xl md:rounded-[2.5rem] p-8 md:p-12 text-center text-white/40 border border-white/10 flex items-center justify-center min-h-[360px] md:min-h-[440px]">
                   Memuat Berita Utama...
                 </div>
               )}
             </div>
 
-            {/* 2. Berita Pendamping */}
-            <div className="col-span-1 md:col-span-1 lg:col-span-2 flex flex-col gap-5">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-display font-black text-lg text-accent uppercase tracking-wider">Berita Pendamping</h3>
-                <Link to="/publikasi/berita" className="text-[10px] bg-accent/10 hover:bg-accent hover:text-primary text-accent border border-accent/20 transition-all font-black px-4 py-2 rounded-full uppercase tracking-widest">
+            {/* 2. Ringkasan Pengumuman Resmi */}
+            <div className="col-span-1 md:col-span-1 lg:col-span-2 flex flex-col gap-3">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="font-display font-black text-sm text-accent uppercase tracking-wider">Ringkasan Pengumuman</h3>
+                <Link to="/publikasi/pengumuman" className="text-[9px] bg-accent/10 hover:bg-accent hover:text-primary text-accent border border-accent/20 transition-all font-black px-3 py-1 rounded-full uppercase tracking-wider">
                   Lihat Semua
                 </Link>
               </div>
               
-              <div className="flex flex-col gap-4 flex-grow justify-between">
-                {news.slice(1, 5).map((item, i) => (
+              <div className="flex flex-col gap-2.5">
+                {announcements.slice(0, 4).map((item, i) => (
                   <Link 
                     key={item.id}
-                    to="/publikasi/berita"
-                    className={`group bg-white/5 backdrop-blur-sm hover:bg-white/10 border border-white/10 rounded-2xl p-4 flex gap-4 transition-all hover:scale-[1.02] items-center text-left ${
+                    to="/publikasi/pengumuman"
+                    className={`group bg-white/5 backdrop-blur-sm hover:bg-white/10 border border-white/10 rounded-xl p-2.5 flex gap-3 transition-all hover:scale-[1.01] items-center text-left ${
                       i >= 2 ? "md:hidden lg:flex pointer-events-auto" : "flex pointer-events-auto"
                     }`}
                   >
-                    <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 relative bg-white/10">
-                      <img 
-                        src={item.image} 
-                        alt={item.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 duration-300 transition-transform" 
-                        referrerPolicy="no-referrer"
-                      />
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-accent/15 text-accent group-hover:bg-accent group-hover:text-primary transition-all">
+                      <Presentation size={16} />
                     </div>
-                    <div className="space-y-1.5">
-                      <span className="text-[9px] text-accent font-black uppercase tracking-widest block">
-                        {item.category || "BERITA"}
-                      </span>
-                      <h4 className="text-white font-bold text-sm leading-snug line-clamp-2 group-hover:text-accent transition-all">
+                    <div className="space-y-0.5 flex-grow min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[8px] text-accent font-black uppercase tracking-wider truncate">
+                          {item.category || "PENGUMUMAN"}
+                        </span>
+                        <span className="text-[8.5px] text-white/40 shrink-0">
+                          {new Date(item.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' })}
+                        </span>
+                      </div>
+                      <h4 className="text-white font-bold text-[11px] leading-tight line-clamp-1 group-hover:text-accent transition-all truncate">
                         {item.title}
                       </h4>
-                      <span className="text-[9.5px] text-white/40 block">
-                        {new Date(item.date).toLocaleDateString("id-ID")}
-                      </span>
                     </div>
                   </Link>
                 ))}
@@ -417,16 +489,16 @@ export default function Home() {
       </section>
 
       {/* Section H1 (30/70) */}
-      <section className="py-24 bg-surface border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-16">
-          <div className="lg:w-1/3 space-y-8">
+      <section className="py-12 md:py-24 bg-surface border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-8 lg:gap-16">
+          <div className="lg:w-1/3 space-y-6 md:space-y-8">
             <div className="space-y-2">
               <span className="text-accent font-bold tracking-widest text-xs uppercase">#Movement</span>
-              <h2 className="text-4xl font-bold leading-tight text-primary">Suara <br/>Pergerakan</h2>
+              <h2 className="text-3xl md:text-4xl font-bold leading-tight text-primary">Suara <br className="hidden md:block"/>Pergerakan</h2>
             </div>
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {['Kisah Inspiratif Kader', 'Jurnal Ilmiah Alumni', 'Opini Publik'].map((tag, i) => (
-                <div key={i} className="border-l-2 border-primary/20 pl-4 py-2 hover:border-primary transition-all cursor-pointer group">
+                <div key={i} className="border-l-2 border-primary/20 pl-4 py-1 hover:border-primary transition-all cursor-pointer group">
                   <p className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">#{tag}</p>
                   <p className="text-xs text-gray-500 mt-1">Membaca arah peradaban melalui kacamata alumni.</p>
                 </div>
@@ -434,13 +506,13 @@ export default function Home() {
             </div>
           </div>
           <div className="lg:w-2/3">
-            <div className="relative group overflow-hidden rounded-[2.5rem] bg-primary aspect-[16/9]">
+            <div className="relative group overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-primary aspect-[16/10] sm:aspect-[16/9]">
               <img src={bannerImg} className="absolute inset-0 w-full h-full object-cover transition-all duration-700 hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent flex items-end p-12">
-                <div className="max-w-lg space-y-4">
-                  <h3 className="text-3xl text-white font-bold">Membangun Masa Depan Berbasis Intelektualitas</h3>
-                  <p className="text-white/80 text-sm">Gerakan IKA PMII KBB tidak hanya sekedar silaturahmi, tapi manifestasi pengabdian kader terhadap umat dan bangsa.</p>
-                  <Link id="home-opinions-link" to="/publikasi/opini" className="text-accent font-bold text-sm inline-flex items-center gap-2 hover:gap-4 transition-all">Baca Selengkapnya <ArrowRight size={16}/></Link>
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent flex items-end p-5 sm:p-12">
+                <div className="max-w-lg space-y-3 sm:space-y-4 text-left">
+                  <h3 className="text-lg sm:text-3xl text-white font-bold">Membangun Masa Depan Berbasis Intelektualitas</h3>
+                  <p className="text-white/80 text-xs sm:text-sm line-clamp-2 sm:line-clamp-none">Gerakan IKA PMII KBB tidak hanya sekedar silaturahmi, tapi manifestasi pengabdian kader terhadap umat dan bangsa.</p>
+                  <Link id="home-opinions-link" to="/publikasi/opini" className="text-accent font-bold text-xs sm:text-sm inline-flex items-center gap-2 hover:gap-4 transition-all">Baca Selengkapnya <ArrowRight size={14}/></Link>
                 </div>
               </div>
             </div>
@@ -449,16 +521,16 @@ export default function Home() {
       </section>
 
       {/* Section H2: PancaKarsa */}
-      <section className="py-32 bg-primary relative">
+      <section className="py-16 md:py-32 bg-primary relative">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#ffffff10,transparent)]"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-16">
-          <div className="text-center space-y-4">
-            <h2 className="text-5xl font-bold text-accent">PancaKarsa</h2>
-            <p className="text-surface/50 uppercase tracking-[0.3em] text-[10px] font-bold">5 Pilar Program Kerja Strategis & Kategori Pengabdian</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10 md:space-y-16">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl sm:text-5xl font-bold text-accent">PancaKarsa</h2>
+            <p className="text-surface/50 uppercase tracking-[0.3em] text-[8px] sm:text-[10px] font-bold">5 Pilar Program Kerja Strategis & Kategori Pengabdian</p>
           </div>
 
           {/* Category Tabs Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {pancakarsa.map((pilar, i) => {
               const IconComponent = pilar.icon;
               const isActive = activeKarsa === i;
@@ -467,24 +539,24 @@ export default function Home() {
                   key={i}
                   id={`pancakarsa-tab-${i}`}
                   onClick={() => setActiveKarsa(i)}
-                  className={`text-left p-6 rounded-3xl border transition-all duration-300 relative group flex flex-col justify-between h-full cursor-pointer ${
+                  className={`text-left p-5 sm:p-6 rounded-2xl sm:rounded-3xl border transition-all duration-300 relative group flex flex-col justify-between h-full cursor-pointer ${
                     isActive
                       ? "bg-accent text-primary border-accent shadow-lg shadow-accent/25 scale-[1.02]"
                       : "bg-white/5 backdrop-blur-md text-surface border-white/10 hover:border-accent/40 hover:bg-white/10"
                   }`}
                 >
                   <div className="flex items-center justify-between w-full mb-6">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center transition-colors ${
                       isActive ? "bg-primary text-accent" : "bg-accent text-primary"
                     }`}>
-                      <IconComponent size={24} />
+                      <IconComponent size={20} className="sm:size-[24px]" />
                     </div>
                     <span className={`text-[9px] font-black uppercase tracking-widest ${
                       isActive ? "text-primary/70" : "text-accent"
                     }`}>Pilar 0{i+1}</span>
                   </div>
                   <div>
-                    <h4 className={`font-display font-bold text-lg leading-tight uppercase tracking-tight ${
+                    <h4 className={`font-display font-bold text-base sm:text-lg leading-tight uppercase tracking-tight ${
                       isActive ? "text-primary" : "text-surface"
                     }`}>{pilar.title}</h4>
                     <p className={`text-xs mt-2 line-clamp-2 ${isActive ? "text-primary/85" : "text-surface/60"}`}>{pilar.desc}</p>
@@ -501,19 +573,19 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -30 }}
             transition={{ duration: 0.4 }}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start bg-white/5 backdrop-blur-lg border border-white/10 p-8 md:p-12 rounded-[2.5rem] shadow-3xl text-left"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start bg-white/5 backdrop-blur-lg border border-white/10 p-5 sm:p-8 md:p-12 rounded-3xl md:rounded-[2.5rem] shadow-3xl text-left"
           >
             {/* Category Info Sidebar */}
-            <div className="lg:col-span-4 space-y-6">
-              <div className="inline-flex p-5 bg-accent/20 border border-accent/30 rounded-3xl text-accent">
+            <div className="lg:col-span-4 space-y-4 sm:space-y-6">
+              <div className="inline-flex p-4 sm:p-5 bg-accent/20 border border-accent/30 rounded-2xl sm:rounded-3xl text-accent">
                 {(() => {
                   const ActiveIcon = pancakarsa[activeKarsa].icon;
-                  return <ActiveIcon size={48} className="animate-pulse" />;
+                  return <ActiveIcon className="size-8 sm:size-12 animate-pulse" />;
                 })()}
               </div>
               <div className="space-y-3">
                 <span className="text-accent font-black tracking-widest text-[10px] uppercase">Rona Program Kerja</span>
-                <h3 className="text-3.5xl font-display font-bold text-surface uppercase tracking-tight leading-none">
+                <h3 className="text-2xl sm:text-3.5xl font-display font-bold text-surface uppercase tracking-tight leading-none">
                   {pancakarsa[activeKarsa].title}
                 </h3>
                 <p className="text-sm text-surface/75 leading-relaxed">
@@ -531,7 +603,7 @@ export default function Home() {
 
             {/* Programs List */}
             <div className="lg:col-span-8 space-y-4">
-              <div className="mb-4">
+              <div className="mb-2 sm:mb-4">
                 <h5 className="text-xs uppercase tracking-widest font-black text-accent/80">Daftar 5 Program Kerja Unggulan:</h5>
               </div>
               <div className="grid grid-cols-1 gap-4">
@@ -539,7 +611,7 @@ export default function Home() {
                   <motion.div
                     key={idx}
                     whileHover={{ x: 6 }}
-                    className="flex items-start gap-5 p-5 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-accent/30 rounded-2xl transition-all duration-300 shadow-sm"
+                    className="flex items-start gap-3 sm:gap-5 p-4 sm:p-5 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-accent/30 rounded-2xl transition-all duration-300 shadow-sm text-left"
                   >
                     <div className="flex items-center justify-center font-mono font-black text-sm text-accent bg-accent/10 border border-accent/20 w-10 h-10 rounded-xl shrink-0">
                       {prog.nr}
@@ -557,15 +629,15 @@ export default function Home() {
       </section>
 
       {/* Section H3: IKA KBB Movement Slide */}
-      <section className="py-24 bg-primary text-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 flex items-end justify-between">
-          <div className="space-y-2">
-             <h2 className="text-4xl font-bold">IKA Bandung Barat Movement</h2>
+      <section className="py-16 md:py-24 bg-primary text-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 md:mb-12 flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
+          <div className="space-y-2 text-left">
+             <h2 className="text-2xl sm:text-4xl font-bold">IKA Bandung Barat Movement</h2>
              <p className="text-white/60 uppercase tracking-widest text-xs">Jejak Langkah Pergerakan Kami</p>
           </div>
           <Link to="/publikasi/galeri" className="text-accent font-bold text-sm">Galeri Kegiatan Kami</Link>
         </div>
-        <div className="flex gap-8 overflow-x-auto pb-12 px-4 sm:px-6 lg:px-24 snap-x">
+        <div className="flex gap-6 overflow-x-auto pb-8 px-4 sm:px-6 lg:px-8 scrollbar-none snap-x">
           {news.map((item, i) => (
             <div key={i} className="min-w-[280px] md:min-w-[300px] snap-center shrink-0">
               <Link
@@ -587,16 +659,16 @@ export default function Home() {
       </section>
 
       {/* Section H4: Dynamic Modern Statistics Tab Dashboard */}
-      <section className="py-28 bg-surface border-t border-gray-100">
+      <section className="py-12 md:py-28 bg-surface border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-16 gap-4">
-            <div className="space-y-2">
+          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-10 lg:mb-16 gap-4">
+            <div className="space-y-2 text-left">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-accent/10 text-primary border border-accent/20 rounded-full text-[10px] font-black uppercase tracking-wider">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                 Sistem Informasi Alumni &amp; Database SIAP Pedia
               </span>
-              <h2 className="text-4xl lg:text-5xl font-display font-bold text-primary tracking-tight">
+              <h2 className="text-3xl lg:text-5xl font-display font-bold text-primary tracking-tight">
                 Statistik Dewan &amp; Alumni
               </h2>
               <p className="text-gray-400 text-sm max-w-xl">
@@ -606,21 +678,21 @@ export default function Home() {
             
             {/* Quick Live Counter Stats */}
             <div className="flex flex-wrap gap-4 select-none lg:self-end">
-              <div className="bg-white/40 backdrop-blur border border-gray-200/65 px-6 py-3.5 rounded-2xl flex items-center gap-4 shadow-sm">
+              <div className="bg-white/40 backdrop-blur border border-gray-200/65 px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-2xl flex items-center gap-4 shadow-sm">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                   <Users size={18} />
                 </div>
-                <div>
+                <div className="text-left">
                   <span className="block text-2xl font-black text-primary leading-none count-up">{totalAlumni}</span>
                   <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Alumni Terverifikasi</span>
                 </div>
               </div>
               
-              <div className="bg-white/40 backdrop-blur border border-gray-200/65 px-6 py-3.5 rounded-2xl flex items-center gap-4 shadow-sm">
+              <div className="bg-white/40 backdrop-blur border border-gray-200/65 px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-2xl flex items-center gap-4 shadow-sm">
                 <div className="w-10 h-10 rounded-xl bg-accent/20 text-primary flex items-center justify-center">
                   <Activity size={18} className="text-primary" />
                 </div>
-                <div>
+                <div className="text-left">
                   <span className="block text-2xl font-black text-primary leading-none">{distData.length}</span>
                   <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Kecamatan Aktif</span>
                 </div>
@@ -629,9 +701,9 @@ export default function Home() {
           </div>
 
           {/* Core Analytics Grid Container */}
-          <div className="bg-white rounded-[3.5rem] border border-gray-150/80 shadow-2xl shadow-gray-200/50 overflow-hidden">
+          <div className="bg-white rounded-3xl md:rounded-[3.5rem] border border-gray-150/80 shadow-2xl shadow-gray-200/50 overflow-hidden">
             {/* Minimalist Tab Bar Switcher */}
-            <div className="bg-gray-50/60 border-b border-gray-150/80 px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="bg-gray-50/60 border-b border-gray-150/80 px-4 md:px-8 py-4 md:py-6 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex flex-wrap gap-2.5 w-full md:w-auto">
                 {tabsList.map((t) => {
                   const TabIcon = t.icon;
@@ -640,13 +712,13 @@ export default function Home() {
                     <button
                       key={t.id}
                       onClick={() => setActiveStatTab(t.id as any)}
-                      className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl font-bold font-sans text-xs uppercase tracking-wider transition-all duration-200 relative shrink-0 ${
+                      className={`flex items-center gap-2.5 px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-2xl font-bold font-sans text-xs uppercase tracking-wider transition-all duration-200 relative shrink-0 ${
                         isActive
                           ? "bg-primary text-accent shadow-md shadow-primary/20 hover:opacity-95"
                           : "bg-white/70 hover:bg-white text-gray-550 border border-gray-150 hover:border-gray-200"
                       }`}
                     >
-                      <TabIcon size={15} />
+                      <TabIcon size={14} />
                       <div className="text-left">
                         <span className="block leading-none">{t.title}</span>
                       </div>
@@ -662,7 +734,7 @@ export default function Home() {
             </div>
 
             {/* Main Interactive Visualizer Frame */}
-            <div className="p-8 lg:p-14 grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
+            <div className="p-4 sm:p-8 lg:p-14 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
               
               {/* Left Sidebar Info List */}
               <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
@@ -752,12 +824,12 @@ export default function Home() {
               </div>
 
               {/* Right Main Chart Panel */}
-              <div className="lg:col-span-7 bg-gray-50/40 rounded-3xl border border-gray-100 p-6 flex flex-col justify-center items-center relative overflow-hidden min-h-[400px]">
+              <div className="lg:col-span-7 bg-gray-50/40 rounded-3xl border border-gray-100 p-4 sm:p-6 flex flex-col justify-center items-center relative overflow-hidden min-h-[280px] md:min-h-[400px]">
                 
                 {/* Embedded Aesthetic Grid Gridmarks */}
                 <div className="absolute inset-x-0 top-0 bottom-0 pointer-events-none opacity-[0.03] select-none bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px]"></div>
                 
-                <div className="w-full h-[360px] relative z-10 font-sans">
+                <div className="w-full h-[240px] sm:h-[360px] relative z-10 font-sans">
                   {activeStatTab === "kecamatan" && (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={distData.slice(0, 8)}>

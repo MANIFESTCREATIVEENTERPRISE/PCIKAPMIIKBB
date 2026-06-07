@@ -22,6 +22,7 @@ export default function App() {
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     if (location.pathname === "/") {
       setShowWelcome(true);
     } else {
