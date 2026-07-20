@@ -146,10 +146,30 @@ textarea,
 .text-slate-800, 
 .text-slate-705,
 .text-slate-700,
+.text-stone-950,
+.text-stone-900,
+.text-stone-850,
 .text-stone-800,
+.text-stone-700,
+.text-zinc-950,
+.text-zinc-900,
 .text-zinc-850,
 .text-zinc-805,
 .text-zinc-800,
+.text-zinc-700,
+.text-neutral-955,
+.text-neutral-950,
+.text-neutral-900,
+.text-neutral-850,
+.text-neutral-800,
+.text-neutral-700,
+.text-gray-950,
+.text-slate-950,
+.text-blue-950,
+.text-blue-900,
+.text-indigo-950,
+.text-indigo-900,
+.text-black,
 .text-text-base,
 .text-slate-200,
 .text-slate-300,
@@ -167,6 +187,12 @@ textarea,
 .text-gray-500, 
 .text-slate-500,
 .text-gray-400,
+.text-zinc-600,
+.text-zinc-500,
+.text-stone-600,
+.text-stone-500,
+.text-neutral-600,
+.text-neutral-500,
 .text-text-muted {
   color: var(--text-muted) !important;
 }
@@ -238,4 +264,31 @@ h4.text-primary,
   .bg-slate-50, .bg-slate-100 {
     background-color: var(--card) !important;
   }
+}
+
+/* Gold Background Contrast Safeguards - Force dark text on gold backgrounds for maximum legibility */
+.bg-accent,
+[class*="bg-accent"] {
+  color: #000033 !important;
+}
+.bg-accent *,
+[class*="bg-accent"] * {
+  color: #000033 !important;
+}
+.bg-accent .text-primary,
+[class*="bg-accent"] .text-primary,
+.bg-accent .text-text-base,
+[class*="bg-accent"] .text-text-base {
+  color: #000033 !important;
+}
+
+/* Semi-transparent text overrides for excellent legibility on deep blue background */
+.text-primary\/80 {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+.text-primary\/70 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.text-primary\/40 {
+  color: rgba(255, 255, 255, 0.4) !important;
 }
