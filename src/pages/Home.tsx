@@ -328,13 +328,13 @@ export default function Home() {
                 transition={{ delay: 0.1 }}
                 className="text-3xl sm:text-5xl md:text-7xl font-display font-bold leading-tight md:leading-[1.0] text-accent uppercase"
               >
-                SINERGI <span className="text-surface italic text-2xl sm:text-4xl md:text-5xl">&amp;</span> <span className="text-surface">KOLABORASI</span>
+                SINERGI <span className="text-white/80 italic text-2xl sm:text-4xl md:text-5xl">&amp;</span> <span className="text-white">KOLABORASI</span>
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-base md:text-lg text-surface/80 max-w-2xl leading-relaxed font-sans"
+                className="text-base md:text-lg text-white/80 max-w-2xl leading-relaxed font-sans"
               >
                 Mengajak seluruh alumni PMII Kabupaten Bandung Barat untuk bersinergi membangun peradaban, intelektualitas, dan kemandirian ekonomi daerah.
               </motion.p>
@@ -669,7 +669,7 @@ export default function Home() {
                 Sistem Informasi Alumni &amp; Database SIAP Pedia
               </span>
               <h2 className="text-3xl lg:text-5xl font-display font-bold text-primary tracking-tight">
-                Statistik Dewan &amp; Alumni
+                Statistik Anggota Alumni
               </h2>
               <p className="text-gray-400 text-sm max-w-xl">
                 Olah data digital terpusat menyajikan visualisasi sebaran kuantitatif, kapabilitas, serta potensi riil seluruh kader IKA PMII se-Kabupaten Bandung Barat.
