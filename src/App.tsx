@@ -2,6 +2,7 @@ import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { useState, useEffect, ReactNode } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import SEO from "./components/SEO";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Publications from "./pages/Publications";
@@ -34,6 +35,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <SEO />
       <Header />
       <main className="flex-grow">
         <AnimatePresence mode="wait">
