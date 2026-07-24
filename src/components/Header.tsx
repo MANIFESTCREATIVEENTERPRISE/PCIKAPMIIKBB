@@ -135,7 +135,7 @@ export default function Header() {
   });
 
   return (
-    <header className="bg-primary border-b border-white/5 sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-[#072587] via-[#004db8] to-[#0060e2] text-white shadow-lg sticky top-0 z-50 border-b border-white/10">
       <div className="absolute inset-0 bg-[linear-gradient(45deg,#ffffff05,transparent)] pointer-events-none"></div>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10" aria-label="Top">
         <div className="flex items-center justify-between h-20">
@@ -237,146 +237,32 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Desktop Search Bar */}
-            <div className="relative hidden xl:flex items-center">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Cari berita & opini..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setSearchActive(true)}
-                  onBlur={() => setTimeout(() => setSearchActive(false), 200)}
-                  className="bg-white/10 text-white placeholder-white/40 text-xs px-4 py-2 pl-9 rounded-full border border-white/10 focus:border-accent focus:bg-white/15 focus:outline-none transition-all w-48 focus:w-64 font-sans"
-                />
-                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
-              </div>
-
-              {/* Suggestions Dropdown */}
-              <AnimatePresence>
-                {searchActive && searchResults.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full mt-2 right-0 w-80 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden z-50 p-2 text-left"
-                  >
-                    <div className="px-3 py-1.5 text-[10px] text-gray-400 font-bold uppercase tracking-wider">Hasil Pencarian</div>
-                    {searchResults.map((item) => (
-                      <Link
-                        key={item.id}
-                        to={item.url}
-                        className="block px-3 py-2 hover:bg-gray-50 rounded-xl transition-all"
-                      >
-                        <span className="block text-[9px] uppercase font-bold text-accent">{item.type}</span>
-                        <span className="block text-xs font-bold text-gray-800 line-clamp-1">{item.title}</span>
-                      </Link>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <div className="hidden lg:flex items-center gap-4 border-l border-white/20 pl-4 ml-4">
+            <div className="hidden lg:flex items-center gap-4">
               <button 
                 onClick={() => setLanguage(language === "ID" ? "EN" : "ID")}
-                className="flex items-center gap-1.5 text-white/70 hover:text-accent transition-colors font-bold text-sm bg-white/5 px-3 py-1.5 rounded-full"
+                className="flex items-center gap-1.5 text-white/70 hover:text-accent transition-colors font-bold text-sm bg-white/5 px-3 py-1.5 rounded-full cursor-pointer"
               >
                 <Globe size={16} />
                 <span>{language}</span>
               </button>
-              
-              <button 
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="text-white/70 hover:text-accent transition-colors bg-white/5 p-2 rounded-full"
-                aria-label="Toggle Theme"
-              >
-                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-              </button>
             </div>
 
             <div className="lg:hidden flex items-center gap-3">
-              {/* Mobile Search Icon Trigger */}
-              <button 
-                onClick={() => setMobileSearchActive(!mobileSearchActive)}
-                className="text-white/70 hover:text-accent transition-colors bg-white/5 p-1.5 rounded-full cursor-pointer"
-                aria-label="Cari Berita"
-              >
-                <Search size={16} />
-              </button>
-
               <button 
                 onClick={() => setLanguage(language === "ID" ? "EN" : "ID")}
-                className="flex items-center gap-1 text-white/70 hover:text-accent transition-colors font-bold text-xs bg-white/5 px-2 py-1 rounded-full animate-none"
+                className="flex items-center gap-1 text-white/70 hover:text-accent transition-colors font-bold text-xs bg-white/5 px-2 py-1 rounded-full cursor-pointer"
               >
                 <Globe size={14} />
                 <span>{language}</span>
               </button>
-              <button 
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="text-white/70 hover:text-accent transition-colors bg-white/5 p-1.5 rounded-full"
-              >
-                {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
-              <button onClick={() => setMobileMenuOpen(true)}>
+              <button onClick={() => setMobileMenuOpen(true)} className="cursor-pointer">
                 <Menu className="h-6 w-6 text-white" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Search Input subheader dropbar */}
-        <AnimatePresence>
-          {mobileSearchActive && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="lg:hidden border-t border-white/5 py-3 relative z-20 px-1"
-            >
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Cari berita & opini..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white/10 text-white placeholder-white/40 text-sm px-4 py-3 pl-10 rounded-2xl border border-white/10 focus:border-accent focus:outline-none focus:bg-white/15 transition-all font-sans"
-                  autoFocus
-                />
-                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
-                {searchQuery && (
-                  <button 
-                    onClick={() => setSearchQuery("")} 
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
 
-              {/* Suggestions overlay for Mobile */}
-              {searchResults.length > 0 && (
-                <div className="mt-3 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden p-2 text-left">
-                  <div className="px-3 py-1.5 text-[9px] text-gray-400 font-bold uppercase tracking-wider">Hasil Pencarian</div>
-                  {searchResults.map((item) => (
-                    <Link
-                      key={item.id}
-                      to={item.url}
-                      onClick={() => {
-                        setMobileSearchActive(false);
-                        setSearchQuery("");
-                      }}
-                      className="block px-3 py-2.5 hover:bg-gray-55 rounded-xl transition-all"
-                    >
-                      <span className="block text-[9px] uppercase font-bold text-accent">{item.type}</span>
-                      <span className="block text-xs font-bold text-gray-805 line-clamp-1">{item.title}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
       </nav>
 
       {/* Mobile menu */}

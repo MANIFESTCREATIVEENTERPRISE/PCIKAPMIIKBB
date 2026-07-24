@@ -1,29 +1,29 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { 
   ArrowRight, Calendar, Users, Briefcase, GraduationCap, Building2, 
-  HeartHandshake, Presentation, TrendingUp, MapPin, Award, Activity, ShieldCheck, Compass, Sparkles 
+  HeartHandshake, Presentation, TrendingUp, MapPin, Award, Activity, ShieldCheck, Compass, Sparkles, Newspaper, CheckCircle2, Globe, Star
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import bannerImg from "../assets/images/popup.png";
 import { GENERATED_SIMULATED_MEMBERS } from "../data/simulatedMembers";
 
-const COLORS_LIST = ["#112D75", "#FFD700", "#059669", "#6366f1", "#ec4899", "#f59e0b", "#10b981"];
+const COLORS_LIST = ["#072587", "#f59e0b", "#059669", "#6366f1", "#ec4899", "#d97706", "#10b981"];
 
 const DEFAULT_NEWS_FALLBACK = [
-  { id: 1, title: "Sinergi IKA PMII KBB dengan Pemkab Bandung Barat dalam Program Penataan Desa", content: "PC IKA PMII Kabupaten Bandung Barat menjalin kesepakatan strategis dengan Pemerintah Kabupaten Bandung Barat untuk mendorong digitalisasi administrasi di tingkat desa se-KBB.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Humas IKA PMII" },
-  { id: 2, title: "IKA PMII KBB : silaturahim Rapatkan Barisan untuk pelantikan dan Rapat Kerja", content: "PC IKA PMII Kabupaten Bandung Barat menyelenggarakan kegiatan silaturahim akbar guna mempererat hubungan kekeluargaan antar-alumni sekaligus merapatkan barisan menyongsong agenda pelantikan kepengurusan baru serta pelaksanaan Rapat Kerja.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Redaksi" },
-  { id: 3, title: "Rapat Koordinasi Cabang: Persiapan Pelantikan Pengurus Baru", content: "Agenda besar transisi kepemimpinan IKA PMII KBB akan segera dilaksanakan. Seluruh alumni diundang untuk memberikan sumbangsih pemikiran.", image: "https://picsum.photos/seed/news3/800/400", date: new Date().toISOString(), category: "Organisasi", author: "Sekretariat" },
-  { id: 4, title: "Kunjungan Studi Banding IKA PMII KBB ke Balai Kota Bandung", content: "Mempelajari tata kelola organisasi alumni yang mandiri secara ekonomi, IKA PMII KBB melakukan kunjungan kerja ke ikatan alumni lainnya.", image: "https://picsum.photos/seed/news4/800/400", date: new Date().toISOString(), category: "Berita", author: "Humas" },
-  { id: 5, title: "Update Kejadian: Musyawarah Daerah IKA PMII di Ngamprah Berlangsung Khidmat", content: "Musyawarah daerah menghasilkan beberapa poin penting mengenai peran alumni di sektor pertanian Bandung Barat.", image: "https://picsum.photos/seed/news5/800/400", date: new Date().toISOString(), category: "Berita", author: "Redaksi" }
+  { id: 1, title: "Sinergi IKA PMII KBB dengan Pemkab Bandung Barat dalam Program Penataan Desa", content: "PC IKA PMII Kabupaten Bandung Barat menjalin kesepakatan strategis dengan Pemerintah Kabupaten Bandung Barat untuk mendorong digitalisasi administrasi dan pemberdayaan ekonomi di tingkat desa se-KBB.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Humas IKA PMII" },
+  { id: 2, title: "Silaturahim Akbar & Consolidasi Alumni Menyongsong Rapat Kerja Cabang", content: "PC IKA PMII Kabupaten Bandung Barat menyelenggarakan kegiatan silaturahim akbar guna mempererat hubungan kekeluargaan antar-alumni sekaligus merapatkan barisan menyongsong Rapat Kerja Cabang.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Redaksi" },
+  { id: 3, title: "Rapat Koordinasi Cabang: Persiapan Pelantikan Pengurus Baru & Agenda SIAP Pedia", content: "Agenda besar transisi kepemimpinan IKA PMII KBB akan segera dilaksanakan. Seluruh alumni diundang untuk memberikan sumbangsih pemikiran strategis.", image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80", date: new Date().toISOString(), category: "Organisasi", author: "Sekretariat" },
+  { id: 4, title: "Penguatan LBH PC IKA PMII: Layanan Advokasi & Bantuan Hukum Masyarakat", content: "Memperkuat fungsi perlindungan hak-hak sipil, LBH PC IKA PMII Bandung Barat membuka posko bantuan hukum pro-bono bagi masyarakat membutuhkan.", image: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80", date: new Date().toISOString(), category: "Advokasi", author: "LBH IKA PMII" },
+  { id: 5, title: "Koperasi KAMARA Swatransaksi: Inkubasi UMKM & Produk Ekonomi Kreatif Alumni", content: "Mendorong kemandirian ekonomi daerah, Koperasi KAMARA merilis program pendampingan sertifikasi halal dan digitalisasi pemasaran UMKM alumni.", image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80", date: new Date().toISOString(), category: "Ekonomi", author: "KAMARA" }
 ];
 
 const DEFAULT_ANNOUNCEMENTS_FALLBACK = [
   { id: 1, title: "Pendaftaran Verifikasi Hak Pilih Musyawarah Cabang Pembentukan Komda Kepengurusan KBB", content: "Instruksi pendaftaran ulang bagi seluruh delegasi alumni di 16 kecamatan guna menyusun daftar pemilih sah Musyawarah Cabang.", date: "2026-06-03T12:00:00Z", category: "Pengumuman" },
   { id: 2, title: "Wakaf Produktif pembangunan Graha IKA PMII Bandung Barat", content: "Mengundang keikhlasan segenap alumni untuk wakaf pembangunan sekretariat bersama/Graha IKA PMII KBB guna menunjang sentra kegiatan kader.", date: "2026-06-01T12:00:00Z", category: "Pembangunan" },
-  { id: 3, title: "Beasiswa S2/S3 Luar Negeri: Program Kemitraan Khusus bagi Alumni PMII KBB", content: "DPC IKA PMII Bandung Barat membuka program pendampingan beasiswa pascasarjana (S2/S3) bekerjasama dengan LPDP untuk alumni berprestasi.", date: "2026-05-28T12:00:00Z", category: "Beasiswa" },
-  { id: 4, title: "Rapat Kerja Daerah ke-I DPC IKA PMII Bandung Barat Tahun 2026", content: "Pemberitahuan kepada seluruh pengurus harian dan dewan penasihat untuk menghadiri konsolidasi program kerja terpadu.", date: "2026-05-25T12:00:00Z", category: "Organisasi" }
+  { id: 3, title: "Beasiswa S2/S3 Luar Negeri: Program Kemitraan Khusus bagi Alumni PMII KBB", content: "PC IKA PMII Bandung Barat membuka program pendampingan beasiswa pascasarjana (S2/S3) bekerjasama dengan LPDP untuk alumni berprestasi.", date: "2026-05-28T12:00:00Z", category: "Beasiswa" },
+  { id: 4, title: "Rapat Kerja Daerah ke-I PC IKA PMII Bandung Barat Tahun 2026", content: "Pemberitahuan kepada seluruh pengurus harian dan dewan penasihat untuk menghadiri konsolidasi program kerja terpadu.", date: "2026-05-25T12:00:00Z", category: "Organisasi" }
 ];
 
 export default function Home() {
@@ -90,10 +90,6 @@ export default function Home() {
       .catch(err => console.error("Error loading homepage announcements silently:", err));
   }, []);
 
-  // ----------------------------------------------------
-  // DYNAMIC LIVE STAT BALANCER AND GROUPER (SIAP Pedia)
-  // ----------------------------------------------------
-  
   // Overall dynamic total
   const totalAlumni = membersList.length;
 
@@ -213,19 +209,19 @@ export default function Home() {
   const pancakarsa = [
     {
       title: "Penguatan Lembaga",
-      desc: "Meningkatkan soliditas dan tata kelola organisasi yang profesional.",
+      desc: "Meningkatkan soliditas, tata kelola transparan, dan modernisasi organisasi yang profesional.",
       icon: Building2,
       programs: [
-        { nr: "01", title: "Sinergi Sipencak/SIAP Alumni", desc: "Digitalisasi pendataan dan aktivasi e-KTA terintegrasi untuk seluruh alumni PMII se-Bandung Barat." },
-        { nr: "02", title: "Konsolidasi 16 PAC KBB", desc: "Pembentukan dan pembinaan kepengurusan tingkat kecamatan (PAC) di seluruh wilayah Bandung Barat." },
-        { nr: "03", title: "Rapat Kerja Berkala", desc: "Penyelenggaraan evaluasi, rapat koordinasi cabang, dan perumusan rekomendasi kebijakan organisasi." },
+        { nr: "01", title: "Sinergi Sipencak/SIAP Alumni", desc: "Digitalisasi pendataan terpusat dan penertiban e-KTA terintegrasi untuk seluruh alumni PMII se-Bandung Barat." },
+        { nr: "02", title: "Konsolidasi 16 PAC KBB", desc: "Pembentukan dan pembinaan kepengurusan tingkat kecamatan (PAC) di seluruh wilayah Kabupaten Bandung Barat." },
+        { nr: "03", title: "Rapat Kerja Berkala", desc: "Penyelenggaraan evaluasi, rapat koordinasi cabang, dan perumusan rekomendasi kebijakan strategis." },
         { nr: "04", title: "Sekretariat Representatif", desc: "Penyediaan sarana pusat koordinasi, arsip digital, dan ruang kolaborasi beradab untuk seluruh kader." },
         { nr: "05", title: "Kredibilitas & Tata Kelola", desc: "Standardisasi manajemen administrasi keuangan, pelaporan transparan, dan penataan hukum organisasi." }
       ]
     },
     {
       title: "Pendidikan & Pelatihan",
-      desc: "Pengembangan kapasitas intelektual dan skill kader alumni PMII.",
+      desc: "Pengembangan kapasitas intelektual, keahlian digital, dan kepemimpinan kader alumni PMII.",
       icon: GraduationCap,
       programs: [
         { nr: "01", title: "Sekolah Kepemimpinan IKA", desc: "Pusat inkubasi kepemimpinan strategis, analisis kebijakan publik, dan wawasan keagamaan moderat." },
@@ -237,11 +233,11 @@ export default function Home() {
     },
     {
       title: "Penguatan Jaringan",
-      desc: "Membangun konektivitas strategis antar alumni di berbagai sektor.",
+      desc: "Membangun konektivitas strategis antar alumni di sektor birokrasi, swasta, dan kemasyarakatan.",
       icon: Users,
       programs: [
         { nr: "01", title: "Sinergitas Lintas Sektor", desc: "Pemetaan kompetensi dan kolaborasi kontinu antar profesi birokrat, swasta, akademisi, dan seniman." },
-        { nr: "02", title: "LBH IKA PMII Bandung Barat", desc: "Penyediaan payung hukum advokasi, konsultasi paralegal, serta perlindungan hak sipil kemasyarakatan." },
+        { nr: "02", title: "LBH PC IKA PMII Bandung Barat", desc: "Penyediaan payung hukum advokasi, konsultasi paralegal, serta perlindungan hak sipil kemasyarakatan." },
         { nr: "03", title: "Sumbangsih Kebijakan Daerah", desc: "Pemberian rekomendasi akademis strategis untuk mendorong kebijakan RPJMD Pemkab Bandung Barat." },
         { nr: "04", title: "Temu Alumni & Simposium", desc: "Penyelenggaraan reuni akbar tahunan dan sumbang saran ideologis demi penguatan eksistensi organisasi." },
         { nr: "05", title: "Publikasi Karya Kreatif", desc: "Fasilitas peluncuran tulisan opini, gagasan ilmiah, dan karya sastra budaya alumni di portal media jurnalisme." }
@@ -249,7 +245,7 @@ export default function Home() {
     },
     {
       title: "Pemberdayaan Ekonomi",
-      desc: "Mendorong kemandirian ekonomi alumni melalui UMKM dan bisnis.",
+      desc: "Mendorong kemandirian ekonomi alumni melalui UMKM, Koperasi KAMARA, dan bisnis berdikari.",
       icon: Briefcase,
       programs: [
         { nr: "01", title: "KAMARA Swatransaksi", desc: "Pembentukan Koperasi Mandiri Rakyat Sejahtera (KAMARA) dan integrasi unit usaha ritel KAMARA Mart." },
@@ -261,7 +257,7 @@ export default function Home() {
     },
     {
       title: "Pengabdian Masyarakat",
-      desc: "Kontribusi nyata IKA PMII dalam pembangunan sosial daerah.",
+      desc: "Kontribusi nyata IKA PMII dalam pengabdian sosial, kesehatan, dan kesejahteraan umat.",
       icon: HeartHandshake,
       programs: [
         { nr: "01", title: "Klinik Kesehatan Keliling", desc: "Penyuluhan stunting santriwati, pemeriksaan gizi gratis pemukiman dhuafa, dan bakti sosial kesehatan." },
@@ -273,99 +269,150 @@ export default function Home() {
     }
   ];
 
-  const COLORS = ['#FFD700', '#112D75', '#059669', '#FDFBF7', '#7C3AED'];
-
   return (
-    <div className="space-y-0">
-      {/* Hero Section (60/40 Split) */}
-      <section className="relative bg-primary pt-0 pb-32 overflow-hidden border-b border-primary/20">
-        {/* Background Image with Elegant Dark Fading */}
+    <div className="space-y-0 overflow-x-hidden">
+      {/* ---------------------------------------------------- */}
+      {/* HERO SECTION: Premium Royal Blue Gradient & Islamic Motif */}
+      {/* ---------------------------------------------------- */}
+      <section className="relative bg-hero-royal bg-islamic-pattern pt-2 pb-24 md:pb-36 overflow-hidden">
+        
+        {/* Subtle Ambient Glow Overlays */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        {/* Hero Background Photo Accent */}
         <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden">
           <img 
             src="/src/assets/images/pmii_meeting_cooperation_1779609727304.png" 
-            alt="Pertemuan IKA PMII" 
-            className="w-full h-full object-cover opacity-20 object-center scale-105"
+            alt="PC IKA PMII Bandung Barat" 
+            className="w-full h-full object-cover opacity-10 object-center scale-105"
             referrerPolicy="no-referrer"
           />
-          {/* Subtle custom radial and linear gradient overlay for high contrast text readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/95 to-primary/60" />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary via-transparent to-primary/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#031242] via-[#072587]/90 to-[#004db8]/80" />
         </div>
 
-        {/* Elite Running Text Ticker */}
-        <div className="w-full bg-black/40 border-b border-white/5 py-4 mb-2 overflow-hidden relative z-10">
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-primary to-transparent z-10 pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-primary to-transparent z-10 pointer-events-none"></div>
-          <marquee scrollamount="3.5" className="block font-sans font-black text-sm md:text-base text-accent uppercase tracking-[0.2em] select-none">
-            Selamat Datang di Rumah Digital PC IKA PMII Kabupaten Bandung Barat &nbsp;&bull;&nbsp; #AlumniSinergiPMIIBerdikari &nbsp;&bull;&nbsp; #KolaborasiAksiNyata &nbsp;&bull;&nbsp; Selamat Datang di Rumah Digital PC IKA PMII Kabupaten Bandung Barat &nbsp;&bull;&nbsp; #AlumniSinergiPMIIBerdikari &nbsp;&bull;&nbsp; #KolaborasiAksiNyata
+        {/* Running Text Ticker - Elegant Gold Accent */}
+        <div className="w-full bg-slate-950/40 backdrop-blur-md border-b border-white/10 py-3 mb-6 overflow-hidden relative z-10">
+          <marquee scrollamount="3.5" className="block font-sans font-bold text-xs md:text-sm text-amber-300 uppercase tracking-[0.2em] select-none">
+            Selamat Datang di Rumah Digital PC IKA PMII Kabupaten Bandung Barat &nbsp;&bull;&nbsp; #AlumniSinergiPMIIBerdikari &nbsp;&bull;&nbsp; #KolaborasiAksiNyata &nbsp;&bull;&nbsp; Pengabdian Umat, Bangsa &amp; Daerah
           </marquee>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 relative z-10 text-left">
-          <div className="flex flex-col lg:flex-row gap-10 items-start justify-between">
-            {/* Left Column: Heading & Description */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 relative z-10 text-left">
+          <div className="flex flex-col lg:flex-row gap-12 items-center justify-between">
+            
+            {/* Left Column: Heading, Badges, Tagline & CTAs */}
             <div className="max-w-3xl space-y-6 lg:w-3/5">
               <div className="flex flex-wrap gap-2.5">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="inline-block px-4 py-1.5 bg-accent/10 text-accent rounded-full text-xs font-bold uppercase tracking-widest border border-accent/20"
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-amber-400/15 text-amber-300 rounded-full text-xs font-bold uppercase tracking-widest border border-amber-300/30 backdrop-blur-md shadow-sm"
                 >
+                  <Star size={12} className="fill-amber-300 text-amber-300" />
                   #KolaborasiAksiNyata
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.05 }}
-                  className="inline-block px-4 py-1.5 bg-accent/10 text-accent rounded-full text-xs font-bold uppercase tracking-widest border border-accent/20"
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-blue-500/20 text-blue-200 rounded-full text-xs font-bold uppercase tracking-widest border border-blue-300/20 backdrop-blur-md shadow-sm"
                 >
+                  <CheckCircle2 size={12} className="text-blue-300" />
                   #AlumniSinergiPMIIBerdikari
                 </motion.div>
               </div>
+
               <motion.h1
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-3xl sm:text-5xl md:text-7xl font-display font-bold leading-tight md:leading-[1.0] text-accent uppercase"
+                className="text-4xl sm:text-6xl lg:text-7xl font-display font-extrabold leading-[1.08] text-white tracking-tight"
               >
-                SINERGI <span className="text-white/80 italic text-2xl sm:text-4xl md:text-5xl">&amp;</span> <span className="text-white">KOLABORASI</span>
+                SINERGI <span className="text-amber-300 italic font-normal">&amp;</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-300 to-amber-500">KOLABORASI</span>
               </motion.h1>
+
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-base md:text-lg text-white/80 max-w-2xl leading-relaxed font-sans"
+                className="text-base sm:text-lg md:text-xl text-slate-200/90 max-w-2xl leading-relaxed font-sans font-normal"
               >
-                Mengajak seluruh alumni PMII Kabupaten Bandung Barat untuk bersinergi membangun peradaban, intelektualitas, dan kemandirian ekonomi daerah.
+                Rumah Digital Pengurus Cabang Ikatan Keluarga Alumni PMII Kabupaten Bandung Barat. Menghimpun potensi alumni untuk pengabdian berdikari di sektor intelektual, birokrasi, hukum, dan ekonomi daerah.
               </motion.p>
+
+              {/* Action Buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-wrap gap-4 pt-3"
+              >
+                <Link
+                  to="/registrasi"
+                  className="btn-gold"
+                >
+                  Daftar Anggota SIAP <ArrowRight size={18} />
+                </Link>
+                <Link
+                  to="/profil/selayang-pandang"
+                  className="btn-outline-white"
+                >
+                  Pelajari Selengkapnya
+                </Link>
+              </motion.div>
+
+              {/* Trust Indicators */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="pt-4 flex flex-wrap items-center gap-6 border-t border-white/10 text-xs text-slate-300 font-medium"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span><strong>{totalAlumni}</strong> Alumni Terverifikasi</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                  <span>16 PAC Kecamatan Se-KBB</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                  <span>5 Pilar Panca Karsa</span>
+                </div>
+              </motion.div>
+
             </div>
 
-            {/* Right Column: Ringkasan Berita Terkini Quick Portal Links Box */}
+            {/* Right Column: Floating Quick News Summary Portal Card */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
-              className="w-full lg:w-2/5 xl:w-[35%] bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 shadow-2xl flex flex-col gap-4 self-stretch justify-between"
+              className="w-full lg:w-2/5 xl:w-[36%] glass-panel rounded-3xl p-6 shadow-2xl flex flex-col gap-4 self-stretch justify-between relative overflow-hidden"
             >
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-xl pointer-events-none"></div>
+
+              <div className="flex items-center justify-between border-b border-white/15 pb-3 relative z-10">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-accent animate-pulse shrink-0"></span>
-                  <span className="font-display font-black text-xs text-accent uppercase tracking-widest">Ringkasan Berita Terkini</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+                  <span className="font-display font-bold text-xs text-amber-300 uppercase tracking-widest">Ringkasan Berita Terkini</span>
                 </div>
-                <Link to="/publikasi/berita" className="text-[10px] text-white/50 hover:text-accent font-black uppercase tracking-wider transition-all inline-flex items-center gap-1">
+                <Link to="/publikasi/berita" className="text-[10px] text-white/70 hover:text-amber-300 font-bold uppercase tracking-wider transition-all inline-flex items-center gap-1">
                   Selengkapnya <ArrowRight size={10} />
                 </Link>
               </div>
 
-              <div className="flex flex-col gap-3.5 divide-y divide-white/5 flex-grow justify-center">
-                {news.slice(0, 3).map((item, idx) => (
+              <div className="flex flex-col gap-3.5 divide-y divide-white/10 flex-grow justify-center relative z-10">
+                {news.slice(0, 3).map((item) => (
                   <Link
                     key={item.id}
                     to="/publikasi/berita"
-                    className="flex gap-4 pt-3 first:pt-0 group text-left transition-transform duration-200 hover:translate-x-1"
+                    className="flex gap-4 pt-3 first:pt-0 group text-left transition-all duration-300 hover:translate-x-1"
                   >
                     {item.image && (
-                      <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-white/10 border border-white/10 relative">
+                      <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-white/10 border border-white/20 relative shadow-sm">
                         <img 
                           src={item.image} 
                           alt={item.title} 
@@ -376,157 +423,187 @@ export default function Home() {
                     )}
                     <div className="flex-grow space-y-1.5 my-auto">
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] bg-accent/10 border border-accent/20 px-2 py-0.5 rounded-full text-accent font-black uppercase tracking-wider">
+                        <span className="text-[9px] bg-amber-400/20 border border-amber-300/30 px-2 py-0.5 rounded-full text-amber-300 font-bold uppercase tracking-wider">
                           {item.category || "Berita"}
                         </span>
-                        <span className="text-[9.5px] text-white/40 font-semibold font-mono">
+                        <span className="text-[9.5px] text-white/60 font-semibold font-mono">
                           {new Date(item.date).toLocaleDateString("id-ID", { month: "short", day: "numeric" })}
                         </span>
                       </div>
-                      <h4 className="text-white font-bold text-xs leading-snug line-clamp-2 group-hover:text-accent transition-colors">
+                      <h4 className="text-white font-bold text-xs leading-snug line-clamp-2 group-hover:text-amber-300 transition-colors">
                         {item.title}
                       </h4>
                     </div>
                   </Link>
                 ))}
               </div>
+
+              <div className="pt-3 border-t border-white/10 text-center relative z-10">
+                <Link 
+                  to="/publikasi/berita" 
+                  className="text-xs font-bold text-amber-300 hover:text-amber-200 inline-flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  Portal Berita &amp; Informasi Publik <ArrowRight size={12} />
+                </Link>
+              </div>
+
             </motion.div>
+
           </div>
         </div>
 
-        {/* Responsive news portal layout block */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
+        {/* Curved Organic Wave SVG Divider */}
+        <div className="wave-divider">
+          <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="text-surface fill-current">
+            <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,60 L1200,120 L0,120 Z"></path>
+          </svg>
+        </div>
+      </section>
+
+      {/* ---------------------------------------------------- */}
+      {/* 4-COLUMN FEATURE CARDS GRID: Clean & Minimalist */}
+      {/* ---------------------------------------------------- */}
+      <section className="bg-surface py-12 md:py-20 border-b border-slate-200/60 relative z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             
-            {/* 1. Berita Utama Besar */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col">
-              {news[0] ? (
-                <Link 
-                  to="/publikasi/berita"
-                  className="group relative flex flex-col bg-white/5 backdrop-blur-md rounded-3xl md:rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl h-full focus:ring-2 focus:ring-accent outline-none min-h-[360px] md:min-h-[440px]"
-                >
-                  <div className="relative aspect-[16/10] overflow-hidden">
-                    <img 
-                      src={news[0].image || "/src/assets/images/pmii_meeting_cooperation_1779609727304.png"} 
-                      alt={news[0].title} 
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 duration-700 transition-transform"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/25 to-transparent"></div>
-                    <span className="absolute top-4 left-4 md:top-6 md:left-6 bg-accent text-primary text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
-                      {news[0].category || "BERITA UTAMA"}
-                    </span>
-                  </div>
-                  <div className="p-5 sm:p-8 flex flex-col justify-between flex-grow text-left">
-                    <div className="space-y-3 sm:space-y-4">
-                      <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs text-white/50 font-bold">
-                        <span>{new Date(news[0].date).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                        <span>&bull;</span>
-                        <span>Oleh: {news[0].author || "Redaksi"}</span>
-                      </div>
-                      <h2 className="text-xl sm:text-2xl md:text-3.5xl font-display font-black text-white leading-tight group-hover:text-accent transition-colors line-clamp-3">
-                        {news[0].title}
-                      </h2>
-                      <p className="text-white/60 text-xs sm:text-sm line-clamp-2 md:line-clamp-3 leading-relaxed">
-                        {news[0].content}
-                      </p>
-                    </div>
-                    <div className="pt-4 sm:pt-6 border-t border-white/10 flex items-center justify-between">
-                      <span className="text-accent text-xs font-black uppercase tracking-widest inline-flex items-center gap-2">
-                        Baca Selengkapnya <ArrowRight size={14} className="group-hover:translate-x-1.5 duration-200 transition-transform" />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ) : (
-                <div className="bg-white/5 backdrop-blur-md rounded-3xl md:rounded-[2.5rem] p-8 md:p-12 text-center text-white/40 border border-white/10 flex items-center justify-center min-h-[360px] md:min-h-[440px]">
-                  Memuat Berita Utama...
-                </div>
-              )}
+            {/* Feature 1: Database Alumni SIAP */}
+            <div className="p-8 rounded-2xl bg-white border border-slate-200/80 card-floating shadow-soft text-left group">
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 text-[#072587] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-[#072587] group-hover:text-white transition-all duration-300 shadow-sm">
+                <Users size={28} />
+              </div>
+              <h3 className="font-display font-bold text-slate-900 text-xl mb-2 group-hover:text-[#072587] transition-colors">Database SIAP Pedia</h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-4">Pendaftaran &amp; direktori terpusat SIAP Pedia seluruh kader alumni PMII KBB.</p>
+              <Link to="/registrasi" className="text-xs font-bold text-[#072587] hover:text-amber-600 inline-flex items-center gap-1.5 transition-colors">
+                Daftar E-KTA <ArrowRight size={12} />
+              </Link>
             </div>
 
-            {/* 2. Ringkasan Pengumuman Resmi */}
-            <div className="col-span-1 md:col-span-1 lg:col-span-2 flex flex-col gap-3">
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="font-display font-black text-sm text-accent uppercase tracking-wider">Ringkasan Pengumuman</h3>
-                <Link to="/publikasi/pengumuman" className="text-[9px] bg-accent/10 hover:bg-accent hover:text-primary text-accent border border-accent/20 transition-all font-black px-3 py-1 rounded-full uppercase tracking-wider">
-                  Lihat Semua
-                </Link>
+            {/* Feature 2: Koperasi KAMARA */}
+            <div className="p-8 rounded-2xl bg-white border border-slate-200/80 card-floating shadow-soft text-left group">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                <Building2 size={28} />
               </div>
-              
-              <div className="flex flex-col gap-2.5">
-                {announcements.slice(0, 4).map((item, i) => (
-                  <Link 
-                    key={item.id}
-                    to="/publikasi/pengumuman"
-                    className={`group bg-white/5 backdrop-blur-sm hover:bg-white/10 border border-white/10 rounded-xl p-2.5 flex gap-3 transition-all hover:scale-[1.01] items-center text-left ${
-                      i >= 2 ? "md:hidden lg:flex pointer-events-auto" : "flex pointer-events-auto"
-                    }`}
-                  >
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-accent/15 text-accent group-hover:bg-accent group-hover:text-primary transition-all">
-                      <Presentation size={16} />
-                    </div>
-                    <div className="space-y-0.5 flex-grow min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[8px] text-accent font-black uppercase tracking-wider truncate">
-                          {item.category || "PENGUMUMAN"}
-                        </span>
-                        <span className="text-[8.5px] text-white/40 shrink-0">
-                          {new Date(item.date).toLocaleDateString("id-ID", { day: 'numeric', month: 'short' })}
-                        </span>
-                      </div>
-                      <h4 className="text-white font-bold text-[11px] leading-tight line-clamp-1 group-hover:text-accent transition-all truncate">
-                        {item.title}
-                      </h4>
-                    </div>
-                  </Link>
-                ))}
+              <h3 className="font-display font-bold text-slate-900 text-xl mb-2 group-hover:text-amber-600 transition-colors">Koperasi KAMARA</h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-4">Pemberdayaan UMKM alumni &amp; katalog produk ekonomi kreatif berdikari.</p>
+              <Link to="/produk-umkm/katalog" className="text-xs font-bold text-amber-600 hover:text-amber-700 inline-flex items-center gap-1.5 transition-colors">
+                Katalog Produk <ArrowRight size={12} />
+              </Link>
+            </div>
+
+            {/* Feature 3: Berita & Publikasi */}
+            <div className="p-8 rounded-2xl bg-white border border-slate-200/80 card-floating shadow-soft text-left group">
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 text-[#072587] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-[#072587] group-hover:text-white transition-all duration-300 shadow-sm">
+                <Newspaper size={28} />
               </div>
+              <h3 className="font-display font-bold text-slate-900 text-xl mb-2 group-hover:text-[#072587] transition-colors">Berita &amp; Publikasi</h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-4">Kanal opini, jurnal ilmiah, serta pengumuman kegiatan resmi organisasi.</p>
+              <Link to="/publikasi/berita" className="text-xs font-bold text-[#072587] hover:text-amber-600 inline-flex items-center gap-1.5 transition-colors">
+                Baca Warta <ArrowRight size={12} />
+              </Link>
+            </div>
+
+            {/* Feature 4: LBH & Advokasi */}
+            <div className="p-8 rounded-2xl bg-white border border-slate-200/80 card-floating shadow-soft text-left group">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                <ShieldCheck size={28} />
+              </div>
+              <h3 className="font-display font-bold text-slate-900 text-xl mb-2 group-hover:text-amber-600 transition-colors">LBH &amp; Advokasi</h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-4">Bantuan hukum pro-bono advokasi masyarakat serta pengabdian sosial.</p>
+              <Link to="/profil/lbh" className="text-xs font-bold text-amber-600 hover:text-amber-700 inline-flex items-center gap-1.5 transition-colors">
+                Konsultasi LBH <ArrowRight size={12} />
+              </Link>
             </div>
 
           </div>
         </div>
       </section>
 
-      {/* Section H1 (30/70) */}
-      <section className="py-12 md:py-24 bg-surface border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-8 lg:gap-16">
-          <div className="lg:w-1/3 space-y-6 md:space-y-8">
+      {/* ---------------------------------------------------- */}
+      {/* SECTION: Movement & Suara Pergerakan (Clean Whitespace) */}
+      {/* ---------------------------------------------------- */}
+      <section className="py-16 md:py-24 bg-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
+          
+          <div className="lg:w-5/12 space-y-6 text-left">
             <div className="space-y-2">
-              <span className="text-accent font-bold tracking-widest text-xs uppercase">#Movement</span>
-              <h2 className="text-3xl md:text-4xl font-bold leading-tight text-primary">Suara <br className="hidden md:block"/>Pergerakan</h2>
+              <span className="inline-block text-amber-600 font-bold tracking-widest text-xs uppercase px-3 py-1 bg-amber-50 rounded-full border border-amber-200">
+                #SuaraPergerakan
+              </span>
+              <h2 className="text-3xl md:text-5xl font-display font-bold leading-tight text-[#072587]">
+                Peradaban &amp; Intelektualitas Alumni
+              </h2>
             </div>
-            <div className="space-y-4 md:space-y-6">
-              {['Kisah Inspiratif Kader', 'Jurnal Ilmiah Alumni', 'Opini Publik'].map((tag, i) => (
-                <div key={i} className="border-l-2 border-primary/20 pl-4 py-1 hover:border-primary transition-all cursor-pointer group">
-                  <p className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">#{tag}</p>
-                  <p className="text-xs text-gray-500 mt-1">Membaca arah peradaban melalui kacamata alumni.</p>
+
+            <p className="text-slate-600 text-base leading-relaxed">
+              PC IKA PMII Kabupaten Bandung Barat berkomitmen membangun ruang dialektika yang sehat, menerbitkan gagasan kritis, dan memberikan sumbangsih nyata untuk pembangunan daerah.
+            </p>
+
+            <div className="space-y-4 pt-2">
+              {[
+                { title: 'Kisah Inspiratif Kader', desc: 'Jejak kiprah alumni di berbagai lini profesi strategis.' },
+                { title: 'Jurnal Ilmiah & Opini', desc: 'Pemikiran kritis kebangsaan dan wacana Islam moderat.' },
+                { title: 'Pemberdayaan Umat & Daerah', desc: 'Kerja sama erat dengan mitra strategis se-Bandung Barat.' }
+              ].map((tag, i) => (
+                <div key={i} className="border-l-4 border-amber-400 pl-4 py-1.5 hover:border-[#072587] transition-all group cursor-pointer">
+                  <p className="text-sm font-bold text-slate-900 group-hover:text-[#072587] transition-colors">{tag.title}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{tag.desc}</p>
                 </div>
               ))}
             </div>
+
+            <div className="pt-4">
+              <Link to="/publikasi/opini" className="btn-gold">
+                Jelajahi Portal Opini <ArrowRight size={16} />
+              </Link>
+            </div>
           </div>
-          <div className="lg:w-2/3">
-            <div className="relative group overflow-hidden rounded-3xl md:rounded-[2.5rem] bg-primary aspect-[16/10] sm:aspect-[16/9]">
-              <img src={bannerImg} className="absolute inset-0 w-full h-full object-cover transition-all duration-700 hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent flex items-end p-5 sm:p-12">
-                <div className="max-w-lg space-y-3 sm:space-y-4 text-left">
-                  <h3 className="text-lg sm:text-3xl text-white font-bold">Membangun Masa Depan Berbasis Intelektualitas</h3>
-                  <p className="text-white/80 text-xs sm:text-sm line-clamp-2 sm:line-clamp-none">Gerakan IKA PMII KBB tidak hanya sekedar silaturahmi, tapi manifestasi pengabdian kader terhadap umat dan bangsa.</p>
-                  <Link id="home-opinions-link" to="/publikasi/opini" className="text-accent font-bold text-xs sm:text-sm inline-flex items-center gap-2 hover:gap-4 transition-all">Baca Selengkapnya <ArrowRight size={14}/></Link>
+
+          <div className="lg:w-7/12 w-full">
+            <div className="relative group overflow-hidden rounded-3xl bg-[#072587] aspect-[16/10] sm:aspect-[16/9] shadow-soft-lg">
+              <img 
+                src={bannerImg} 
+                alt="Suara Pergerakan PMII KBB"
+                className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#031242]/95 via-[#072587]/40 to-transparent flex items-end p-6 sm:p-10 text-left">
+                <div className="max-w-xl space-y-3">
+                  <span className="text-xs font-bold uppercase tracking-widest text-amber-300 bg-amber-400/20 px-3 py-1 rounded-full border border-amber-300/30">
+                    Gagasan Utama
+                  </span>
+                  <h3 className="text-xl sm:text-3xl text-white font-display font-bold leading-tight">
+                    Membangun Masa Depan Berbasis Intelektualitas &amp; Integritas
+                  </h3>
+                  <p className="text-slate-200/90 text-xs sm:text-sm line-clamp-2">
+                    Gerakan IKA PMII KBB tidak hanya sekedar silaturahmi, tapi manifestasi pengabdian kader terhadap umat, bangsa, dan daerah.
+                  </p>
+                  <Link to="/publikasi/opini" className="text-amber-300 font-bold text-xs sm:text-sm inline-flex items-center gap-2 hover:gap-3 transition-all pt-1">
+                    Baca Selengkapnya <ArrowRight size={14}/>
+                  </Link>
                 </div>
               </div>
             </div>
           </div>
+
         </div>
       </section>
 
-      {/* Section H2: PancaKarsa */}
-      <section className="py-16 md:py-32 bg-primary relative">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#ffffff10,transparent)]"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10 md:space-y-16">
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-5xl font-bold text-accent">PancaKarsa</h2>
-            <p className="text-surface/50 uppercase tracking-[0.3em] text-[8px] sm:text-[10px] font-bold">5 Pilar Program Kerja Strategis & Kategori Pengabdian</p>
+      {/* ---------------------------------------------------- */}
+      {/* SECTION: PANCAKARSA (5 Pillars - Dark Royal Blue & Gold) */}
+      {/* ---------------------------------------------------- */}
+      <section className="py-16 md:py-28 bg-hero-royal bg-islamic-gold-pattern text-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-12">
+          
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <span className="text-amber-400 font-bold uppercase tracking-[0.25em] text-xs px-4 py-1.5 bg-amber-400/10 rounded-full border border-amber-400/20">
+              5 Pilar Program Kerja
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-display font-bold text-white tracking-tight">
+              PancaKarsa IKA PMII KBB
+            </h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Panduan program strategis pengabdian organisasi alumni dalam memperkuat kelembagaan, pendidikan, jaringan, ekonomi, dan pengabdian sosial.
+            </p>
           </div>
 
           {/* Category Tabs Layout */}
@@ -537,29 +614,28 @@ export default function Home() {
               return (
                 <button
                   key={i}
-                  id={`pancakarsa-tab-${i}`}
                   onClick={() => setActiveKarsa(i)}
-                  className={`text-left p-5 sm:p-6 rounded-2xl sm:rounded-3xl border transition-all duration-300 relative group flex flex-col justify-between h-full cursor-pointer ${
+                  className={`text-left p-6 rounded-2xl border transition-all duration-300 relative group flex flex-col justify-between h-full cursor-pointer ${
                     isActive
-                      ? "bg-accent text-primary border-accent shadow-lg shadow-accent/25 scale-[1.02]"
-                      : "bg-white/5 backdrop-blur-md text-surface border-white/10 hover:border-accent/40 hover:bg-white/10"
+                      ? "bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-slate-950 border-amber-300 shadow-gold scale-[1.02]"
+                      : "glass-panel text-white hover:bg-white/10 hover:border-amber-400/40"
                   }`}
                 >
                   <div className="flex items-center justify-between w-full mb-6">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center transition-colors ${
-                      isActive ? "bg-primary text-accent" : "bg-accent text-primary"
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                      isActive ? "bg-slate-950 text-amber-400" : "bg-amber-400/20 text-amber-300"
                     }`}>
-                      <IconComponent size={20} className="sm:size-[24px]" />
+                      <IconComponent size={24} />
                     </div>
-                    <span className={`text-[9px] font-black uppercase tracking-widest ${
-                      isActive ? "text-primary/70" : "text-accent"
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${
+                      isActive ? "text-slate-900" : "text-amber-300"
                     }`}>Pilar 0{i+1}</span>
                   </div>
                   <div>
-                    <h4 className={`font-display font-bold text-base sm:text-lg leading-tight uppercase tracking-tight ${
-                      isActive ? "text-primary" : "text-surface"
+                    <h4 className={`font-display font-bold text-base leading-tight ${
+                      isActive ? "text-slate-950" : "text-white"
                     }`}>{pilar.title}</h4>
-                    <p className={`text-xs mt-2 line-clamp-2 ${isActive ? "text-primary/85" : "text-surface/60"}`}>{pilar.desc}</p>
+                    <p className={`text-xs mt-2 line-clamp-2 ${isActive ? "text-slate-900/80" : "text-slate-300/70"}`}>{pilar.desc}</p>
                   </div>
                 </button>
               );
@@ -567,90 +643,99 @@ export default function Home() {
           </div>
 
           {/* Active Category Programs Showcase */}
-          <motion.div
-            key={activeKarsa}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.4 }}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start bg-white/5 backdrop-blur-lg border border-white/10 p-5 sm:p-8 md:p-12 rounded-3xl md:rounded-[2.5rem] shadow-3xl text-left"
-          >
-            {/* Category Info Sidebar */}
-            <div className="lg:col-span-4 space-y-4 sm:space-y-6">
-              <div className="inline-flex p-4 sm:p-5 bg-accent/20 border border-accent/30 rounded-2xl sm:rounded-3xl text-accent">
-                {(() => {
-                  const ActiveIcon = pancakarsa[activeKarsa].icon;
-                  return <ActiveIcon className="size-8 sm:size-12 animate-pulse" />;
-                })()}
-              </div>
-              <div className="space-y-3">
-                <span className="text-accent font-black tracking-widest text-[10px] uppercase">Rona Program Kerja</span>
-                <h3 className="text-2xl sm:text-3.5xl font-display font-bold text-surface uppercase tracking-tight leading-none">
-                  {pancakarsa[activeKarsa].title}
-                </h3>
-                <p className="text-sm text-surface/75 leading-relaxed">
-                  {pancakarsa[activeKarsa].desc}
-                </p>
-              </div>
-              <div className="pt-4 border-t border-white/10">
-                <span className="block text-[9px] uppercase tracking-widest font-black text-accent/60 mb-2">Fokus Utama</span>
-                <div className="flex flex-wrap gap-2 text-xs font-bold text-surface/90">
-                  <span className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-full">Kemandirian Kader</span>
-                  <span className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-full">Silih Asah Asih Asuh</span>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeKarsa}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start glass-panel p-6 sm:p-10 rounded-3xl text-left"
+            >
+              {/* Category Info Sidebar */}
+              <div className="lg:col-span-4 space-y-6">
+                <div className="inline-flex p-4 bg-amber-400/20 border border-amber-300/30 rounded-2xl text-amber-300">
+                  {(() => {
+                    const ActiveIcon = pancakarsa[activeKarsa].icon;
+                    return <ActiveIcon size={36} />;
+                  })()}
+                </div>
+                <div className="space-y-2">
+                  <span className="text-amber-300 font-bold tracking-widest text-xs uppercase">Rona Program Kerja</span>
+                  <h3 className="text-2xl sm:text-3xl font-display font-bold text-white leading-snug">
+                    {pancakarsa[activeKarsa].title}
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed">
+                    {pancakarsa[activeKarsa].desc}
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-white/10">
+                  <span className="block text-[10px] uppercase tracking-widest font-bold text-amber-300/80 mb-2">Fokus Utama</span>
+                  <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-200">
+                    <span className="px-3 py-1 bg-white/10 border border-white/15 rounded-full">Kemandirian Kader</span>
+                    <span className="px-3 py-1 bg-white/10 border border-white/15 rounded-full">Silih Asah Asih Asuh</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Programs List */}
-            <div className="lg:col-span-8 space-y-4">
-              <div className="mb-2 sm:mb-4">
-                <h5 className="text-xs uppercase tracking-widest font-black text-accent/80">Daftar 5 Program Kerja Unggulan:</h5>
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                {pancakarsa[activeKarsa].programs.map((prog, idx) => (
-                  <motion.div
-                    key={idx}
-                    whileHover={{ x: 6 }}
-                    className="flex items-start gap-3 sm:gap-5 p-4 sm:p-5 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-accent/30 rounded-2xl transition-all duration-300 shadow-sm text-left"
-                  >
-                    <div className="flex items-center justify-center font-mono font-black text-sm text-accent bg-accent/10 border border-accent/20 w-10 h-10 rounded-xl shrink-0">
-                      {prog.nr}
+              {/* Programs List */}
+              <div className="lg:col-span-8 space-y-4">
+                <div className="mb-2">
+                  <h5 className="text-xs uppercase tracking-widest font-bold text-amber-300">Daftar 5 Program Kerja Unggulan:</h5>
+                </div>
+                <div className="grid grid-cols-1 gap-3.5">
+                  {pancakarsa[activeKarsa].programs.map((prog, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-4 p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-300/40 rounded-2xl transition-all duration-300 text-left"
+                    >
+                      <div className="flex items-center justify-center font-mono font-bold text-sm text-amber-300 bg-amber-400/15 border border-amber-300/30 w-10 h-10 rounded-xl shrink-0">
+                        {prog.nr}
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-sans font-bold text-base text-white">{prog.title}</h4>
+                        <p className="text-xs text-slate-300/80 leading-relaxed">{prog.desc}</p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <h4 className="font-sans font-bold text-base text-surface group-hover:text-accent tracking-tight">{prog.title}</h4>
-                      <p className="text-xs text-surface/70 leading-relaxed">{prog.desc}</p>
-                    </div>
-                  </motion.div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </AnimatePresence>
+
         </div>
       </section>
 
-      {/* Section H3: IKA KBB Movement Slide */}
-      <section className="py-16 md:py-24 bg-primary text-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 md:mb-12 flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
+      {/* ---------------------------------------------------- */}
+      {/* SECTION: IKA KBB Movement Showcase (Interactive Slide) */}
+      {/* ---------------------------------------------------- */}
+      <section className="py-16 md:py-24 bg-slate-900 text-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
           <div className="space-y-2 text-left">
-             <h2 className="text-2xl sm:text-4xl font-bold">IKA Bandung Barat Movement</h2>
-             <p className="text-white/60 uppercase tracking-widest text-xs">Jejak Langkah Pergerakan Kami</p>
+            <span className="text-amber-400 text-xs uppercase font-bold tracking-widest">Galeri &amp; Dokumentasi</span>
+            <h2 className="text-2xl sm:text-4xl font-display font-bold">IKA Bandung Barat Movement</h2>
           </div>
-          <Link to="/publikasi/galeri" className="text-accent font-bold text-sm">Galeri Kegiatan Kami</Link>
+          <Link to="/publikasi/galeri" className="btn-gold text-xs py-2.5 px-5">
+            Lihat Semua Galeri <ArrowRight size={14} />
+          </Link>
         </div>
+
         <div className="flex gap-6 overflow-x-auto pb-8 px-4 sm:px-6 lg:px-8 scrollbar-none snap-x">
           {news.map((item, i) => (
-            <div key={i} className="min-w-[280px] md:min-w-[300px] snap-center shrink-0">
+            <div key={i} className="min-w-[290px] md:min-w-[320px] snap-center shrink-0">
               <Link
                 to={item.category === "Artikel" ? "/publikasi/artikel" : item.category === "Pengumuman" ? "/publikasi/pengumuman" : item.category === "Opini" ? "/publikasi/opini" : "/publikasi/berita"}
-                className="block aspect-[3/2] bg-white/10 rounded-[2rem] overflow-hidden relative group"
+                className="block aspect-[4/3] bg-slate-800 rounded-2xl overflow-hidden relative group shadow-lg"
               >
-                <img src={item.image} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" title={item.title} referrerPolicy="no-referrer" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent flex flex-col justify-end p-5 md:p-6">
-                  <span className="text-[9px] text-accent font-bold uppercase mb-1.5">{new Date(item.date).toLocaleDateString("id-ID")}</span>
-                  <h3 className="font-bold text-sm md:text-base leading-snug mb-3 line-clamp-2 text-white">{item.title}</h3>
-                  <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
-                    <ArrowRight size={16} />
-                  </div>
+                <img 
+                  src={item.image} 
+                  alt={item.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                  referrerPolicy="no-referrer" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent flex flex-col justify-end p-5">
+                  <span className="text-[10px] text-amber-300 font-bold uppercase mb-1">{new Date(item.date).toLocaleDateString("id-ID")}</span>
+                  <h3 className="font-bold text-sm leading-snug line-clamp-2 text-white group-hover:text-amber-300 transition-colors">{item.title}</h3>
                 </div>
               </Link>
             </div>
@@ -658,52 +743,55 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Section H4: Dynamic Modern Statistics Tab Dashboard */}
-      <section className="py-12 md:py-28 bg-surface border-t border-gray-100">
+      {/* ---------------------------------------------------- */}
+      {/* SECTION: Dynamic Modern Statistics Tab Dashboard */}
+      {/* ---------------------------------------------------- */}
+      <section className="py-16 md:py-28 bg-surface border-t border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-10 lg:mb-16 gap-4">
+          <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between mb-10 lg:mb-14 gap-6">
             <div className="space-y-2 text-left">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-accent/10 text-primary border border-accent/20 rounded-full text-[10px] font-black uppercase tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                Sistem Informasi Alumni &amp; Database SIAP Pedia
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-blue-50 text-[#072587] border border-blue-200 rounded-full text-xs font-bold uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Sistem Informasi Alumni SIAP Pedia
               </span>
-              <h2 className="text-3xl lg:text-5xl font-display font-bold text-primary tracking-tight">
-                Statistik Anggota Alumni
+              <h2 className="text-3xl lg:text-5xl font-display font-bold text-[#072587] tracking-tight">
+                Statistik &amp; Demografi Alumni
               </h2>
-              <p className="text-gray-400 text-sm max-w-xl">
-                Olah data digital terpusat menyajikan visualisasi sebaran kuantitatif, kapabilitas, serta potensi riil seluruh kader IKA PMII se-Kabupaten Bandung Barat.
+              <p className="text-slate-600 text-sm max-w-xl">
+                Visualisasi terpadu sebaran alumni di 16 kecamatan, potensi pengabdian, serta keahlian khusus kader IKA PMII Bandung Barat.
               </p>
             </div>
             
             {/* Quick Live Counter Stats */}
             <div className="flex flex-wrap gap-4 select-none lg:self-end">
-              <div className="bg-white/40 backdrop-blur border border-gray-200/65 px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-2xl flex items-center gap-4 shadow-sm">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                  <Users size={18} />
+              <div className="bg-white border border-slate-200 px-5 py-3 rounded-2xl flex items-center gap-4 shadow-soft">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 text-[#072587] flex items-center justify-center font-bold">
+                  <Users size={22} />
                 </div>
                 <div className="text-left">
-                  <span className="block text-2xl font-black text-primary leading-none count-up">{totalAlumni}</span>
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Alumni Terverifikasi</span>
+                  <span className="block text-2xl font-extrabold text-[#072587] leading-none">{totalAlumni}</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Alumni Terverifikasi</span>
                 </div>
               </div>
               
-              <div className="bg-white/40 backdrop-blur border border-gray-200/65 px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-2xl flex items-center gap-4 shadow-sm">
-                <div className="w-10 h-10 rounded-xl bg-accent/20 text-primary flex items-center justify-center">
-                  <Activity size={18} className="text-primary" />
+              <div className="bg-white border border-slate-200 px-5 py-3 rounded-2xl flex items-center gap-4 shadow-soft">
+                <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                  <MapPin size={22} />
                 </div>
                 <div className="text-left">
-                  <span className="block text-2xl font-black text-primary leading-none">{distData.length}</span>
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Kecamatan Aktif</span>
+                  <span className="block text-2xl font-extrabold text-amber-600 leading-none">{distData.length}</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Kecamatan Aktif</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Core Analytics Grid Container */}
-          <div className="bg-white rounded-3xl md:rounded-[3.5rem] border border-gray-150/80 shadow-2xl shadow-gray-200/50 overflow-hidden">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-soft-lg overflow-hidden">
+            
             {/* Minimalist Tab Bar Switcher */}
-            <div className="bg-gray-50/60 border-b border-gray-150/80 px-4 md:px-8 py-4 md:py-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="bg-slate-50/80 border-b border-slate-200 px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex flex-wrap gap-2.5 w-full md:w-auto">
                 {tabsList.map((t) => {
                   const TabIcon = t.icon;
@@ -712,61 +800,50 @@ export default function Home() {
                     <button
                       key={t.id}
                       onClick={() => setActiveStatTab(t.id as any)}
-                      className={`flex items-center gap-2.5 px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-2xl font-bold font-sans text-xs uppercase tracking-wider transition-all duration-200 relative shrink-0 ${
+                      className={`flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                         isActive
-                          ? "bg-primary text-accent shadow-md shadow-primary/20 hover:opacity-95"
-                          : "bg-white/70 hover:bg-white text-gray-550 border border-gray-150 hover:border-gray-200"
+                          ? "bg-[#072587] text-white shadow-md"
+                          : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
                       }`}
                     >
-                      <TabIcon size={14} />
-                      <div className="text-left">
-                        <span className="block leading-none">{t.title}</span>
-                      </div>
+                      <TabIcon size={16} />
+                      <span>{t.title}</span>
                     </button>
                   );
                 })}
               </div>
               
-              <div className="text-xs text-gray-400 font-bold flex items-center gap-2">
-                <Compass size={14} className="text-accent animate-spin" style={{ animationDuration: "4s" }} />
-                <span>Interaktif: Klik tab untuk beralih perspektif</span>
+              <div className="text-xs text-slate-500 font-semibold flex items-center gap-2">
+                <Compass size={16} className="text-amber-500 animate-spin" style={{ animationDuration: "6s" }} />
+                <span>Beralih tab untuk visualisasi data interaktif</span>
               </div>
             </div>
 
             {/* Main Interactive Visualizer Frame */}
-            <div className="p-4 sm:p-8 lg:p-14 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
+            <div className="p-6 sm:p-10 lg:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
               
               {/* Left Sidebar Info List */}
-              <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <span className="text-[10px] uppercase font-black tracking-[0.2em] text-accent font-sans bg-primary/95 px-3 py-1 rounded-full inline-block">
+              <div className="lg:col-span-5 flex flex-col justify-between space-y-6 text-left">
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-[#072587] bg-blue-50 px-3 py-1 rounded-full inline-block">
                       {activeStatTab === "kecamatan" && "Sebaran Teritorial"}
                       {activeStatTab === "potensi" && "Sektor Potensi"}
-                      {activeStatTab === "profesi" && "Komposisi Karir"}
                       {activeStatTab === "kompetensi" && "Spesialisasi Kader"}
                     </span>
-                    <h3 className="text-2.5xl font-display font-bold text-primary">
+                    <h3 className="text-2xl font-display font-bold text-[#072587]">
                       {activeStatTab === "kecamatan" && "Kerapatan Wilayah KBB"}
                       {activeStatTab === "potensi" && "Dominasi Klaster Bakti"}
-                      {activeStatTab === "profesi" && "Pemetaan Profesi Alumni"}
                       {activeStatTab === "kompetensi" && "Keahlian Unggulan"}
                     </h3>
-                    <p className="text-xs text-gray-400 leading-relaxed">
-                      {activeStatTab === "kecamatan" && "Distribusi jumlah alumni berdasar 16 wilayah kecamatan di Bandung Barat untuk penataan kohesi daerah."}
-                      {activeStatTab === "potensi" && "Pemetaan potensi strategis kader yang berkontribusi aktif pada pembentukan pilar peradaban daerah."}
-                      {activeStatTab === "profesi" && "Kategori karir dan lapangan pengabdian alumni dalam menghidupkan roda kesejahteraan umat."}
-                      {activeStatTab === "kompetensi" && "Rangkuman ragam keahlian teknis khusus yang melekat pada personil alumni terdaftar."}
-                    </p>
                   </div>
 
                   {/* Top Items Detail Container */}
-                  <div className="space-y-4 pt-4 border-t border-gray-100 max-h-[350px] overflow-y-auto pr-2">
+                  <div className="space-y-3.5 pt-3 border-t border-slate-100 max-h-[320px] overflow-y-auto pr-2">
                     {(() => {
                       let activeData: any[] = [];
                       if (activeStatTab === "kecamatan") activeData = distData;
                       else if (activeStatTab === "potensi") activeData = potentialData;
-                      else if (activeStatTab === "profesi") activeData = profData;
                       else if (activeStatTab === "kompetensi") activeData = skillData;
 
                       const maxVal = Math.max(...activeData.map(d => d.value), 1);
@@ -775,20 +852,20 @@ export default function Home() {
                         const scorePct = Math.round((item.value / totalAlumni) * 100);
                         const progressPct = Math.round((item.value / maxVal) * 100);
                         return (
-                          <div key={idx} className="space-y-1.5 group">
-                            <div className="flex justify-between items-center text-xs font-sans">
-                              <span className="font-bold text-primary group-hover:text-accent font-sans duration-100">{item.name}</span>
-                              <div className="space-x-2 text-right font-sans">
-                                <span className="font-black text-primary">{item.value} Orang</span>
-                                <span className="text-gray-400">({scorePct}%)</span>
+                          <div key={idx} className="space-y-1 group">
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="font-bold text-slate-800 group-hover:text-[#072587] transition-colors">{item.name}</span>
+                              <div className="space-x-1.5 font-semibold">
+                                <span className="font-bold text-[#072587]">{item.value} Orang</span>
+                                <span className="text-slate-400">({scorePct}%)</span>
                               </div>
                             </div>
-                            <div className="w-full h-2 bg-gray-100/70 rounded-full overflow-hidden flex">
+                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden flex">
                               <div 
-                                className="h-full bg-primary rounded-full transition-all duration-1000 ease-out"
+                                className="h-full rounded-full transition-all duration-1000 ease-out"
                                 style={{ 
                                   width: `${progressPct}%`,
-                                  backgroundColor: idx === 0 ? "#112D75" : idx === 1 ? "#FFD700" : idx === 2 ? "#059669" : "#6366f1"
+                                  backgroundColor: idx === 0 ? "#072587" : idx === 1 ? "#f59e0b" : idx === 2 ? "#059669" : "#6366f1"
                                 }}
                               />
                             </div>
@@ -800,22 +877,22 @@ export default function Home() {
                 </div>
 
                 {/* Additional Insight Banner */}
-                <div className="p-5 rounded-2xl bg-gray-50/80 border border-gray-100 text-left space-y-3.5 backdrop-blur">
-                  <span className="block text-[9px] uppercase tracking-widest font-black text-gray-400">Demografi Gender &amp; Kaderisasi</span>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <span className="block text-[10px] uppercase tracking-widest font-bold text-slate-500">Demografi Gender &amp; Kaderisasi</span>
                   <div className="grid grid-cols-2 gap-4 items-center">
-                    <div className="border-r border-gray-100 pr-2">
-                      <span className="text-[10px] text-gray-400 block font-bold uppercase">Rasio L/P</span>
-                      <div className="flex gap-2 items-end mt-1 font-sans">
-                        <span className="text-sm font-black text-primary">L: {malePct}%</span>
-                        <span className="text-xs text-black/50">/</span>
-                        <span className="text-sm font-black text-emerald-600">P: {femalePct}%</span>
+                    <div className="border-r border-slate-200 pr-2">
+                      <span className="text-[10px] text-slate-500 block font-semibold uppercase">Rasio L / P</span>
+                      <div className="flex gap-2 items-end mt-0.5">
+                        <span className="text-sm font-bold text-[#072587]">L: {malePct}%</span>
+                        <span className="text-xs text-slate-400">/</span>
+                        <span className="text-sm font-bold text-emerald-600">P: {femalePct}%</span>
                       </div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 block font-bold uppercase">Kaderisasi</span>
-                      <div className="mt-1 flex flex-wrap gap-1 font-sans">
-                        <span className="text-[9px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-md">Utama: {levelUtama}</span>
-                        <span className="text-[9px] font-bold bg-amber-500/10 text-amber-700 px-1.5 py-0.5 rounded-md">Madya: {levelMadya}</span>
+                      <span className="text-[10px] text-slate-500 block font-semibold uppercase">Kaderisasi</span>
+                      <div className="mt-0.5 flex flex-wrap gap-1">
+                        <span className="text-[9px] font-bold bg-blue-100 text-[#072587] px-2 py-0.5 rounded-md">Utama: {levelUtama}</span>
+                        <span className="text-[9px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md">Madya: {levelMadya}</span>
                       </div>
                     </div>
                   </div>
@@ -824,33 +901,28 @@ export default function Home() {
               </div>
 
               {/* Right Main Chart Panel */}
-              <div className="lg:col-span-7 bg-gray-50/40 rounded-3xl border border-gray-100 p-4 sm:p-6 flex flex-col justify-center items-center relative overflow-hidden min-h-[280px] md:min-h-[400px]">
+              <div className="lg:col-span-7 bg-slate-50/60 rounded-2xl border border-slate-200 p-6 flex flex-col justify-center items-center relative min-h-[300px]">
                 
-                {/* Embedded Aesthetic Grid Gridmarks */}
-                <div className="absolute inset-x-0 top-0 bottom-0 pointer-events-none opacity-[0.03] select-none bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-                
-                <div className="w-full h-[240px] sm:h-[360px] relative z-10 font-sans">
+                <div className="w-full h-[260px] sm:h-[340px] relative z-10">
                   {activeStatTab === "kecamatan" && (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={distData.slice(0, 8)}>
-                        <XAxis dataKey="name" fontSize={11} axisLine={false} tickLine={false} tick={{ fill: "#4b5563", fontWeight: 600 }} />
-                        <YAxis fontSize={10} axisLine={false} tickLine={false} tick={{ fill: "#9ca3af" }} />
+                        <XAxis dataKey="name" fontSize={11} axisLine={false} tickLine={false} tick={{ fill: "#475569", fontWeight: 600 }} />
+                        <YAxis fontSize={10} axisLine={false} tickLine={false} tick={{ fill: "#94a3b8" }} />
                         <Tooltip 
                           contentStyle={{ 
-                            borderRadius: "1.25rem", 
+                            borderRadius: "1rem", 
                             border: "1px solid #e2e8f0", 
-                            boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+                            boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)",
                             backgroundColor: "#ffffff",
-                            fontWeight: 650,
-                            fontFamily: "Inter, sans-serif"
+                            fontWeight: 600
                           }}
-                          cursor={{ fill: "rgba(17, 45, 117, 0.04)", radius: 8 }} 
                         />
-                        <Bar dataKey="value" fill="#112D75" name="Jumlah Alumni" radius={[12, 12, 0, 0]}>
+                        <Bar dataKey="value" fill="#072587" name="Jumlah Alumni" radius={[8, 8, 0, 0]}>
                           {distData.slice(0, 8).map((entry, index) => (
                             <Cell 
                               key={`cell-${index}`} 
-                              fill={index === 0 ? "#112D75" : index === 1 ? "#2046ac" : index === 2 ? "#FFD700" : index % 2 === 0 ? "#059669" : "#6366f1"} 
+                              fill={index === 0 ? "#072587" : index === 1 ? "#004db8" : index === 2 ? "#f59e0b" : "#059669"} 
                             />
                           ))}
                         </Bar>
@@ -863,9 +935,9 @@ export default function Home() {
                       <PieChart>
                         <Pie
                           data={potentialData}
-                          innerRadius={80}
-                          outerRadius={115}
-                          paddingAngle={6}
+                          innerRadius={75}
+                          outerRadius={110}
+                          paddingAngle={5}
                           dataKey="value"
                           nameKey="name"
                           cx="50%"
@@ -876,63 +948,37 @@ export default function Home() {
                               key={`cell-${index}`} 
                               fill={COLORS_LIST[index % COLORS_LIST.length]} 
                               stroke="#ffffff" 
-                              strokeWidth={3} 
+                              strokeWidth={2} 
                             />
                           ))}
                         </Pie>
                         <Tooltip 
                           contentStyle={{ 
-                            borderRadius: "1.25rem", 
+                            borderRadius: "1rem", 
                             border: "1px solid #e2e8f0", 
-                            boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
-                            backgroundColor: "#ffffff"
+                            boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)" 
                           }} 
                         />
                       </PieChart>
                     </ResponsiveContainer>
                   )}
 
-                  {activeStatTab === "profesi" && (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={profData} layout="vertical">
-                        <XAxis type="number" hide />
-                        <YAxis dataKey="name" type="category" fontSize={11} axisLine={false} tickLine={false} width={130} tick={{ fill: "#112D75", fontWeight: 700 }} />
-                        <Tooltip 
-                          contentStyle={{ 
-                            borderRadius: "1.25rem", 
-                            border: "none", 
-                            boxShadow: "0 15px 20px -5px rgb(0 0 0 / 0.08)" 
-                          }} 
-                        />
-                        <Bar dataKey="value" fill="#059669" name="Jumlah" radius={[0, 12, 12, 0]}>
-                          {profData.map((entry, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={index === 0 ? "#059669" : index === 1 ? "#10b981" : index === 2 ? "#112D75" : "#FFD700"} 
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-
                   {activeStatTab === "kompetensi" && (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={skillData.slice(0, 6)}>
-                        <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} tick={{ fill: "#4b5563", fontWeight: 600 }} />
-                        <YAxis fontSize={10} axisLine={false} tickLine={false} tick={{ fill: "#9ca3af" }} />
+                        <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} tick={{ fill: "#475569", fontWeight: 600 }} />
+                        <YAxis fontSize={10} axisLine={false} tickLine={false} tick={{ fill: "#94a3b8" }} />
                         <Tooltip 
                           contentStyle={{ 
-                            borderRadius: "1.25rem", 
-                            border: "1px solid #e2e8f0", 
-                            boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" 
+                            borderRadius: "1rem", 
+                            border: "1px solid #e2e8f0" 
                           }} 
                         />
-                        <Bar dataKey="value" fill="#FFD700" name="Alumni" radius={[12, 12, 0, 0]}>
+                        <Bar dataKey="value" fill="#f59e0b" name="Alumni" radius={[8, 8, 0, 0]}>
                           {skillData.slice(0, 6).map((entry, index) => (
                             <Cell 
                               key={`cell-${index}`} 
-                              fill={index % 2 === 0 ? "#FFD700" : "#112D75"} 
+                              fill={index % 2 === 0 ? "#f59e0b" : "#072587"} 
                             />
                           ))}
                         </Bar>
@@ -941,12 +987,12 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* Aesthetic Chart Legend Indicator list */}
+                {/* Legend for Pie Chart */}
                 {activeStatTab === "potensi" && (
-                  <div className="flex flex-wrap gap-x-4 gap-y-1.5 justify-center mt-4 text-[10px] font-bold text-gray-500 relative z-10 w-full font-sans">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1.5 justify-center mt-3 text-[11px] font-semibold text-slate-600">
                     {potentialData.map((entry, index) => (
                       <div key={index} className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS_LIST[index % COLORS_LIST.length] }} />
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS_LIST[index % COLORS_LIST.length] }} />
                         <span>{entry.name} ({entry.value})</span>
                       </div>
                     ))}

@@ -1,294 +1,164 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-primary: var(--primary);
-  --color-accent: var(--accent);
-  --color-surface: var(--surface);
-  --color-card: var(--card);
-  --color-text-base: var(--text-base);
-  --color-text-muted: var(--text-muted);
-  --color-border-color: var(--border-color);
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-primary: #072587;
+  --color-primary-light: #004db8;
+  --color-primary-dark: #00175a;
+  --color-accent: #f59e0b;
+  --color-accent-gold: #d97706;
+  --color-accent-light: #fbbf24;
+  --color-surface: #f8fafc;
+  --color-card: #ffffff;
+  --color-text-base: #0f172a;
+  --color-text-muted: #64748b;
+  --color-border-color: #e2e8f0;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Playfair Display", serif;
 }
 
 :root {
-  --primary: #00008B;      /* Deep Dark Blue */
-  --accent: #FFA500;       /* Golden Yellow / Orange */
-  --surface: #00008B;      /* Deep Dark Blue Background as requested */
-  --card: #0d17a3;         /* Elegant slightly lighter blue for high-contrast cards */
-  --text-base: #FFFFFF;    /* Crisp White Text for excellent readability */
-  --text-muted: #CBD5E1;   /* Beautiful Slate Light Gray */
-  --border-color: rgba(255, 255, 255, 0.12); /* Seamless translucent border */
+  --primary: #072587;      /* Deep Royal Blue */
+  --primary-light: #004db8;
+  --accent: #f59e0b;       /* Gold / Amber */
+  --accent-gold: #d97706;  /* Rich Gold */
+  --surface: #f8fafc;      /* Crisp Light Surface */
+  --card: #ffffff;         /* Clean White Card */
+  --text-base: #0f172a;    /* High Contrast Slate Text */
+  --text-muted: #64748b;   /* Slate Gray Muted Text */
+  --border-color: #e2e8f0; /* Soft Light Border */
 }
 
 .dark {
-  --primary: #00008B;      /* Deep Dark Blue */
-  --accent: #FFA500;       /* Golden Yellow / Orange */
-  --surface: #00008B;      /* Deep Dark Blue Background */
-  --card: #0d17a3;         /* Elegant lighter blue card */
-  --text-base: #FFFFFF;    /* Crisp White Text */
-  --text-muted: #CBD5E1;   /* Slate Light Gray */
-  --border-color: rgba(255, 255, 255, 0.12); /* Seamless translucent border */
+  --primary: #072587;
+  --accent: #f59e0b;
+  --surface: #030a1e;      /* Deep Blue Night Surface */
+  --card: #07173e;         /* Deep Blue Card */
+  --text-base: #f8fafc;    /* Crisp White Text */
+  --text-muted: #94a3b8;   /* Light Slate Gray */
+  --border-color: rgba(255, 255, 255, 0.12);
 }
 
 @variant dark (&:where(.dark, .dark *));
 
 @layer base {
   body {
-    @apply bg-surface text-text-base font-sans transition-colors duration-300;
-    background-color: var(--surface) !important;
-    color: var(--text-base) !important;
-  }
-  h1, h2, h3, h4 {
-    @apply font-display text-text-base;
-    color: var(--text-base) !important;
+    @apply bg-surface text-text-base font-sans transition-colors duration-300 antialiased;
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
 }
 
+/* Islamic Geometric Pattern Background SVG Overlay */
+.bg-islamic-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04' fill-rule='evenodd'%3E%3Cpath d='M0 0h80v80H0V0zm40 40M20 0l20 20L20 40 0 20 20 0zm40 0l20 20-20 20-20-20 20-20zm0 40l20 20-20 20-20-20 20-20zm-40 0l20 20-20 20-20-20 20-20zm20-20l20 20-20 20-20-20 20-20zM0 40l20 20L0 80v-40zm80 0v40L60 60l20-20zM40 0l20 20L40 40V0zm0 80V40l20 20-20 20z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Gold Accent Geometric Pattern Overlay */
+.bg-islamic-gold-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fbbf24' fill-opacity='0.06' fill-rule='evenodd'%3E%3Cpath d='M30 30L0 0h60L30 30zM0 60l30-30 30 30H0zM30 30L0 60V0l30 30zm0 0l30 30V0L30 30z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Custom Gradient Helpers */
+.bg-hero-royal {
+  background: linear-gradient(135deg, #031242 0%, #072587 40%, #004db8 80%, #0056d6 100%);
+}
+
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.glass-card-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.glass-gold-card {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.08) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+/* Rounded component corner standards (16-20px = rounded-2xl to rounded-3xl) */
+.rounded-standard {
+  border-radius: 1.125rem; /* 18px */
+}
+
+/* Soft Shadows */
+.shadow-soft {
+  box-shadow: 0 10px 30px -10px rgba(7, 37, 135, 0.08);
+}
+
+.shadow-soft-lg {
+  box-shadow: 0 20px 40px -15px rgba(7, 37, 135, 0.12);
+}
+
+.shadow-gold {
+  box-shadow: 0 12px 30px -8px rgba(217, 119, 6, 0.3);
+}
+
+/* Floating Card Animation Hover Effect */
+.card-floating {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-floating:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 22px 45px -12px rgba(7, 37, 135, 0.15);
+}
+
+/* Custom Curved Wave Divider CSS */
+.wave-divider {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  pointer-events: none;
+}
+
+.wave-divider svg {
+  position: relative;
+  display: block;
+  width: calc(100% + 1.3px);
+  height: 80px;
+}
+
+/* Navigation Links */
 .nav-link {
-  @apply text-sm font-medium transition-colors hover:text-accent;
+  @apply text-sm font-semibold transition-all hover:text-amber-300 text-white/90 relative py-1;
 }
 
-.btn-primary {
-  @apply bg-primary text-white px-6 py-3 rounded-full hover:opacity-90 transition-all font-medium;
+.btn-gold {
+  @apply bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 font-bold px-7 py-3.5 rounded-xl hover:from-amber-300 hover:to-amber-500 transition-all duration-300 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center gap-2;
 }
 
-.card-movement {
-  @apply relative overflow-hidden rounded-2xl shadow-xl transition-transform hover:scale-[1.02];
+.btn-white {
+  @apply bg-white text-[#072587] font-bold px-7 py-3.5 rounded-xl hover:bg-slate-50 transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5 inline-flex items-center gap-2;
 }
 
-/* Smart Theme Automatic Overrides for Premium Navy & Gold Look */
-
-/* Level 1: Outer Backgrounds (Luxurious Deep Royal Navy) */
-.bg-surface, 
-.bg-slate-950, 
-.bg-gray-950,
-.bg-zinc-950,
-.bg-neutral-950,
-.bg-\[\#F8FAFC\],
-.bg-\[\#FAF6EE\] {
-  background-color: var(--surface) !important;
+.btn-outline-white {
+  @apply border-2 border-white/80 text-white font-bold px-7 py-3.5 rounded-xl hover:bg-white/10 hover:border-white transition-all duration-300 inline-flex items-center gap-2;
 }
 
-/* Level 2: Core Cards & Content Containers (Premium Navy Card) */
-.bg-white,
-.bg-card,
-.bg-slate-900,
-.bg-gray-900,
-.bg-zinc-900,
-.bg-neutral-900,
-.bg-\[\#FCFAF2\] {
-  background-color: var(--card) !important;
-}
-
-/* Level 3: Secondary cards, nested widgets or popup lists */
-.bg-slate-800,
-.bg-gray-800,
-.bg-zinc-800,
-.bg-neutral-800,
-.bg-slate-800\/50,
-.bg-[#131E3B],
-.bg-[#131E3B]\/40,
-.bg-[#1c2c54],
-.bg-[#1C2C54],
-.bg-[#202E50],
-.bg-slate-950\/50 {
-  background-color: #05057a !important;
-}
-
-/* Level 4: Soft highlights, tables, interactive menu buttons */
-.bg-slate-50, 
-.bg-gray-50, 
-.bg-zinc-50,
-.bg-neutral-50,
-.bg-slate-100,
-.bg-gray-100,
-.bg-slate-200,
-.bg-gray-200,
-.bg-[#FAF6EE] {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-}
-
-.bg-gray-50\/50,
-.bg-gray-50\/60,
-.bg-surface\/50,
-.bg-slate-50\/50 {
-  background-color: rgba(255, 255, 255, 0.03) !important;
-}
-
-/* Form / Interactive Utility Controls */
-input, 
-select, 
-textarea,
-.bg-gray-55 {
-  &.border, &.border-gray-100, &.border-gray-200, &.border-gray-300, &.border-border-color {
-    background-color: #000066 !important;
-    border-color: rgba(255, 255, 255, 0.15) !important;
-    color: var(--text-base) !important;
+/* Form Controls Styling */
+input, select, textarea {
+  &.border {
+    border-color: #cbd5e1;
+    &:focus {
+      border-color: #004db8;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 77, 184, 0.15);
+    }
   }
-  &:focus {
-    background-color: #0d17a3 !important;
-    border-color: var(--accent) !important;
-  }
-}
-
-/* Text & Contrast Overrides */
-.text-gray-900, 
-.text-gray-850,
-.text-gray-800, 
-.text-gray-750,
-.text-gray-700,
-.text-slate-905,
-.text-slate-900, 
-.text-slate-850,
-.text-slate-800, 
-.text-slate-705,
-.text-slate-700,
-.text-stone-950,
-.text-stone-900,
-.text-stone-850,
-.text-stone-800,
-.text-stone-700,
-.text-zinc-950,
-.text-zinc-900,
-.text-zinc-850,
-.text-zinc-805,
-.text-zinc-800,
-.text-zinc-700,
-.text-neutral-955,
-.text-neutral-950,
-.text-neutral-900,
-.text-neutral-850,
-.text-neutral-800,
-.text-neutral-700,
-.text-gray-950,
-.text-slate-950,
-.text-blue-950,
-.text-blue-900,
-.text-indigo-950,
-.text-indigo-900,
-.text-black,
-.text-text-base,
-.text-slate-200,
-.text-slate-300,
-.text-slate-400,
-.text-gray-950,
-.text-\[\#3E2A1C\] {
-  color: var(--text-base) !important; /* Perfect crisp light text */
-}
-
-/* Muted Text - Silver Slate Gray */
-.text-gray-650, 
-.text-gray-600, 
-.text-slate-600, 
-.text-gray-550,
-.text-gray-500, 
-.text-slate-500,
-.text-gray-400,
-.text-zinc-600,
-.text-zinc-500,
-.text-stone-600,
-.text-stone-500,
-.text-neutral-600,
-.text-neutral-500,
-.text-text-muted {
-  color: var(--text-muted) !important;
-}
-
-/* Core Headers or Highlights */
-h1, h2, h3, h4, 
-.font-display.text-primary,
-h1.text-primary,
-h2.text-primary,
-h3.text-primary,
-h4.text-primary,
-.text-primary {
-  color: var(--text-base) !important;
-}
-
-/* Accent items (yellow/gold indicators) */
-.text-accent,
-.text-yellow-600,
-.text-[#BC9010],
-.text-yellow-500,
-.text-amber-500 {
-  color: var(--accent) !important;
-}
-
-/* Borders & Dividers */
-.border,
-.border-gray-50,
-.border-gray-100, 
-.border-gray-150,
-.border-gray-200,
-.border-gray-300,
-.border-slate-100,
-.border-slate-150,
-.border-slate-200,
-.border-slate-300,
-.border-slate-800,
-.border-slate-850,
-.border-slate-900,
-.border-dashed {
-  border-color: var(--border-color) !important;
-}
-
-/* Hover and active states overrides */
-.hover\:bg-gray-50:hover,
-.hover\:bg-gray-100:hover,
-.hover\:bg-slate-50:hover,
-.hover\:bg-slate-100:hover {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-.hover\:text-primary:hover {
-  color: var(--accent) !important;
-}
-
-/* Neutral Badges & Highlights */
-.bg-gray-200.text-gray-600,
-.bg-gray-105.text-gray-605,
-.bg-gray-100.text-gray-600,
-.bg-blue-50.text-blue-700 {
-  background-color: rgba(59, 130, 246, 0.15) !important;
-  color: var(--accent) !important;
-}
-
-/* Light Mode Overrides for Complete Consistency */
-:root {
-  .text-slate-500, .text-gray-500 {
-    color: var(--text-muted) !important;
-  }
-  .bg-slate-50, .bg-slate-100 {
-    background-color: var(--card) !important;
-  }
-}
-
-/* Gold Background Contrast Safeguards - Force dark text on gold backgrounds for maximum legibility */
-.bg-accent,
-[class*="bg-accent"] {
-  color: #000033 !important;
-}
-.bg-accent *,
-[class*="bg-accent"] * {
-  color: #000033 !important;
-}
-.bg-accent .text-primary,
-[class*="bg-accent"] .text-primary,
-.bg-accent .text-text-base,
-[class*="bg-accent"] .text-text-base {
-  color: #000033 !important;
-}
-
-/* Semi-transparent text overrides for excellent legibility on deep blue background */
-.text-primary\/80 {
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-.text-primary\/70 {
-  color: rgba(255, 255, 255, 0.7) !important;
-}
-.text-primary\/40 {
-  color: rgba(255, 255, 255, 0.4) !important;
 }
