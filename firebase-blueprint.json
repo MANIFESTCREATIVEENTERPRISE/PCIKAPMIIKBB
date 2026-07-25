@@ -1,0 +1,89 @@
+{
+  "entities": {
+    "news": {
+      "title": "News / Berita",
+      "description": "Berita terkini PC IKA PMII Bandung Barat",
+      "properties": {
+        "id": { "type": "number", "description": "Unique ID" },
+        "title": { "type": "string", "description": "Judul berita" },
+        "content": { "type": "string", "description": "Isi berita" },
+        "image": { "type": "string", "description": "URL/path gambar thumbnail" },
+        "date": { "type": "string", "description": "Tanggal terbit ISO string" },
+        "category": { "type": "string", "description": "Kategori berita" },
+        "author": { "type": "string", "description": "Penulis/Humas" }
+      }
+    },
+    "articles": {
+      "title": "Articles / Opini / Jurnal",
+      "description": "Opini, artikel, dan jurnal pemikiran alumni",
+      "properties": {
+        "id": { "type": "number", "description": "Unique ID" },
+        "title": { "type": "string", "description": "Judul tulisan" },
+        "content": { "type": "string", "description": "Isi tulisan" },
+        "image": { "type": "string", "description": "Gambar pendukung" },
+        "date": { "type": "string", "description": "Tanggal terbit" },
+        "category": { "type": "string", "description": "Kategori: Opini, Artikel, Jurnal" },
+        "author": { "type": "string", "description": "Penulis/Alumni" }
+      }
+    },
+    "submittedContents": {
+      "title": "Submitted Contents",
+      "description": "Tulisan yang diajukan oleh alumni dari website untuk dikurasi admin",
+      "properties": {
+        "id": { "type": "number", "description": "Unique ID" },
+        "title": { "type": "string", "description": "Judul tulisan" },
+        "author": { "type": "string", "description": "Nama penulis" },
+        "category": { "type": "string", "description": "Kategori tulisan" },
+        "content": { "type": "string", "description": "Isi tulisan" },
+        "date": { "type": "string", "description": "Tanggal submit" },
+        "status": { "type": "string", "description": "Status: Menunggu Kurasi, Diterbitkan, Ditolak" },
+        "views": { "type": "number", "description": "Jumlah dibaca" }
+      }
+    },
+    "members": {
+      "title": "Members",
+      "description": "Data pendaftaran kader dan alumni",
+      "properties": {
+        "id": { "type": "number", "description": "Unique ID" },
+        "fullName": { "type": "string", "description": "Nama lengkap" },
+        "whatsapp": { "type": "string", "description": "Nomor WA" },
+        "email": { "type": "string", "description": "Email" },
+        "status": { "type": "string", "description": "Status pendaftaran: pending, approved, rejected" }
+      }
+    },
+    "products": {
+      "title": "Products UMKM KAMARA",
+      "description": "Katalog produk & usaha alumni Koperasi KAMARA",
+      "properties": {
+        "id": { "type": "number", "description": "Unique ID" },
+        "name": { "type": "string", "description": "Nama produk" },
+        "price": { "type": "string", "description": "Harga produk" },
+        "image": { "type": "string", "description": "Gambar produk" },
+        "contact": { "type": "string", "description": "Kontak WA penjual" },
+        "provider": { "type": "string", "description": "Nama unit usaha alumni" }
+      }
+    },
+    "announcements": {
+      "title": "Announcements",
+      "description": "Pengumuman resmi PC IKA PMII Bandung Barat",
+      "properties": {
+        "id": { "type": "number", "description": "Unique ID" },
+        "title": { "type": "string", "description": "Judul pengumuman" },
+        "content": { "type": "string", "description": "Isi pengumuman" },
+        "documentUrl": { "type": "string", "description": "Link dokumen PDF" },
+        "date": { "type": "string", "description": "Tanggal" },
+        "category": { "type": "string", "description": "Kategori" }
+      }
+    },
+    "criticSuggestions": {
+      "title": "Critics and Suggestions",
+      "description": "Kritik dan saran dari pengunjung",
+      "properties": {
+        "id": { "type": "number", "description": "Unique ID" },
+        "name": { "type": "string", "description": "Nama pengirim" },
+        "message": { "type": "string", "description": "Pesan" },
+        "date": { "type": "string", "description": "Tanggal" }
+      }
+    }
+  }
+}

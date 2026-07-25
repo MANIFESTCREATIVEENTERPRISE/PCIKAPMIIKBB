@@ -2,6 +2,13 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import fs from "fs";
+import { 
+  initFirestore, 
+  fetchCollectionFromFirestore, 
+  saveDocumentToFirestore, 
+  deleteDocumentFromFirestore, 
+  seedCollectionIfEmpty 
+} from "./src/lib/firebaseServer.js";
 
 async function startServer() {
   const app = express();
@@ -9,7 +16,7 @@ async function startServer() {
 
   app.use(express.json());
 
-  // In-memory data store (simulating a database)
+  // In-memory data store backed by Firebase Firestore
   const db: any = {
     members: [],
     submittedContents: [
@@ -104,8 +111,28 @@ async function startServer() {
     ]
   };
 
+  // Sync with Firestore on startup
+  const collectionsToSync = ["news", "articles", "submittedContents", "announcements", "members", "products", "criticSuggestions"];
+  
+  initFirestore();
+
+  for (const collName of collectionsToSync) {
+    try {
+      await seedCollectionIfEmpty(collName, db[collName] || []);
+      const fsData = await fetchCollectionFromFirestore(collName);
+      if (fsData && fsData.length > 0) {
+        // Sort items by ID or date descending
+        fsData.sort((a, b) => (b.id || 0) - (a.id || 0));
+        db[collName] = fsData;
+        console.log(`[Firestore] Synced ${fsData.length} items for ${collName}`);
+      }
+    } catch (e) {
+      console.error(`[Firestore] Startup sync error for ${collName}:`, e);
+    }
+  }
+
   // API Routes
-  app.get("/api/content/:type", (req, res) => {
+  app.get("/api/content/:type", async (req, res) => {
     const { type } = req.params;
     if (type === "opinions") {
       const opinions = db.articles.filter((art: any) => art.category === "Opini");
@@ -121,7 +148,7 @@ async function startServer() {
     res.json(db.submittedContents);
   });
 
-  app.post("/api/submitted-contents", (req, res) => {
+  app.post("/api/submitted-contents", async (req, res) => {
     const { title, content, author, category } = req.body;
     const newSubmit = {
       id: Date.now(),
@@ -134,14 +161,16 @@ async function startServer() {
       views: 0
     };
     db.submittedContents.unshift(newSubmit);
+    await saveDocumentToFirestore("submittedContents", newSubmit.id, newSubmit);
     res.json({ success: true, item: newSubmit });
   });
 
-  app.post("/api/submitted-contents/update", (req, res) => {
+  app.post("/api/submitted-contents/update", async (req, res) => {
     const { id, title, content, author, category, status } = req.body;
+    let updatedItem: any = null;
     db.submittedContents = db.submittedContents.map((c: any) => {
       if (c.id === Number(id)) {
-        return {
+        updatedItem = {
           ...c,
           title: title !== undefined ? title : c.title,
           content: content !== undefined ? content : c.content,
@@ -149,19 +178,24 @@ async function startServer() {
           category: category !== undefined ? category : c.category,
           status: status !== undefined ? status : c.status
         };
+        return updatedItem;
       }
       return c;
     });
+    if (updatedItem) {
+      await saveDocumentToFirestore("submittedContents", updatedItem.id, updatedItem);
+    }
     res.json({ success: true });
   });
 
-  app.post("/api/submitted-contents/delete", (req, res) => {
+  app.post("/api/submitted-contents/delete", async (req, res) => {
     const { id } = req.body;
     db.submittedContents = db.submittedContents.filter((c: any) => c.id !== Number(id));
+    await deleteDocumentFromFirestore("submittedContents", id);
     res.json({ success: true });
   });
 
-  app.post("/api/content/publish", (req, res) => {
+  app.post("/api/content/publish", async (req, res) => {
     const { title, content, author, category, image, date } = req.body;
     const newItem = {
       id: Date.now(),
@@ -173,25 +207,103 @@ async function startServer() {
       date: date || new Date().toISOString()
     };
 
+    let targetColl = "articles";
     if (category === "Berita") {
+      targetColl = "news";
       db.news.unshift(newItem);
     } else if (category === "Pengumuman") {
-      db.announcements.unshift({
+      targetColl = "announcements";
+      const ann = {
         id: newItem.id,
         title: newItem.title,
         content: newItem.content,
         documentUrl: "#",
         date: newItem.date,
         category: "Pengumuman",
-      });
+      };
+      db.announcements.unshift(ann);
+      await saveDocumentToFirestore("announcements", newItem.id, ann);
+      return res.json({ success: true, item: ann });
     } else {
       // Opini or Artikel
       db.articles.unshift(newItem);
     }
+    await saveDocumentToFirestore(targetColl, newItem.id, newItem);
     res.json({ success: true, item: newItem });
   });
 
-  app.post("/api/register", (req, res) => {
+  app.post("/api/content/delete", async (req, res) => {
+    const { id, category } = req.body;
+    let targetColl = "articles";
+    if (category === "Berita") targetColl = "news";
+    else if (category === "Pengumuman") targetColl = "announcements";
+
+    if (db[targetColl]) {
+      db[targetColl] = db[targetColl].filter((item: any) => item.id !== Number(id));
+    }
+    await deleteDocumentFromFirestore(targetColl, id);
+    res.json({ success: true });
+  });
+
+  app.post("/api/content/update", async (req, res) => {
+    const { id, title, content, author, category, image } = req.body;
+    let targetColl = "articles";
+    if (category === "Berita") targetColl = "news";
+    else if (category === "Pengumuman") targetColl = "announcements";
+
+    let updatedItem: any = null;
+    if (db[targetColl]) {
+      db[targetColl] = db[targetColl].map((item: any) => {
+        if (item.id === Number(id)) {
+          updatedItem = {
+            ...item,
+            title: title || item.title,
+            content: content || item.content,
+            author: author || item.author,
+            category: category || item.category,
+            image: image || item.image
+          };
+          return updatedItem;
+        }
+        return item;
+      });
+    }
+    if (updatedItem) {
+      await saveDocumentToFirestore(targetColl, updatedItem.id, updatedItem);
+    }
+    res.json({ success: true, item: updatedItem });
+  });
+
+  app.get("/api/products", (req, res) => {
+    res.json(db.products || []);
+  });
+
+  app.post("/api/products", async (req, res) => {
+    const product = req.body;
+    const id = product.id || Date.now();
+    const newProduct = { ...product, id };
+    const existingIdx = db.products.findIndex((p: any) => p.id === Number(id));
+    if (existingIdx >= 0) {
+      db.products[existingIdx] = newProduct;
+    } else {
+      db.products.unshift(newProduct);
+    }
+    await saveDocumentToFirestore("products", id, newProduct);
+    res.json({ success: true, product: newProduct });
+  });
+
+  app.post("/api/products/delete", async (req, res) => {
+    const { id } = req.body;
+    db.products = db.products.filter((p: any) => p.id !== Number(id));
+    await deleteDocumentFromFirestore("products", id);
+    res.json({ success: true });
+  });
+
+  app.get("/api/members", (req, res) => {
+    res.json(db.members || []);
+  });
+
+  app.post("/api/register", async (req, res) => {
     const memberData = req.body;
     
     // 1. Anti-spam honeypot check
@@ -216,12 +328,16 @@ async function startServer() {
       return res.status(400).json({ error: "Format email tidak valid." });
     }
 
-    db.members.push({ ...memberData, id: Date.now(), status: "pending" });
+    const newMember = { ...memberData, id: Date.now(), status: "pending" };
+    db.members.push(newMember);
+    await saveDocumentToFirestore("members", newMember.id, newMember);
     res.json({ message: "Pendaftaran berhasil, data anda akan ditinjau oleh pengurus." });
   });
 
-  app.post("/api/critics", (req, res) => {
-    db.criticSuggestions.push({ ...req.body, id: Date.now() });
+  app.post("/api/critics", async (req, res) => {
+    const newCritic = { ...req.body, id: Date.now() };
+    db.criticSuggestions.push(newCritic);
+    await saveDocumentToFirestore("criticSuggestions", newCritic.id, newCritic);
     res.json({ message: "Terima kasih atas kritik dan saran anda." });
   });
 
