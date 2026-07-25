@@ -583,7 +583,8 @@ _Terima kasih telah memesan melalui ekosistem alumni PMII Bandung Barat. Silakan
                         <div className="aspect-[4/3] w-full max-h-40 overflow-hidden relative bg-gray-50 flex items-center justify-center border-b border-gray-100">
                           <img 
                             src={p.image} 
-                            alt={p.name}
+                            alt={`Foto Produk UMKM KAMARA: ${p.name}`}
+                            loading="lazy"
                             referrerPolicy="no-referrer"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />

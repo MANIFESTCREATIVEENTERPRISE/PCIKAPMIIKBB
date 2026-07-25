@@ -530,6 +530,25 @@ export default function MemberRegistration() {
           />
         ) : (
           <form onSubmit={handleSubmitPrompt} className="space-y-16 bg-white p-8 md:p-16 rounded-[4rem] shadow-2xl border border-gray-100 relative z-20">
+            {/* Honeypot Anti-Spam Hidden Fields */}
+            <input
+              type="text"
+              name="website_url_hp"
+              value={formData.website_url_hp || ""}
+              onChange={(e) => handleChange("website_url_hp", e.target.value)}
+              style={{ display: "none" }}
+              tabIndex={-1}
+              autoComplete="off"
+            />
+            <input
+              type="text"
+              name="fax_hp"
+              value={formData.fax_hp || ""}
+              onChange={(e) => handleChange("fax_hp", e.target.value)}
+              style={{ display: "none" }}
+              tabIndex={-1}
+              autoComplete="off"
+            />
             {/* 1. DATA IDENTITAS ALUMNI */}
             <section id="section-identitas">
             <SectionTitle icon={User} title="Identitas Alumni" desc="Dasar & Kependudukan" />

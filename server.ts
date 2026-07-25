@@ -193,6 +193,29 @@ async function startServer() {
 
   app.post("/api/register", (req, res) => {
     const memberData = req.body;
+    
+    // 1. Anti-spam honeypot check
+    if (memberData.website_url_hp || memberData.fax_hp) {
+      return res.status(400).json({ error: "Permintaan ditolak (Sistem mendeteksi spam/bot)." });
+    }
+
+    // 2. Server-side validation
+    const fullName = (memberData.fullName || "").trim();
+    const whatsapp = (memberData.whatsapp || "").trim();
+    const email = (memberData.email || "").trim();
+
+    if (!fullName || fullName.length < 3) {
+      return res.status(400).json({ error: "Nama lengkap wajib diisi minimal 3 karakter." });
+    }
+
+    if (!whatsapp || whatsapp.length < 9) {
+      return res.status(400).json({ error: "Nomor WhatsApp/Telepon aktif wajib diisi minimal 9 digit." });
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Format email tidak valid." });
+    }
+
     db.members.push({ ...memberData, id: Date.now(), status: "pending" });
     res.json({ message: "Pendaftaran berhasil, data anda akan ditinjau oleh pengurus." });
   });
@@ -325,17 +348,152 @@ Allow: /
 Sitemap: https://pcikapmiikbb.or.id/sitemap.xml`);
   });
 
+  // SEO Metadata Generator for Server-Side HTML Pre-Rendering
+  function getSeoMetadata(reqPath: string) {
+    const canonicalUrl = `https://pcikapmiikbb.or.id${reqPath}`;
+    
+    let title = "PC IKA PMII Kabupaten Bandung Barat | Rumah Digital Alumni PMII KBB";
+    let description = "Portal Resmi PC IKA PMII Kabupaten Bandung Barat. Sistem Informasi Alumni (SIAP Pedia), Koperasi KAMARA, LBH IKA PMII, Berita & Opini.";
+    let jsonLd: any = {
+      "@context": "https://schema.org",
+      "@type": "NGO",
+      "name": "PC IKA PMII Kabupaten Bandung Barat",
+      "alternateName": "IKA PMII KBB",
+      "url": "https://pcikapmiikbb.or.id/",
+      "logo": "https://pcikapmiikbb.or.id/src/assets/images/logo.png",
+      "description": "Pengurus Cabang Ikatan Keluarga Alumni PMII Kabupaten Bandung Barat.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Kp. Babakan Rt 003 Rw 007 Desa Tanimulya",
+        "addressLocality": "Kecamatan Ngamprah",
+        "addressRegion": "Kabupaten Bandung Barat",
+        "postalCode": "40552",
+        "addressCountry": "ID"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+6282115991771",
+        "contactType": "customer service",
+        "email": "pcikapmiibandungbarat@gmail.com"
+      }
+    };
+
+    if (reqPath.startsWith("/profil/pc")) {
+      title = "Pengurus Cabang PC IKA PMII Bandung Barat | Profil Organisasi";
+      description = "Struktur Organisasi Pengurus Cabang IKA PMII Kabupaten Bandung Barat. Susunan dewan penasihat, dewan pembina, dan pengurus harian.";
+    } else if (reqPath.startsWith("/profil/pac")) {
+      title = "Pengurus Anak Cabang (PAC) IKA PMII Se-Bandung Barat";
+      description = "Direktori Pengurus Anak Cabang (PAC) IKA PMII di 16 Kecamatan Kabupaten Bandung Barat.";
+    } else if (reqPath.startsWith("/profil/lbh")) {
+      title = "LBH PC IKA PMII Bandung Barat | Bantuan Hukum Pro-Bono";
+      description = "Lembaga Bantuan Hukum PC IKA PMII KBB menyediakan konsultasi, advokasi, dan bantuan hukum gratis untuk masyarakat.";
+    } else if (reqPath.startsWith("/profil/koperasi")) {
+      title = "Koperasi Swatransaksi KAMARA | Pemberdayaan Ekonomi Alumni";
+      description = "Koperasi Mandiri Rakyat Sejahtera (KAMARA) IKA PMII Bandung Barat. Pusat inkubasi UMKM alumni dan ritel swalayan.";
+    } else if (reqPath.startsWith("/publikasi/berita")) {
+      title = "Berita & Warta Terkini PC IKA PMII Bandung Barat";
+      description = "Kumpulan berita resmi, kegiatan cabang, dan warta terkini alumni PMII Kabupaten Bandung Barat.";
+      jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Berita & Warta Terkini PC IKA PMII Bandung Barat",
+        "itemListElement": (db.news || []).slice(0, 5).map((item: any, index: number) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "NewsArticle",
+            "headline": item.title,
+            "description": item.content ? item.content.substring(0, 150) : "",
+            "datePublished": item.date,
+            "author": {
+              "@type": "Organization",
+              "name": item.author || "Redaksi IKA PMII KBB"
+            }
+          }
+        }))
+      };
+    } else if (reqPath.startsWith("/publikasi/opini")) {
+      title = "Opini & Suara Pergerakan Alumni PMII Bandung Barat";
+      description = "Kanal pemikiran kritis, tulisan opini, dan sumbangsih ide kebangsaan kader alumni PMII KBB.";
+      jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Opini & Pemikiran Intelektual Alumni PMII KBB",
+        "itemListElement": (db.articles || []).filter((a: any) => a.category === "Opini").slice(0, 5).map((item: any, index: number) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "BlogPosting",
+            "headline": item.title,
+            "description": item.content ? item.content.substring(0, 150) : "",
+            "datePublished": item.date,
+            "author": {
+              "@type": "Person",
+              "name": item.author || "Alumni PMII KBB"
+            }
+          }
+        }))
+      };
+    } else if (reqPath.startsWith("/produk-umkm/katalog")) {
+      title = "Katalog Produk UMKM Alumni IKA PMII Bandung Barat";
+      description = "Showcase produk kreatif, kriya, kuliner, dan usaha mandiri buatan kader alumni PMII KBB.";
+    } else if (reqPath.startsWith("/daftar-anggota")) {
+      title = "Pendaftaran SIAP Pedia | Verifikasi E-KTA Alumni PMII KBB";
+      description = "Formulir pendataan terpusat dan verifikasi e-KTA Sistem Informasi Alumni PMII (SIAP) Kabupaten Bandung Barat.";
+    }
+
+    return { title, description, canonicalUrl, jsonLd };
+  }
+
+  function injectSeoIntoHtml(html: string, seo: any) {
+    let updated = html;
+    
+    // Replace <title>
+    updated = updated.replace(/<title>.*?<\/title>/gi, `<title>${seo.title}</title>`);
+    
+    // Replace description
+    if (updated.includes('name="description"')) {
+      updated = updated.replace(/<meta name="description" content=".*?" \/>/gi, `<meta name="description" content="${seo.description}" />`);
+    }
+
+    // Replace og:title
+    if (updated.includes('property="og:title"')) {
+      updated = updated.replace(/<meta property="og:title" content=".*?" \/>/gi, `<meta property="og:title" content="${seo.title}" />`);
+    }
+
+    // Replace og:description
+    if (updated.includes('property="og:description"')) {
+      updated = updated.replace(/<meta property="og:description" content=".*?" \/>/gi, `<meta property="og:description" content="${seo.description}" />`);
+    }
+
+    // Inject dynamic JSON-LD
+    const jsonLdScript = `\n    <script type="application/ld+json">\n${JSON.stringify(seo.jsonLd, null, 2)}\n    </script>\n`;
+    updated = updated.replace("</head>", `${jsonLdScript}</head>`);
+
+    return updated;
+  }
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
+
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, { index: false }));
     app.get("*", (req, res) => {
+      if (!req.path.startsWith("/api")) {
+        const indexPath = path.join(distPath, "index.html");
+        if (fs.existsSync(indexPath)) {
+          let template = fs.readFileSync(indexPath, "utf-8");
+          const seoData = getSeoMetadata(req.path);
+          template = injectSeoIntoHtml(template, seoData);
+          return res.status(200).set({ "Content-Type": "text/html" }).end(template);
+        }
+      }
       res.sendFile(path.join(distPath, "index.html"));
     });
   }

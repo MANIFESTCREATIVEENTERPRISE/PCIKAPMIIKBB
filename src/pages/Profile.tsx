@@ -324,7 +324,7 @@ function PengurusSection({ title, data }: { title: string, data: any[] }) {
         {data.map((p, i) => (
           <div key={i} className="group relative bg-white p-8 rounded-[3rem] border border-gray-100 shadow-xl overflow-hidden flex flex-col items-center text-center transition-all hover:shadow-2xl hover:scale-105">
             <div className="w-36 h-36 rounded-full overflow-hidden mb-8 border-[6px] border-surface shadow-inner group-hover:border-accent transition-all duration-500">
-               <img src={p.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={p.name} title={p.name} referrerPolicy="no-referrer" />
+               <img src={p.image} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={`Foto Profile ${p.name}`} title={p.name} referrerPolicy="no-referrer" />
             </div>
             <h4 className="font-bold text-xl text-primary">{p.name}</h4>
             <div className="mt-4 px-4 py-1.5 bg-primary/5 rounded-full group-hover:bg-accent transition-colors">

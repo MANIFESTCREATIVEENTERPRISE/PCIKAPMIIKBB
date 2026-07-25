@@ -284,7 +284,8 @@ export default function Home() {
         <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden">
           <img 
             src="/src/assets/images/pmii_meeting_cooperation_1779609727304.png" 
-            alt="PC IKA PMII Bandung Barat" 
+            alt="Silaturahim dan Kerjasama Alumni PC IKA PMII Bandung Barat" 
+            loading="lazy"
             className="w-full h-full object-cover opacity-10 object-center scale-105"
             referrerPolicy="no-referrer"
           />
@@ -415,7 +416,8 @@ export default function Home() {
                       <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-white/10 border border-white/20 relative shadow-sm">
                         <img 
                           src={item.image} 
-                          alt={item.title} 
+                          alt={item.title || "Warta Alumni IKA PMII KBB"} 
+                          loading="lazy"
                           className="w-full h-full object-cover group-hover:scale-110 duration-300 transition-transform" 
                           referrerPolicy="no-referrer"
                         />
@@ -563,7 +565,8 @@ export default function Home() {
             <div className="relative group overflow-hidden rounded-3xl bg-[#072587] aspect-[16/10] sm:aspect-[16/9] shadow-soft-lg">
               <img 
                 src={bannerImg} 
-                alt="Suara Pergerakan PMII KBB"
+                alt="Dokumentasi Gerakan Suara Pergerakan IKA PMII Bandung Barat"
+                loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105" 
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#031242]/95 via-[#072587]/40 to-transparent flex items-end p-6 sm:p-10 text-left">
@@ -729,7 +732,8 @@ export default function Home() {
               >
                 <img 
                   src={item.image} 
-                  alt={item.title}
+                  alt={item.title || "Dokumentasi Kegiatan PC IKA PMII KBB"}
+                  loading="lazy"
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                   referrerPolicy="no-referrer" 
                 />

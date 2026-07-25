@@ -188,6 +188,39 @@ function ContentView({ type, title }: { type: string, title: string }) {
   };
 
   useEffect(() => {
+    if (selectedItem) {
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.id = "selected-article-schema";
+      script.text = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": type === "news" ? "NewsArticle" : "BlogPosting",
+        "headline": selectedItem.title,
+        "description": selectedItem.content ? selectedItem.content.substring(0, 160) : "",
+        "image": selectedItem.image ? [selectedItem.image] : ["https://pcikapmiikbb.or.id/src/assets/images/pmii_meeting_cooperation_1779609727304.png"],
+        "datePublished": selectedItem.date || new Date().toISOString(),
+        "author": {
+          "@type": "Person",
+          "name": selectedItem.author || "Redaksi IKA PMII KBB"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "PC IKA PMII Kabupaten Bandung Barat",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://pcikapmiikbb.or.id/src/assets/images/logo.png"
+          }
+        }
+      });
+      document.head.appendChild(script);
+      return () => {
+        const existing = document.getElementById("selected-article-schema");
+        if (existing) existing.remove();
+      };
+    }
+  }, [selectedItem, type]);
+
+  useEffect(() => {
     // If we have items already, we can still fetch fresh data Silently in the background to avoid blocking!
     const hasItems = LOCAL_FALLBACKS[type] && LOCAL_FALLBACKS[type].length > 0;
     if (!hasItems) {
@@ -687,8 +720,9 @@ function GaleriView() {
             <div className="aspect-[16/11] overflow-hidden relative">
               <img 
                 src={item.image} 
+                loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                alt={item.title} 
+                alt={`Dokumentasi Galeri: ${item.title}`} 
                 title={item.title}
                 referrerPolicy="no-referrer"
               />

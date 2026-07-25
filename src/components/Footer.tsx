@@ -31,7 +31,8 @@ export default function Footer() {
           <div className="flex items-center gap-3">
             <img 
               src={logoImg} 
-              alt="PC IKA PMII Kabupaten Bandung Barat" 
+              alt="Logo Resmi PC IKA PMII Kabupaten Bandung Barat" 
+              loading="lazy"
               className="h-14 w-auto object-contain"
               referrerPolicy="no-referrer"
               onError={(e) => {

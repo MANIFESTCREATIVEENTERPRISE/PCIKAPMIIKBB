@@ -328,7 +328,7 @@ export default function Header() {
                                       to={child.href}
                                       onClick={() => setMobileMenuOpen(false)}
                                       className={`block py-3 px-4 rounded-xl text-sm font-bold transition-all ${
-                                        isActive(child.href) ? "bg-accent text-primary" : "text-gray-400 hover:text-primary"
+                                        isActive(child.href) ? "bg-accent text-primary" : "text-gray-600 hover:text-primary"
                                       }`}
                                     >
                                       {child.name}
