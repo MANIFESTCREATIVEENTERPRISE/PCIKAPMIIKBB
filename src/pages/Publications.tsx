@@ -2,6 +2,7 @@ import { Routes, Route, Link, useParams, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Calendar, User, FileText, ImageIcon, Eye, Quote, ChevronDown, ChevronUp, X, BookOpen, Clock } from "lucide-react";
+import pmiiMeetingImg from "../assets/images/pmii_meeting_cooperation_1779609727304.png";
 
 const formatDate = (dateExpression: any, options?: Intl.DateTimeFormatOptions) => {
   if (!dateExpression) return "-";
@@ -18,7 +19,7 @@ const LOCAL_FALLBACKS: Record<string, any[]> = {
       id: 1, 
       title: "Sinergi IKA PMII KBB dengan Pemkab Bandung Barat dalam Program Penataan Desa", 
       content: "PC IKA PMII Kabupaten Bandung Barat menjalin kesepakatan strategis dengan Pemerintah Kabupaten Bandung Barat untuk mendorong digitalisasi administrasi di tingkat desa se-KBB.", 
-      image: "/assets/images/pmii_meeting_cooperation_1779609727304.png", 
+      image: pmiiMeetingImg, 
       date: "2026-06-01T12:00:00Z", 
       category: "Berita", 
       author: "Humas IKA PMII" 
@@ -27,7 +28,7 @@ const LOCAL_FALLBACKS: Record<string, any[]> = {
       id: 2, 
       title: "IKA PMII KBB : silaturahim Rapatkan Barisan untuk pelantikan dan Rapat Kerja", 
       content: "PC IKA PMII Kabupaten Bandung Barat menyelenggarakan kegiatan silaturahim akbar guna mempererat hubungan kekeluargaan antar-alumni sekaligus merapatkan barisan menyongsong agenda pelantikan kepengurusan baru serta pelaksanaan Rapat Kerja.", 
-      image: "/assets/images/pmii_meeting_cooperation_1779609727304.png", 
+      image: pmiiMeetingImg, 
       date: "2026-05-28T12:00:00Z", 
       category: "Berita", 
       author: "Redaksi" 
@@ -236,7 +237,13 @@ function ContentView({ type, title }: { type: string, title: string }) {
       })
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          setItems(data);
+          const sanitized = data.map((item: any) => {
+            if (!item.image || item.image.includes("pmii_meeting_cooperation") || item.image.startsWith("/assets/")) {
+              return { ...item, image: pmiiMeetingImg };
+            }
+            return item;
+          });
+          setItems(sanitized);
         }
         setLoading(false);
       })
