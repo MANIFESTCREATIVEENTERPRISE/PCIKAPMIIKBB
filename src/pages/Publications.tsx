@@ -18,7 +18,7 @@ const LOCAL_FALLBACKS: Record<string, any[]> = {
       id: 1, 
       title: "Sinergi IKA PMII KBB dengan Pemkab Bandung Barat dalam Program Penataan Desa", 
       content: "PC IKA PMII Kabupaten Bandung Barat menjalin kesepakatan strategis dengan Pemerintah Kabupaten Bandung Barat untuk mendorong digitalisasi administrasi di tingkat desa se-KBB.", 
-      image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", 
+      image: "/assets/images/pmii_meeting_cooperation_1779609727304.png", 
       date: "2026-06-01T12:00:00Z", 
       category: "Berita", 
       author: "Humas IKA PMII" 
@@ -27,7 +27,7 @@ const LOCAL_FALLBACKS: Record<string, any[]> = {
       id: 2, 
       title: "IKA PMII KBB : silaturahim Rapatkan Barisan untuk pelantikan dan Rapat Kerja", 
       content: "PC IKA PMII Kabupaten Bandung Barat menyelenggarakan kegiatan silaturahim akbar guna mempererat hubungan kekeluargaan antar-alumni sekaligus merapatkan barisan menyongsong agenda pelantikan kepengurusan baru serta pelaksanaan Rapat Kerja.", 
-      image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", 
+      image: "/assets/images/pmii_meeting_cooperation_1779609727304.png", 
       date: "2026-05-28T12:00:00Z", 
       category: "Berita", 
       author: "Redaksi" 
@@ -197,7 +197,7 @@ function ContentView({ type, title }: { type: string, title: string }) {
         "@type": type === "news" ? "NewsArticle" : "BlogPosting",
         "headline": selectedItem.title,
         "description": selectedItem.content ? selectedItem.content.substring(0, 160) : "",
-        "image": selectedItem.image ? [selectedItem.image] : ["https://pcikapmiikbb.or.id/src/assets/images/pmii_meeting_cooperation_1779609727304.png"],
+        "image": selectedItem.image ? [selectedItem.image] : ["https://pcikapmiikbb.or.id/assets/images/pmii_meeting_cooperation_1779609727304.png"],
         "datePublished": selectedItem.date || new Date().toISOString(),
         "author": {
           "@type": "Person",
@@ -208,7 +208,7 @@ function ContentView({ type, title }: { type: string, title: string }) {
           "name": "PC IKA PMII Kabupaten Bandung Barat",
           "logo": {
             "@type": "ImageObject",
-            "url": "https://pcikapmiikbb.or.id/src/assets/images/logo.png"
+            "url": "https://pcikapmiikbb.or.id/assets/images/logo.png"
           }
         }
       });

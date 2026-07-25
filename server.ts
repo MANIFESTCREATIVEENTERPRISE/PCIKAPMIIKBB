@@ -45,8 +45,8 @@ async function startServer() {
       }
     ],
     news: [
-      { id: 1, title: "Sinergi IKA PMII KBB dengan Pemkab Bandung Barat dalam Program Penataan Desa", content: "PC IKA PMII Kabupaten Bandung Barat menjalin kesepakatan strategis dengan Pemerintah Kabupaten Bandung Barat untuk mendorong digitalisasi administrasi di tingkat desa se-KBB.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Humas IKA PMII" },
-      { id: 2, title: "IKA PMII KBB : silaturahim Rapatkan Barisan untuk pelantikan dan Rapat Kerja", content: "PC IKA PMII Kabupaten Bandung Barat menyelenggarakan kegiatan silaturahim akbar guna mempererat hubungan kekeluargaan antar-alumni sekaligus merapatkan barisan menyongsong agenda pelantikan kepengurusan baru serta pelaksanaan Rapat Kerja.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Redaksi" },
+      { id: 1, title: "Sinergi IKA PMII KBB dengan Pemkab Bandung Barat dalam Program Penataan Desa", content: "PC IKA PMII Kabupaten Bandung Barat menjalin kesepakatan strategis dengan Pemerintah Kabupaten Bandung Barat untuk mendorong digitalisasi administrasi di tingkat desa se-KBB.", image: "/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Humas IKA PMII" },
+      { id: 2, title: "IKA PMII KBB : silaturahim Rapatkan Barisan untuk pelantikan dan Rapat Kerja", content: "PC IKA PMII Kabupaten Bandung Barat menyelenggarakan kegiatan silaturahim akbar guna mempererat hubungan kekeluargaan antar-alumni sekaligus merapatkan barisan menyongsong agenda pelantikan kepengurusan baru serta pelaksanaan Rapat Kerja.", image: "/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Redaksi" },
       { id: 3, title: "Rapat Koordinasi Cabang: Persiapan Pelantikan Pengurus Baru", content: "Agenda besar transisi kepemimpinan IKA PMII KBB akan segera dilaksanakan. Seluruh alumni diundang untuk memberikan sumbangsih pemikiran.", image: "https://picsum.photos/seed/news3/800/400", date: new Date().toISOString(), category: "Organisasi", author: "Sekretariat" },
       { id: 4, title: "Kunjungan Studi Banding IKA PMII KBB ke Balai Kota Bandung", content: "Mempelajari tata kelola organisasi alumni yang mandiri secara ekonomi, IKA PMII KBB melakukan kunjungan kerja ke ikatan alumni lainnya.", image: "https://picsum.photos/seed/news4/800/400", date: new Date().toISOString(), category: "Berita", author: "Humas" },
       { id: 5, title: "Update Kejadian: Musyawarah Daerah IKA PMII di Ngamprah Berlangsung Khidmat", content: "Musyawarah daerah menghasilkan beberapa poin penting mengenai peran alumni di sektor pertanian Bandung Barat.", image: "https://picsum.photos/seed/news5/800/400", date: new Date().toISOString(), category: "Berita", author: "Redaksi" },
@@ -360,7 +360,7 @@ Sitemap: https://pcikapmiikbb.or.id/sitemap.xml`);
       "name": "PC IKA PMII Kabupaten Bandung Barat",
       "alternateName": "IKA PMII KBB",
       "url": "https://pcikapmiikbb.or.id/",
-      "logo": "https://pcikapmiikbb.or.id/src/assets/images/logo.png",
+      "logo": "https://pcikapmiikbb.or.id/assets/images/logo.png",
       "description": "Pengurus Cabang Ikatan Keluarga Alumni PMII Kabupaten Bandung Barat.",
       "address": {
         "@type": "PostalAddress",

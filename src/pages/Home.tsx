@@ -12,8 +12,8 @@ import { GENERATED_SIMULATED_MEMBERS } from "../data/simulatedMembers";
 const COLORS_LIST = ["#072587", "#f59e0b", "#059669", "#6366f1", "#ec4899", "#d97706", "#10b981"];
 
 const DEFAULT_NEWS_FALLBACK = [
-  { id: 1, title: "Sinergi IKA PMII KBB dengan Pemkab Bandung Barat dalam Program Penataan Desa", content: "PC IKA PMII Kabupaten Bandung Barat menjalin kesepakatan strategis dengan Pemerintah Kabupaten Bandung Barat untuk mendorong digitalisasi administrasi dan pemberdayaan ekonomi di tingkat desa se-KBB.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Humas IKA PMII" },
-  { id: 2, title: "Silaturahim Akbar & Consolidasi Alumni Menyongsong Rapat Kerja Cabang", content: "PC IKA PMII Kabupaten Bandung Barat menyelenggarakan kegiatan silaturahim akbar guna mempererat hubungan kekeluargaan antar-alumni sekaligus merapatkan barisan menyongsong Rapat Kerja Cabang.", image: "/src/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Redaksi" },
+  { id: 1, title: "Sinergi IKA PMII KBB dengan Pemkab Bandung Barat dalam Program Penataan Desa", content: "PC IKA PMII Kabupaten Bandung Barat menjalin kesepakatan strategis dengan Pemerintah Kabupaten Bandung Barat untuk mendorong digitalisasi administrasi dan pemberdayaan ekonomi di tingkat desa se-KBB.", image: "/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Humas IKA PMII" },
+  { id: 2, title: "Silaturahim Akbar & Consolidasi Alumni Menyongsong Rapat Kerja Cabang", content: "PC IKA PMII Kabupaten Bandung Barat menyelenggarakan kegiatan silaturahim akbar guna mempererat hubungan kekeluargaan antar-alumni sekaligus merapatkan barisan menyongsong Rapat Kerja Cabang.", image: "/assets/images/pmii_meeting_cooperation_1779609727304.png", date: new Date().toISOString(), category: "Berita", author: "Redaksi" },
   { id: 3, title: "Rapat Koordinasi Cabang: Persiapan Pelantikan Pengurus Baru & Agenda SIAP Pedia", content: "Agenda besar transisi kepemimpinan IKA PMII KBB akan segera dilaksanakan. Seluruh alumni diundang untuk memberikan sumbangsih pemikiran strategis.", image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80", date: new Date().toISOString(), category: "Organisasi", author: "Sekretariat" },
   { id: 4, title: "Penguatan LBH PC IKA PMII: Layanan Advokasi & Bantuan Hukum Masyarakat", content: "Memperkuat fungsi perlindungan hak-hak sipil, LBH PC IKA PMII Bandung Barat membuka posko bantuan hukum pro-bono bagi masyarakat membutuhkan.", image: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80", date: new Date().toISOString(), category: "Advokasi", author: "LBH IKA PMII" },
   { id: 5, title: "Koperasi KAMARA Swatransaksi: Inkubasi UMKM & Produk Ekonomi Kreatif Alumni", content: "Mendorong kemandirian ekonomi daerah, Koperasi KAMARA merilis program pendampingan sertifikasi halal dan digitalisasi pemasaran UMKM alumni.", image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80", date: new Date().toISOString(), category: "Ekonomi", author: "KAMARA" }
@@ -283,7 +283,7 @@ export default function Home() {
         {/* Hero Background Photo Accent */}
         <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden">
           <img 
-            src="/src/assets/images/pmii_meeting_cooperation_1779609727304.png" 
+            src="/assets/images/pmii_meeting_cooperation_1779609727304.png" 
             alt="Silaturahim dan Kerjasama Alumni PC IKA PMII Bandung Barat" 
             loading="lazy"
             className="w-full h-full object-cover opacity-10 object-center scale-105"
