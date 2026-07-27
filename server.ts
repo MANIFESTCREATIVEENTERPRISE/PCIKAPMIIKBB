@@ -16,6 +16,59 @@ async function startServer() {
 
   app.use(express.json());
 
+  // 1. Security Headers Middleware
+  app.use((req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    if (req.secure || req.headers["x-forwarded-proto"] === "https") {
+      res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    }
+    next();
+  });
+
+  // 2. In-Memory Rate Limiter for Form Submissions (Prevents bot spam attacks)
+  const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+  function formRateLimiter(req: express.Request, res: express.Response, next: express.NextFunction) {
+    const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1").toString();
+    const now = Date.now();
+    const windowMs = 15 * 60 * 1000; // 15 minutes window
+    const maxRequests = 10; // 10 submissions limit
+
+    const entry = rateLimitMap.get(ip) || { count: 0, resetTime: now + windowMs };
+
+    if (now > entry.resetTime) {
+      entry.count = 1;
+      entry.resetTime = now + windowMs;
+    } else {
+      entry.count++;
+    }
+
+    rateLimitMap.set(ip, entry);
+
+    if (entry.count > maxRequests) {
+      return res.status(429).json({
+        error: "Terlalu banyak permintaan dari perangkat/IP ini. Mohon tunggu 15 menit sebelum mencoba kembali."
+      });
+    }
+
+    next();
+  }
+
+  // 3. Server-side XSS & HTML Sanitization Helper
+  function sanitizeString(str: any): string {
+    if (typeof str !== "string") return "";
+    return str
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      .replace(/<[^>]+>/g, "") // Strip HTML tags
+      .replace(/javascript:/gi, "")
+      .replace(/onerror=/gi, "")
+      .replace(/onload=/gi, "")
+      .trim();
+  }
+
   // In-memory data store backed by Firebase Firestore
   const db: any = {
     members: [],
@@ -148,14 +201,23 @@ async function startServer() {
     res.json(db.submittedContents);
   });
 
-  app.post("/api/submitted-contents", async (req, res) => {
+  app.post("/api/submitted-contents", formRateLimiter, async (req, res) => {
     const { title, content, author, category } = req.body;
+    const cleanTitle = sanitizeString(title);
+    const cleanContent = sanitizeString(content);
+    const cleanAuthor = sanitizeString(author);
+    const cleanCategory = sanitizeString(category);
+
+    if (!cleanTitle || !cleanContent) {
+      return res.status(400).json({ error: "Judul dan isi konten wajib diisi." });
+    }
+
     const newSubmit = {
       id: Date.now(),
-      title,
-      author: author || "Alumni",
-      category: category || "Opini",
-      content,
+      title: cleanTitle,
+      author: cleanAuthor || "Alumni",
+      category: cleanCategory || "Opini",
+      content: cleanContent,
       date: new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric' }),
       status: "Menunggu Kurasi",
       views: 0
@@ -172,11 +234,11 @@ async function startServer() {
       if (c.id === Number(id)) {
         updatedItem = {
           ...c,
-          title: title !== undefined ? title : c.title,
-          content: content !== undefined ? content : c.content,
-          author: author !== undefined ? author : c.author,
-          category: category !== undefined ? category : c.category,
-          status: status !== undefined ? status : c.status
+          title: title !== undefined ? sanitizeString(title) : c.title,
+          content: content !== undefined ? sanitizeString(content) : c.content,
+          author: author !== undefined ? sanitizeString(author) : c.author,
+          category: category !== undefined ? sanitizeString(category) : c.category,
+          status: status !== undefined ? sanitizeString(status) : c.status
         };
         return updatedItem;
       }
@@ -195,23 +257,32 @@ async function startServer() {
     res.json({ success: true });
   });
 
-  app.post("/api/content/publish", async (req, res) => {
+  app.post("/api/content/publish", formRateLimiter, async (req, res) => {
     const { title, content, author, category, image, date } = req.body;
+    const cleanTitle = sanitizeString(title);
+    const cleanContent = sanitizeString(content);
+    const cleanAuthor = sanitizeString(author);
+    const cleanCategory = sanitizeString(category);
+
+    if (!cleanTitle || !cleanContent) {
+      return res.status(400).json({ error: "Judul dan konten berita/artikel wajib diisi." });
+    }
+
     const newItem = {
       id: Date.now(),
-      title,
-      content,
-      author: author || "Admin SIAP",
-      category: category === "Pikiran Kritis" ? "Opini" : category,
+      title: cleanTitle,
+      content: cleanContent,
+      author: cleanAuthor || "Admin SIAP",
+      category: cleanCategory === "Pikiran Kritis" ? "Opini" : cleanCategory,
       image: image || "https://picsum.photos/seed/pmii/800/400",
       date: date || new Date().toISOString()
     };
 
     let targetColl = "articles";
-    if (category === "Berita") {
+    if (cleanCategory === "Berita") {
       targetColl = "news";
       db.news.unshift(newItem);
-    } else if (category === "Pengumuman") {
+    } else if (cleanCategory === "Pengumuman") {
       targetColl = "announcements";
       const ann = {
         id: newItem.id,
@@ -257,10 +328,10 @@ async function startServer() {
         if (item.id === Number(id)) {
           updatedItem = {
             ...item,
-            title: title || item.title,
-            content: content || item.content,
-            author: author || item.author,
-            category: category || item.category,
+            title: title ? sanitizeString(title) : item.title,
+            content: content ? sanitizeString(content) : item.content,
+            author: author ? sanitizeString(author) : item.author,
+            category: category ? sanitizeString(category) : item.category,
             image: image || item.image
           };
           return updatedItem;
@@ -281,7 +352,14 @@ async function startServer() {
   app.post("/api/products", async (req, res) => {
     const product = req.body;
     const id = product.id || Date.now();
-    const newProduct = { ...product, id };
+    const newProduct = { 
+      ...product, 
+      id,
+      name: sanitizeString(product.name),
+      price: sanitizeString(product.price),
+      provider: sanitizeString(product.provider),
+      contact: sanitizeString(product.contact)
+    };
     const existingIdx = db.products.findIndex((p: any) => p.id === Number(id));
     if (existingIdx >= 0) {
       db.products[existingIdx] = newProduct;
@@ -303,7 +381,7 @@ async function startServer() {
     res.json(db.members || []);
   });
 
-  app.post("/api/register", async (req, res) => {
+  app.post("/api/register", formRateLimiter, async (req, res) => {
     const memberData = req.body;
     
     // 1. Anti-spam honeypot check
@@ -311,10 +389,10 @@ async function startServer() {
       return res.status(400).json({ error: "Permintaan ditolak (Sistem mendeteksi spam/bot)." });
     }
 
-    // 2. Server-side validation
-    const fullName = (memberData.fullName || "").trim();
-    const whatsapp = (memberData.whatsapp || "").trim();
-    const email = (memberData.email || "").trim();
+    // 2. Server-side validation & sanitization
+    const fullName = sanitizeString(memberData.fullName || "");
+    const whatsapp = sanitizeString(memberData.whatsapp || "");
+    const email = sanitizeString(memberData.email || "");
 
     if (!fullName || fullName.length < 3) {
       return res.status(400).json({ error: "Nama lengkap wajib diisi minimal 3 karakter." });
@@ -328,14 +406,37 @@ async function startServer() {
       return res.status(400).json({ error: "Format email tidak valid." });
     }
 
-    const newMember = { ...memberData, id: Date.now(), status: "pending" };
+    const sanitizedMemberData: Record<string, any> = {};
+    for (const key in memberData) {
+      if (typeof memberData[key] === "string") {
+        sanitizedMemberData[key] = sanitizeString(memberData[key]);
+      } else {
+        sanitizedMemberData[key] = memberData[key];
+      }
+    }
+
+    const newMember = { ...sanitizedMemberData, id: Date.now(), status: "pending" };
     db.members.push(newMember);
     await saveDocumentToFirestore("members", newMember.id, newMember);
     res.json({ message: "Pendaftaran berhasil, data anda akan ditinjau oleh pengurus." });
   });
 
-  app.post("/api/critics", async (req, res) => {
-    const newCritic = { ...req.body, id: Date.now() };
+  app.post("/api/critics", formRateLimiter, async (req, res) => {
+    const name = sanitizeString(req.body.name || "Anonim");
+    const email = sanitizeString(req.body.email || "");
+    const suggestion = sanitizeString(req.body.suggestion || req.body.content || "");
+
+    if (!suggestion || suggestion.length < 5) {
+      return res.status(400).json({ error: "Isi kritik/saran wajib diisi minimal 5 karakter." });
+    }
+
+    const newCritic = {
+      id: Date.now(),
+      name,
+      email,
+      suggestion,
+      date: new Date().toISOString()
+    };
     db.criticSuggestions.push(newCritic);
     await saveDocumentToFirestore("criticSuggestions", newCritic.id, newCritic);
     res.json({ message: "Terima kasih atas kritik dan saran anda." });
@@ -599,7 +700,15 @@ Sitemap: https://pcikapmiikbb.or.id/sitemap.xml`);
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath, { index: false }));
+    app.use(express.static(distPath, { 
+      index: false,
+      maxAge: "1d",
+      setHeaders: (res, filePath) => {
+        if (/\.(js|css|webp|png|jpg|jpeg|svg|woff2?|ttf|eot)$/i.test(filePath)) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        }
+      }
+    }));
     app.get("*", (req, res) => {
       if (!req.path.startsWith("/api")) {
         const indexPath = path.join(distPath, "index.html");

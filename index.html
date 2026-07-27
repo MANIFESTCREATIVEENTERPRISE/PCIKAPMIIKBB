@@ -35,39 +35,100 @@
     <meta name="geo.position" content="-6.8406;107.5029" />
     <meta name="ICBM" content="-6.8406, 107.5029" />
 
-    <!-- Schema.org Structured Data (JSON-LD) for Google Search Engine Rich Snippets -->
+    <!-- Schema.org Structured Data (JSON-LD) for NGO / Organization -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "NGO",
-      "name": "PC IKA PMII Kabupaten Bandung Barat",
-      "alternateName": "IKA PMII KBB",
-      "url": "https://pcikapmiikbb.or.id/",
-      "logo": "https://pcikapmiikbb.or.id/assets/images/logo.png",
-      "description": "Pengurus Cabang Ikatan Keluarga Alumni PMII Kabupaten Bandung Barat. Wadah perjuangan, silaturahim, dan pemberdayaan alumni PMII se-Bandung Barat.",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Kp. Babakan Rt 003 Rw 007 Desa Tanimulya",
-        "addressLocality": "Kecamatan Ngamprah",
-        "addressRegion": "Kabupaten Bandung Barat",
-        "postalCode": "40552",
-        "addressCountry": "ID"
-      },
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+6282115991771",
-        "contactType": "customer service",
-        "email": "pcikapmiibandungbarat@gmail.com",
-        "availableLanguage": ["Indonesian"]
-      },
-      "sameAs": [
-        "https://pcikapmiikbb.or.id/"
+      "@graph": [
+        {
+          "@type": "NGO",
+          "@id": "https://pcikapmiikbb.or.id/#organization",
+          "name": "PC IKA PMII Kabupaten Bandung Barat",
+          "alternateName": "IKA PMII KBB",
+          "url": "https://pcikapmiikbb.or.id/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://pcikapmiikbb.or.id/assets/images/logo.png"
+          },
+          "image": "https://pcikapmiikbb.or.id/assets/images/pmii_meeting_cooperation_1779609727304.png",
+          "description": "Pengurus Cabang Ikatan Keluarga Alumni PMII Kabupaten Bandung Barat. Wadah perjuangan, silaturahim, dan pemberdayaan alumni PMII se-Bandung Barat.",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Kp. Babakan Rt 003 Rw 007 Desa Tanimulya",
+            "addressLocality": "Kecamatan Ngamprah",
+            "addressRegion": "Kabupaten Bandung Barat",
+            "postalCode": "40552",
+            "addressCountry": "ID"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+6282115991771",
+            "contactType": "customer service",
+            "email": "pcikapmiibandungbarat@gmail.com",
+            "availableLanguage": ["Indonesian"]
+          },
+          "sameAs": [
+            "https://pcikapmiikbb.or.id/"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://pcikapmiikbb.or.id/#website",
+          "url": "https://pcikapmiikbb.or.id/",
+          "name": "PC IKA PMII Kabupaten Bandung Barat",
+          "description": "Rumah Digital & Sistem Informasi Alumni PMII Kabupaten Bandung Barat",
+          "publisher": {
+            "@id": "https://pcikapmiikbb.or.id/#organization"
+          },
+          "inLanguage": "id-ID"
+        }
       ]
     }
     </script>
   </head>
-  <body>
-    <div id="root"></div>
+  <body class="bg-slate-50 text-slate-900 antialiased font-sans selection:bg-amber-400 selection:text-slate-900">
+    <div id="root">
+      <!-- Fallback Semantic HTML content for Search Engine Crawlers & NoScript Users -->
+      <header class="bg-[#072587] text-white py-4 px-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+          <a href="/" class="font-bold text-lg">PC IKA PMII KBB</a>
+          <nav>
+            <ul class="flex gap-4 text-sm">
+              <li><a href="/profil/pc" class="hover:underline">Profil PC</a></li>
+              <li><a href="/daftar-anggota" class="hover:underline">Pendaftaran SIAP</a></li>
+              <li><a href="/publikasi/berita" class="hover:underline">Berita</a></li>
+              <li><a href="/produk-umkm/katalog" class="hover:underline">Koperasi KAMARA</a></li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+      <main class="max-w-7xl mx-auto px-6 py-12">
+        <h1 class="text-3xl font-bold text-slate-900 mb-4">PC IKA PMII Kabupaten Bandung Barat</h1>
+        <p class="text-slate-700 text-lg mb-6 leading-relaxed">
+          Selamat datang di Rumah Digital Resmi Pengurus Cabang Ikatan Keluarga Alumni PMII Kabupaten Bandung Barat (PC IKA PMII KBB). Menghimpun potensi alumni untuk pengabdian berdikari di sektor intelektual, birokrasi, hukum, dan ekonomi daerah.
+        </p>
+        <div class="grid md:grid-cols-3 gap-6 my-8">
+          <section class="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-xl font-bold text-[#072587] mb-2">SIAP Pedia</h2>
+            <p class="text-slate-600 text-sm">Sistem Informasi & Pendataan Anggota Alumni PMII se-Kabupaten Bandung Barat.</p>
+            <a href="/daftar-anggota" class="inline-block mt-4 text-amber-600 font-bold hover:underline">Formulir Pendaftaran SIAP &rarr;</a>
+          </section>
+          <section class="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-xl font-bold text-[#072587] mb-2">Koperasi KAMARA</h2>
+            <p class="text-slate-600 text-sm">Inkubasi UMKM & unit bisnis mandiri alumni IKA PMII Bandung Barat.</p>
+            <a href="/produk-umkm/katalog" class="inline-block mt-4 text-amber-600 font-bold hover:underline">Katalog Produk UMKM &rarr;</a>
+          </section>
+          <section class="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-xl font-bold text-[#072587] mb-2">LBH IKA PMII</h2>
+            <p class="text-slate-600 text-sm">Lembaga Bantuan Hukum & Advokasi Hak-Hak Masyarakat Kabupaten Bandung Barat.</p>
+            <a href="/profil/lbh" class="inline-block mt-4 text-amber-600 font-bold hover:underline">Konsultasi Hukum &rarr;</a>
+          </section>
+        </div>
+      </main>
+      <footer class="bg-slate-900 text-slate-300 py-8 px-6 text-center text-sm">
+        <p>&copy; 2026 PC IKA PMII Kabupaten Bandung Barat. Kp. Babakan Rt 003 Rw 007 Desa Tanimulya, Kec. Ngamprah, Kab. Bandung Barat.</p>
+      </footer>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

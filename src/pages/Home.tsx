@@ -357,7 +357,7 @@ export default function Home() {
                 className="flex flex-wrap gap-4 pt-3"
               >
                 <Link
-                  to="/registrasi"
+                  to="/daftar-anggota"
                   className="btn-gold"
                 >
                   Daftar Anggota SIAP <ArrowRight size={18} />
@@ -483,7 +483,7 @@ export default function Home() {
               </div>
               <h3 className="font-display font-bold text-slate-900 text-xl mb-2 group-hover:text-[#072587] transition-colors">Database SIAP Pedia</h3>
               <p className="text-slate-600 text-sm leading-relaxed mb-4">Pendaftaran &amp; direktori terpusat SIAP Pedia seluruh kader alumni PMII KBB.</p>
-              <Link to="/registrasi" className="text-xs font-bold text-[#072587] hover:text-amber-600 inline-flex items-center gap-1.5 transition-colors">
+              <Link to="/daftar-anggota" className="text-xs font-bold text-[#072587] hover:text-amber-600 inline-flex items-center gap-1.5 transition-colors">
                 Daftar E-KTA <ArrowRight size={12} />
               </Link>
             </div>

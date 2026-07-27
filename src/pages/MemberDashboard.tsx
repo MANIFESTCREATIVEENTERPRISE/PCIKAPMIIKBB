@@ -4,7 +4,8 @@ import {
   User, LayoutDashboard, MessageCircle, MessagesSquare, FileText, Settings, LogOut, 
   Send, Search, Users, MapPin, Briefcase, Share2, ShieldCheck, Phone, CreditCard, Lock,
   AlignLeft, AlignCenter, AlignRight, AlignJustify, Bold, Italic, Underline, ListOrdered, 
-  Upload, CheckCircle, Eye, Image, Store, Plus, Trash2, Edit3, ShoppingBag, AlertTriangle, ArrowRight
+  Upload, CheckCircle, Eye, Image, Store, Plus, Trash2, Edit3, ShoppingBag, AlertTriangle, ArrowRight,
+  Menu, X
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
@@ -87,6 +88,7 @@ const GENERATED_ALUMNI = Array.from({ length: 60 }).map((_, i) => {
 export default function MemberDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedProfession, setSelectedProfession] = useState("");
   const [selectedSector, setSelectedSector] = useState("");
@@ -339,9 +341,68 @@ export default function MemberDashboard() {
   ];
 
   return (
-    <div className="flex min-h-[calc(100vh-80px)] bg-surface">
-      {/* Sidebar */}
-      <aside className={`bg-primary border-r border-white/5 transition-all duration-500 ${isSidebarOpen ? 'w-72' : 'w-24'} overflow-hidden flex flex-col relative`}>
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-80px)] bg-surface w-full overflow-x-hidden">
+      {/* Mobile Top Navigation Header (< md) */}
+      <div className="md:hidden bg-primary text-white p-4 flex items-center justify-between border-b border-white/10 sticky top-0 z-40 shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-primary font-bold text-xl shadow-md shrink-0">S</div>
+          <div>
+            <h1 className="font-display font-bold text-base text-accent leading-none">SIAP KBB</h1>
+            <span className="text-[10px] text-white/70 uppercase tracking-widest font-bold">
+              {sidebarItems.find(i => i.id === activeTab)?.label || "Dashboard"}
+            </span>
+          </div>
+        </div>
+        <button
+          onClick={() => setIsMobileDrawerOpen(!isMobileDrawerOpen)}
+          className="p-2.5 rounded-xl bg-white/10 text-accent hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-accent min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label="Buka Menu Navigasi"
+        >
+          {isMobileDrawerOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Mobile Slide-down Drawer Menu */}
+      <AnimatePresence>
+        {isMobileDrawerOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="md:hidden bg-[#051c66] border-b border-white/10 overflow-hidden text-white z-30"
+          >
+            <nav className="p-4 space-y-1.5">
+              {sidebarItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setIsMobileDrawerOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold transition-all min-h-[44px] ${
+                    activeTab === item.id 
+                      ? "bg-accent text-primary shadow-md font-black" 
+                      : "text-white/80 hover:bg-white/10"
+                  }`}
+                >
+                  <item.icon size={20} className={activeTab === item.id ? 'text-primary' : 'text-accent'} />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+              <button 
+                onClick={() => setIsMobileDrawerOpen(false)}
+                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold text-red-300 hover:bg-red-500/20 transition-all min-h-[44px]"
+              >
+                <LogOut size={20} />
+                <span>Keluar</span>
+              </button>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Desktop Sidebar (visible on md+) */}
+      <aside className={`hidden md:flex bg-primary border-r border-white/5 transition-all duration-500 ${isSidebarOpen ? 'w-72' : 'w-24'} overflow-hidden flex-col relative shrink-0`}>
         <div className="absolute inset-x-0 top-0 h-64 bg-accent/5 blur-3xl pointer-events-none"></div>
         <div className="p-8">
            <div className={`flex items-center gap-4 ${isSidebarOpen ? '' : 'justify-center'}`}>
@@ -376,12 +437,12 @@ export default function MemberDashboard() {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-grow p-10 overflow-y-auto relative">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <header className="flex justify-between items-end pb-8 border-b border-gray-100">
-             <div className="space-y-2 text-left">
-                <h2 className="text-4xl font-display font-bold text-primary capitalize leading-none">
+      {/* Main Content Area */}
+      <main className="flex-grow p-4 sm:p-6 md:p-10 overflow-y-auto relative w-full min-w-0">
+        <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12">
+          <header className="flex justify-between items-end pb-4 sm:pb-8 border-b border-gray-100">
+             <div className="space-y-1.5 sm:space-y-2 text-left w-full">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-primary capitalize leading-tight break-words">
                   {activeTab === "dashboard" ? (
                     <>Ringkasan <span className="italic text-slate-800">Fitur SIAP</span></>
                   ) : activeTab === "collaboration" ? (
@@ -390,7 +451,7 @@ export default function MemberDashboard() {
                     <>Portal <span className="italic">Alumni</span></>
                   )}
                 </h2>
-                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider leading-relaxed">
                   {activeTab === "dashboard" 
                     ? "Hub integrasi layanan mandiri dan pusat agenda alumni PC IKA PMII Bandung Barat" 
                     : activeTab === "collaboration"
@@ -407,23 +468,27 @@ export default function MemberDashboard() {
                 initial={{ opacity: 0, x: 20 }} 
                 animate={{ opacity: 1, x: 0 }} 
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-10 text-left"
+                className="space-y-8 sm:space-y-10 text-left"
               >
                 {/* 1. Verified Member Welcome Banner */}
-                <div id="welcome-banner" className="bg-gradient-to-br from-[#112D75] to-[#1E3B87] text-white rounded-3xl p-8 md:p-10 relative overflow-hidden shadow-xl border border-white/10">
+                <div id="welcome-banner" className="bg-gradient-to-br from-[#112D75] to-[#1E3B87] text-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10 relative overflow-hidden shadow-xl border border-white/10">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent)] pointer-events-none" />
-                  <div className="absolute top-0 right-0 p-4 bg-accent/20 rounded-bl-3xl shrink-0 font-bold text-[10px] text-accent tracking-widest uppercase">
-                    Lencana Emas Alumni
-                  </div>
                   <div className="absolute -bottom-10 -right-10 w-44 h-44 bg-accent/5 rounded-full blur-2xl"></div>
-                  <div className="space-y-4 relative z-10 max-w-4xl">
-                    <span className="inline-block px-3.5 py-1.5 bg-accent/15 border border-accent/25 text-accent rounded-xl text-[10px] font-black uppercase tracking-widest">
-                      Kader Terverifikasi
-                    </span>
-                    <h3 className="font-display font-medium text-3xl text-white">
+                  
+                  <div className="space-y-3.5 relative z-10 max-w-4xl">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-block px-3 py-1 bg-accent/15 border border-accent/25 text-accent rounded-xl text-[10px] font-black uppercase tracking-widest">
+                        Kader Terverifikasi
+                      </span>
+                      <span className="inline-block px-3 py-1 bg-accent/20 text-accent rounded-xl text-[10px] font-bold tracking-widest uppercase">
+                        Lencana Emas Alumni
+                      </span>
+                    </div>
+
+                    <h3 className="font-display font-medium text-xl sm:text-2xl md:text-3xl text-white leading-snug break-words">
                       Assalamualaikum, <span className="font-bold underline decoration-accent/50 decoration-2 underline-offset-4 italic">{userProfile?.fullName || "Sahabat Alumni"}</span>!
                     </h3>
-                    <p className="text-white/85 text-sm font-medium leading-relaxed max-w-3xl">
+                    <p className="text-white/85 text-xs sm:text-sm font-medium leading-relaxed max-w-3xl">
                       Selamat datang kembali di <strong className="text-accent">Sistem Informasi Alumni PMII (SIAP) Kabupaten Bandung Barat</strong>. Profil Anda telah aktif secara otomatis, terintegrasi aman, dan dapat dicari oleh rekan-rekan se-Bandung Barat. Mari bangun kemandirian beraktivitas demi kemaslahatan bersama!
                     </p>
                   </div>

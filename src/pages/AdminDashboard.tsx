@@ -40,7 +40,9 @@ import {
   Lock,
   Globe,
   MessageCircle,
-  Zap
+  Zap,
+  Menu,
+  X
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -53,6 +55,7 @@ export default function AdminDashboard() {
   
   // Active side-menu tab for whichever admin role is selected
   const [activeTab, setActiveTab] = useState("overview");
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   // ----------------------------------------------------
   // STATE DEFINITIONS FOR DYNAMIC INTERACTIONS
@@ -837,12 +840,95 @@ export default function AdminDashboard() {
   const brand = getBrandPalette();
 
   return (
-    <div className="flex min-h-[calc(100vh-80px)] bg-surface text-primary">
-      
+    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)] bg-surface text-primary w-full overflow-x-hidden">
+      {/* Mobile Top Navigation Bar (< lg) */}
+      <div className={`lg:hidden ${brand.primaryBg} text-white p-4 flex items-center justify-between border-b border-white/10 sticky top-0 z-40 shadow-md`}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-primary font-bold shadow-md shrink-0">
+            {currentRole === "siap" && <Shield size={20} />}
+            {currentRole === "kamara" && <ShoppingBag size={20} />}
+            {currentRole === "katara" && <Handshake size={20} />}
+          </div>
+          <div>
+            <h1 className="font-display font-bold text-base text-accent leading-none">{brand.title}</h1>
+            <span className="text-[10px] text-white/70 uppercase tracking-widest font-bold">{brand.label}</span>
+          </div>
+        </div>
+        <button
+          onClick={() => setIsMobileDrawerOpen(!isMobileDrawerOpen)}
+          className="p-2.5 rounded-xl bg-white/10 text-accent hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-accent min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label="Toggle Navigation"
+        >
+          {isMobileDrawerOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Mobile Drawer Navigation Menu */}
+      <AnimatePresence>
+        {isMobileDrawerOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className={`lg:hidden ${brand.primaryBg} border-b border-white/10 text-white z-30 p-4 space-y-2 overflow-y-auto max-h-[70vh]`}
+          >
+            <button
+              onClick={() => { setActiveTab("overview"); setIsMobileDrawerOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
+                activeTab === "overview" ? "bg-accent text-primary shadow-md font-black" : "text-white/80 hover:bg-white/10"
+              }`}
+            >
+              <LayoutDashboard size={18} />
+              <span>1. RINGKASAN PORTAL</span>
+            </button>
+
+            {currentRole === "siap" && (
+              <>
+                <button
+                  onClick={() => { setActiveTab("siap_verifikasi"); setIsMobileDrawerOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
+                    activeTab === "siap_verifikasi" ? "bg-accent text-primary shadow-md font-black" : "text-white/80 hover:bg-white/10"
+                  }`}
+                >
+                  <Users size={18} />
+                  <span>2. VERIFIKASI ANGGOTA SIAP</span>
+                </button>
+                <button
+                  onClick={() => { setActiveTab("siap_alumni"); setIsMobileDrawerOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
+                    activeTab === "siap_alumni" ? "bg-accent text-primary shadow-md font-black" : "text-white/80 hover:bg-white/10"
+                  }`}
+                >
+                  <Award size={18} />
+                  <span>3. DIREKTORI ALUMNI TERVERIFIKASI</span>
+                </button>
+                <button
+                  onClick={() => { setActiveTab("siap_redaksi"); setIsMobileDrawerOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
+                    activeTab === "siap_redaksi" ? "bg-accent text-primary shadow-md font-black" : "text-white/80 hover:bg-white/10"
+                  }`}
+                >
+                  <FileText size={18} />
+                  <span>4. REDAKSI BERITA & PUBLIKASI</span>
+                </button>
+              </>
+            )}
+
+            <Link 
+              to="/login"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-300 hover:bg-red-500/20 transition-all min-h-[44px] mt-4"
+            >
+              <LogOut size={18} />
+              <span>GANTI USER PORTAL</span>
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ---------------------------------------------------------------- */}
-      {/* SIDEBAR NAVIGATION PANEL (ADAPTER DESIGN)                       */}
+      {/* DESKTOP SIDEBAR NAVIGATION PANEL                                 */}
       {/* ---------------------------------------------------------------- */}
-      <aside className={`w-80 ${brand.primaryBg} text-white flex flex-col relative overflow-hidden transition-all duration-500 shrink-0`}>
+      <aside className={`hidden lg:flex w-80 ${brand.primaryBg} text-white flex-col relative overflow-hidden transition-all duration-500 shrink-0`}>
         
         {/* Ambient background decoration */}
         <div className="absolute inset-x-0 top-0 h-64 bg-white/5 blur-3xl pointer-events-none"></div>
@@ -1137,7 +1223,7 @@ export default function AdminDashboard() {
       {/* ---------------------------------------------------------------- */}
       {/* MAIN CONTENT AREA                                                */}
       {/* ---------------------------------------------------------------- */}
-      <main className="flex-grow p-12 overflow-y-auto max-h-screen">
+      <main className="flex-grow p-4 sm:p-6 md:p-12 overflow-y-auto max-h-screen w-full min-w-0">
         <div className="max-w-6xl mx-auto space-y-12">
           
           {/* Header section with brand contextual display removed */}

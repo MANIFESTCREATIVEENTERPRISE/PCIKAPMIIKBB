@@ -45,6 +45,8 @@ export default function App() {
             <Route path="/visi-misi-program/*" element={<PageWrapper><Profile /></PageWrapper>} />
             <Route path="/publikasi/*" element={<PageWrapper><Publications /></PageWrapper>} />
             <Route path="/daftar-anggota" element={<PageWrapper><MemberRegistration /></PageWrapper>} />
+            <Route path="/registrasi" element={<PageWrapper><MemberRegistration /></PageWrapper>} />
+            <Route path="/pendaftaran" element={<PageWrapper><MemberRegistration /></PageWrapper>} />
             <Route path="/produk-umkm/*" element={<PageWrapper><UMKM /></PageWrapper>} />
             <Route path="/siap" element={<PageWrapper><MemberDashboard /></PageWrapper>} />
             <Route path="/admin" element={<PageWrapper><AdminDashboard /></PageWrapper>} />
